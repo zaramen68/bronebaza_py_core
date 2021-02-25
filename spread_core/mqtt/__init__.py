@@ -1,4 +1,4 @@
-import lom
+#import lom
 from spread_core.errors.project_errors import TopicError
 from spread_core.mqtt.bus import *
 from spread_core.mqtt.data import *
@@ -425,56 +425,5 @@ classifier = dict(
             Info=dict(id=41010119)
         )
     ),
-    Lom=dict(
-        Ready=dict(id=41020001, state=bool),
-        Profiles=dict(id=41020002, set=dict(func='SetProfiles'), state=list),
-        AirBitStreetLamp={
-            lom.const.BRIGHTNESS_LEVEL:     dict(id=41020011, set=dict(func='SetBrightnessLevel'), state=int),
-            lom.const.CONFIG:               dict(set=dict(cmd=lom.commands.SetConfig), get=dict(cmd=lom.commands.GetConfig)),
-            lom.const.CURRENT_PROFILE:      dict(set=dict(func='SetCurrentProfile')),
-            # lom.const.TIME: dict(id=41020101, get=dict(params=dict(phase=int, power_id=int), cmd=mercury.AUXPower)),
-            # lom.const.OPER_TIME: dict(id=41020102),
-            # lom.const.CURRENT_PROFILE_ID: dict(id=41020106),
-            # lom.const.TEMP: dict(id=41020107),
-            # lom.const.TEMP_MIN: dict(id=41020108),
-            # lom.const.TEMP_MAX: dict(id=41020109),
-            # lom.const.ILLUMINATION: dict(id=41020110),
-            # lom.const.TILT: dict(id=41020111),
-            # lom.const.FLAGS: dict(id=41020112),
-            # lom.const.DEVICE_SERIAL:                dict(id=41020113, c_id=1, size=4, get=lom.commands.GetConf),
-            # lom.const.DEVICE_MODEL_ID:              dict(id=41020114, c_id=2, size=1, get=lom.commands.GetConf),
-            # lom.const.FIRMWARE_VERSION:             dict(id=41020115, c_id=3, size=1, get=lom.commands.GetConf),
-            # lom.const.ACTIVATION_STATUS:            dict(id=41020116, c_id=4, size=1, get=lom.commands.GetConf),
-            # lom.const.DEVICE_USER_PASS:             dict(id=41020117, c_id=5, size=4, get=lom.commands.GetConf, state=str),
-            # lom.const.LORAWAN_MC_ADDRESS_GROUP1:    dict(id=41020118, c_id=6, size=4, get=lom.commands.GetConf),
-            # lom.const.LORAWAN_DEV_EUI:              dict(id=41020119, c_id=7, size=8, get=lom.commands.GetConf),
-            # lom.const.LORAWAN_NETWORK_ID:           dict(id=41020120, c_id=257, size=1, get=lom.commands.GetConf, set=lom.commands.SetConf),
-            # lom.const.LORAWAN_REGION:               dict(id=41020121, c_id=258, size=1, get=lom.commands.GetConf, set=lom.commands.SetConf, variants=['AS923', 'AU915', 'CN470', 'CN779', 'EU433', 'EU868', 'KR920', 'IN865', 'US915', 'RU864']),
-            # lom.const.LORAWAN_CLASS:                dict(id=41020122, c_id=259, size=1, get=lom.commands.GetConf, set=lom.commands.SetConf, variants=['CLASS_A', 'CLASS_B', 'CLASS_C']),
-            # lom.const.LORAWAN_NB_TRIALS:            dict(id=41020123, c_id=260, size=1, get=lom.commands.GetConf, set=lom.commands.SetConf),
-            # lom.const.LORAWAN_TX_DATARATE:          dict(id=41020124, c_id=261, size=1, get=lom.commands.GetConf, set=lom.commands.SetConf, format='DT{}'),
-            # lom.const.LORAWAN_IS_PUBLIC_NETWORK:    dict(id=41020125, c_id=262, size=1, get=lom.commands.GetConf, set=lom.commands.SetConf, state=bool),
-            # lom.const.LORAWAN_ADR_ENABLED:          dict(id=41020126, c_id=263, size=1, get=lom.commands.GetConf, set=lom.commands.SetConf, state=bool),
-            # lom.const.LORAWAN_MULTICAST_GROUP1_EN:  dict(id=41020127, c_id=264, size=1, get=lom.commands.GetConf, set=lom.commands.SetConf, state=bool),
-            # lom.const.LORAWAN_MULTICAST_GROUP2_EN:  dict(id=41020128, c_id=281, size=1, get=lom.commands.GetConf, set=lom.commands.SetConf, state=bool),
-            # lom.const.LORAWAN_MULTICAST_GROUP3_EN:  dict(id=41020129, c_id=282, size=1, get=lom.commands.GetConf, set=lom.commands.SetConf, state=bool),
-            # lom.const.LORAWAN_MULTICAST_GROUP4_EN:  dict(id=41020130, c_id=283, size=1, get=lom.commands.GetConf, set=lom.commands.SetConf, state=bool),
-            # lom.const.LORAWAN_REJOIN_INTERVAL_SEC:  dict(id=41020131, c_id=265, size=4, get=lom.commands.GetConf, set=lom.commands.SetConf),
-            # lom.const.LORAWAN_TIMESYNC_INTERVAL_SEC:dict(id=41020132, c_id=266, size=4, get=lom.commands.GetConf, set=lom.commands.SetConf),
-            # lom.const.LORAWAN_SEND_INTERVAL_SEC:    dict(id=41020133, c_id=267, size=4, get=lom.commands.GetConf, set=lom.commands.SetConf),
-            # lom.const.LORAWAN_NWKCHECK_INTERVAL_SEC:dict(id=41020134, c_id=268, size=4, get=lom.commands.GetConf, set=lom.commands.SetConf),
-            # lom.const.LORAWAN_NWKCHECK_ATTEMPTS:    dict(id=41020135, c_id=269, size=1, get=lom.commands.GetConf, set=lom.commands.SetConf),
-            # lom.const.LORAWAN_CONFIRMATION_ENABLED: dict(id=41020136, c_id=270, size=1, get=lom.commands.GetConf, set=lom.commands.SetConf, state=bool),
-            #
-            # lom.const.LATITUDE:                     dict(id=41020137, c_id=271, size=4, get=lom.commands.GetConf, set=lom.commands.SetConf),
-            # lom.const.LONGITUDE:                    dict(id=41020138, c_id=272, size=4, get=lom.commands.GetConf, set=lom.commands.SetConf),
-            # lom.const.ALTITUDE:                     dict(id=41020139, c_id=273, size=2, get=lom.commands.GetConf, set=lom.commands.SetConf),
-            # lom.const.ANGLE_THRESHOLD:              dict(id=41020140, c_id=274, size=1, get=lom.commands.GetConf, set=lom.commands.SetConf),
-            # lom.const.ACCEL_SENSITIVITY:            dict(id=41020141, c_id=275, size=1, get=lom.commands.GetConf, set=lom.commands.SetConf, variants=['Off', 'Low', 'Middle', 'High']),
-            # lom.const.DALI_SCAN_INTERVAL:           dict(id=41020142, c_id=276, size=2, get=lom.commands.GetConf, set=lom.commands.SetConf),
-            # lom.const.ANSWER_RAND_INTERVAL:         dict(id=41020143, c_id=277, size=4, get=lom.commands.GetConf, set=lom.commands.SetConf),
-            # lom.const.DALI_ACTIVE_GLOBAL_PROFILE:   dict(id=41020144, c_id=278, size=1, get=lom.commands.GetConf, set=lom.commands.SetConf),
-            # 'TempDimming':                          dict(id=41020144, set=lom.commands.SetDimmingLevel)
-        }
-    )
+
 )

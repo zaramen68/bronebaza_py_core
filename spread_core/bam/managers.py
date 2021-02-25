@@ -2,7 +2,7 @@ import json
 import threading
 
 import spread_core.mqtt
-from lom.commands import LCommand
+#from lom.commands import LCommand
 from spread_core.bam import generator as generator
 from spread_core.bam.dali import F_READY, STATE_C_LEVEL_RAW, F_ON
 from spread_core.bam.entities import Entity

@@ -1,6 +1,6 @@
 import spread_core.bam.dali.managers
 import spread_core.bam.dali.providers
-import spread_core.bam.lom
+#import spread_core.bam.lom
 import spread_core.bam.mercury
 from spread_core.bam.engineries import Enginery
 from spread_core.bam.managers import Manager
@@ -12,7 +12,7 @@ from spread_core.tools import utils
 _all = [
     spread_core.bam.dali.managers,
     spread_core.bam.dali.providers,
-    spread_core.bam.lom,
+   # spread_core.bam.lom,
     spread_core.bam.mercury
 ]
 
