@@ -9,7 +9,7 @@ class Task:
         self.actions = _actions if _actions else []
 
     def __str__(self):
-        return f'{self.__class__.__name__} <{len(self.actions)} actions by {self.trigger}> of {self.location}'
+        return '{0} <{1} actions by {2}> of {3}'.format(self.__class__.__name__, len(self.actions), self.trigger, self.location)
 
     def __repr__(self):
         return self.__str__()

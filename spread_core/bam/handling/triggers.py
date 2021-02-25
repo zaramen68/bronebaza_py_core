@@ -74,7 +74,7 @@ class _RangeValue:
                 bounds = i.split('-')
                 self.ranges.append(range(int(bounds[0]), int(bounds[1])))
         except BaseException as ex:
-            raise InitError(f'Ошибка парсинга {self.__class__.__name__} для {ranges}: {ex}')
+            raise InitError('Ошибка парсинга {0} для {1}: {2}'.format(self.__class__.__name__, ranges, ex))
 
     def __eq__(self, other):
         for _range in self.ranges:
@@ -94,7 +94,7 @@ class _ListValue:
                     i = int(i)
                 self.items.append(i)
         except BaseException as ex:
-            raise InitError(f'Ошибка парсинга {self.__class__.__name__} для {items}: {ex}')
+            raise InitError('Ошибка парсинга {0} для {1}: {2}'.format(self.__class__.__name__, items, ex))
 
     def __eq__(self, other):
         return other in self.items
@@ -120,7 +120,7 @@ class BrokerTrigger(Trigger):
             self._value = _value
 
     def __str__(self):
-        return f'{self._topic} as {self._value}'
+        return '{0} as {1}'.format(self._topic, self._value)
 
     def check(self, topic: str, variable: Variable):
         if str(topic) == str(self._topic):
@@ -156,7 +156,7 @@ class DateTrigger(Trigger):
         return 1
 
     def __str__(self):
-        return f'{self.days if isinstance(self, WeekDays) else self.TYPE} at {self.time}'
+        return '{} at {}'.format(self.days if isinstance(self, WeekDays) else self.TYPE, self.time)
 
     def __eq__(self, other):
         return super(DateTrigger, self).__eq__(other) and self.time == other.time
@@ -180,12 +180,12 @@ class WeekDays(DateTrigger):
         days = kwargs[const.DAYS]
         self.days = []
         if len(days) == 0:
-            raise HandlingError(f'{const.DAYS} expected 1..7 items')
+            raise HandlingError('{} expected 1..7 items'.format(const.DAYS))
         for day in days:
             if day in WEEK:
                 self.days.append(day)
             else:
-                raise HandlingError(f'{day} not include in standard values {WEEK}')
+                raise HandlingError('{0} not include in standard values {1}'.format(day, WEEK))
 
     @property
     def has_next(self):

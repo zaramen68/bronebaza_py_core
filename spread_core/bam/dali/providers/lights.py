@@ -139,7 +139,7 @@ class RapidaDaliLight(RapidaDaliProvider):
                     if _provider.is_device:
                         _provider.query_level(sig)
                     else:
-                        logging.warning(f'Provider({_provider.id}) is participant of {self.id}')
+                        logging.warning('Provider({0}) is participant of {1}'.format(_provider.id, self.id))
 
     def on_state(self, funit_type, value):
         super(RapidaDaliLight, self).on_state(funit_type, value)

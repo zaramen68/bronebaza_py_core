@@ -178,7 +178,7 @@ class Manager(Entity, ManagerOfBroker):
                 try:
                     self.on_external_command(command_frame)
                 except BaseException as ex:
-                    logging.debug(f'EXTERNAL FRAME ERROR[{command_frame}]')
+                    logging.debug('EXTERNAL FRAME ERROR[{0}]'.format(command_frame))
                     logging.exception(ex)
             else:
                 self._external_cmd.clear()
@@ -194,7 +194,7 @@ class Manager(Entity, ManagerOfBroker):
                 try:
                     self.on_event(event)
                 except BaseException as ex:
-                    logging.debug(f'EVENT FRAME ERROR[{event}]')
+                    logging.debug('EVENT FRAME ERROR[{0}]'.format(event))
                     logging.exception(ex)
 
             else:
@@ -345,10 +345,9 @@ class Manager(Entity, ManagerOfBroker):
             self._step_event.set()
 
     def log_command(self, topic, jocket):
-        set_params = '= {}'.format(jocket.value) if jocket.action == spread_core.mqtt.variables.SET else ''
-        logging.info(f'COMMAND {jocket.id}: {jocket.action} {topic.entity_addr.funit_type} {set_params}; '
-                     f'session_id = {topic.session_id}; '
-                     f'STACK size = {len(self.actions[COMMAND])}')
+        set_params = '= {0}'.format(jocket.value) if jocket.action == spread_core.mqtt.variables.SET else ''
+        logging.info('COMMAND {0}: {1} {2} {3} session_id = {4} STACK size = {5}'.format(jocket.id, jocket.action, topic.entity_addr.funit_type, set_params, topic.session_id, len(self.actions[COMMAND])))
+
 
     def SetReady(self, sig, value):
         self.on_update(F_READY, value)

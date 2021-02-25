@@ -37,41 +37,41 @@ class LightingEquipment(Entity, ManagerOfBroker):
         ManagerOfBroker.__init__(self, mqttc)
 
     def start(self):
-        self.subscribe(TopicProject(self.id, f'{SERVERS}.json'))
+        self.subscribe(TopicProject(self.id, '{}.json'.format(SERVERS)))
 
     def on_project(self, data):
         data = json.loads(data)
         if SERVERS in data:
-            self.unsubscribe(TopicProject(self.id, f'{SERVERS}.json'), LOG_PROJECT_SUBSCRIBES)
+            self.unsubscribe(TopicProject(self.id, '{}.json'.format(SERVERS)), LOG_PROJECT_SUBSCRIBES)
             self.s_id = data[SERVERS][0][ID]
-            self.subscribe(TopicProject(self.id, f'{MANAGERS}.json'), LOG_PROJECT_SUBSCRIBES)
+            self.subscribe(TopicProject(self.id, '{}.json'.format(MANAGERS)), LOG_PROJECT_SUBSCRIBES)
         elif MANAGERS in data:
-            self.unsubscribe(TopicProject(self.id, f'{MANAGERS}.json'), LOG_PROJECT_SUBSCRIBES)
+            self.unsubscribe(TopicProject(self.id, '{}.json'.format(MANAGERS)), LOG_PROJECT_SUBSCRIBES)
             for item in data[MANAGERS]:
                 if item[ID] not in self._managers:
                     self._managers[item[ID]] = dict(data=item)
                     self._managers[item[ID]][ENGINERIES] = dict()
                     self._managers[item[ID]][PROVIDERS] = dict()
-            self.subscribe(TopicProject(self.id, f'{PROVIDERS}.json'), LOG_PROJECT_SUBSCRIBES)
+            self.subscribe(TopicProject(self.id, '{}.json'.format(PROVIDERS)), LOG_PROJECT_SUBSCRIBES)
         elif PROVIDERS in data:
-            self.unsubscribe(TopicProject(self.id, f'{PROVIDERS}.json'), LOG_PROJECT_SUBSCRIBES)
+            self.unsubscribe(TopicProject(self.id, '{}.json'.format(PROVIDERS)), LOG_PROJECT_SUBSCRIBES)
             for item in data[PROVIDERS]:
                 if item[MANAGER_ID] in self._managers:
                     if item[ID] not in self._managers[item[MANAGER_ID]][PROVIDERS]:
                         self._managers[item[MANAGER_ID]][PROVIDERS][item[ID]] = Recipe(item[ID], item[TYPE])
-            self.subscribe(TopicProject(self.id, f'{SUBGINERIES}.json'), LOG_PROJECT_SUBSCRIBES)
+            self.subscribe(TopicProject(self.id, '{}.json'.format(SUBGINERIES)), LOG_PROJECT_SUBSCRIBES)
         elif SUBGINERIES in data:
-            self.unsubscribe(TopicProject(self.id, f'{SUBGINERIES}.json'), LOG_PROJECT_SUBSCRIBES)
+            self.unsubscribe(TopicProject(self.id, '{}.json'.format(SUBGINERIES)), LOG_PROJECT_SUBSCRIBES)
             for s_data in data[SUBGINERIES]:
                 try:
                     self._subgineries[s_data[ID]] = generator.generate_subginery(self.id, s_data)
                     self._subgineries[s_data[ID]].set_update_handler(self.add_to_queue)
                 except ProjectError as ex:
                     logging.warning(ex)
-            self.subscribe(TopicProject(self.id, f'{ENGINERIES}.json'), LOG_PROJECT_SUBSCRIBES)
+            self.subscribe(TopicProject(self.id, '{}.json'.format(ENGINERIES)), LOG_PROJECT_SUBSCRIBES)
         elif ENGINERIES in data:
             try:
-                self.unsubscribe(TopicProject(self.id, f'{ENGINERIES}.json'), LOG_PROJECT_SUBSCRIBES)
+                self.unsubscribe(TopicProject(self.id, '{}.json'.format(ENGINERIES)), LOG_PROJECT_SUBSCRIBES)
                 for e_data in data[ENGINERIES]:
                     e_id = e_data[ID]
                     if RECIPE in e_data and TYPE in e_data[RECIPE] and INGREDIENTS in e_data[RECIPE]:

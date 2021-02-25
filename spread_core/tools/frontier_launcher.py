@@ -39,7 +39,7 @@ class Frontier(Launcher):
                 if isinstance(topic, (spread.topic.Set, spread.topic.Renew)):
                     self.on_spread(topic, msg.payload)
                 else:
-                    logging.debug(f'[NO MOVE] {topic}')
+                    logging.debug('[NO MOVE] {}'.format(topic))
             else:
                 topic = mqtt.mqtt.of(msg.topic)
 
@@ -50,7 +50,7 @@ class Frontier(Launcher):
                 elif isinstance(topic, (mqtt.TopicCommand, mqtt.TopicState)):
                     self.on_jocket(topic, msg.payload)
                 else:
-                    logging.debug(f'[NO MOVE] {topic}')
+                    logging.debug('[NO MOVE] {}'.format(topic))
         except project_errors.TopicError as ex:
             logging.warning(ex)
         except BaseException as ex:
@@ -102,7 +102,7 @@ class Frontier(Launcher):
                 e_data = self.subgineries[e_id]
                 address = spread.address.SubgineryAddress(_topic.p_id, e_data.location_id, e_data.__class__.__name__, _address.funit_id)
             else:
-                logging.debug(f'Unknown enginery/subgnery ({_address})')
+                logging.debug('Unknown enginery/subgnery ({})'.format(_address))
                 return
         elif isinstance(_address, mqtt.ProviderAddress):
             address = spread.address.ProviderAddress(PROJECT_ID, _address.manager_type, _address.manager_id,
@@ -110,7 +110,7 @@ class Frontier(Launcher):
         elif isinstance(_address, mqtt.ManagerAddress):
             address = spread.address.ManagerAddress(PROJECT_ID, _address.manager_type, _address.manager_id, _address.funit_type)
         else:
-            logging.debug(f'Unsupported address ({_address.__class__.__name__})')
+            logging.debug('Unsupported address ({})'.format(_address.__class__.__name__))
             return
 
         if isinstance(_topic, mqtt.TopicState):
@@ -118,7 +118,7 @@ class Frontier(Launcher):
         elif isinstance(_topic, mqtt.TopicCommand):
             topic = spread.topic.Event(address)
         else:
-            logging.debug(f'Unsupported topic ({_topic.__class__.__name__})')
+            logging.debug('Unsupported topic ({})'.format(_topic.__class__.__name__))
             return
 
         var = spread.variable.Variable(_var.value, timestamp=datetime.fromisoformat(str(_var.timeStamp)))
@@ -157,7 +157,7 @@ class Frontier(Launcher):
                     else:
                         funit_id = subgineries.lightSensorsOffId
                 else:
-                    logging.debug(f'Unsupported funit "{_address.funit_type}"')
+                    logging.debug('Unsupported funit "{}"'.format(_address.funit_type))
                     return
 
                 if isinstance(_address, spread.address.EngineryAddress):
@@ -165,7 +165,7 @@ class Frontier(Launcher):
                 elif isinstance(_address, spread.address.SubgineryAddress):
                     _entity = self.subgineries[_address.id]
                 else:
-                    logging.debug(f'Unsupported entity "{_address.__class__.__name__}"')
+                    logging.debug('Unsupported entity "{}"'.format(_address.__class__.__name__))
                     return
 
                 cl = _entity._cmds.index(funit_id)
@@ -179,7 +179,7 @@ class Frontier(Launcher):
                     logging.debug(ex)
                     return
                 except BaseException:
-                    logging.debug(f'Unsupported address "{_address.__class__.__name__}"')
+                    logging.debug('Unsupported address "{}"'.format(_address.__class__.__name__))
                     return
                 else:
                     var = VariableJocket.create_data(_address.id, funit['id'], 'set', _var.value, invalid=_var.invalid)
@@ -192,12 +192,12 @@ class Frontier(Launcher):
                 logging.debug(ex)
                 return
             except BaseException:
-                logging.debug(f'Unsupported address "{_address.__class__.__name__} of {_topic.__class__.__name__}"')
+                logging.debug('Unsupported address "{0} of {1}"'.format(_address.__class__.__name__, _topic.__class__.__name__))
                 return
             else:
                 var = VariableJocket.create_data(_address.id, funit['id'], 'get', _var.value)
         else:
-            logging.debug(f'Unsupported topic "{_topic.__class__.__name__}"')
+            logging.debug('Unsupported topic "{}"'.format(_topic.__class__.__name__))
             return
 
         self.publish(topic, var, retain=False)
@@ -224,7 +224,7 @@ class Frontier(Launcher):
                 elif funit_name == engineries.powerLevelId:
                     funit_type = F_PowerLevel
                 else:
-                    logging.debug(f'Unsupported funit "{funit_name}"')
+                    logging.debug('Unsupported funit "{}"'.format(funit_name))
                     return
 
                 if _var.invalid:
@@ -254,7 +254,7 @@ class Frontier(Launcher):
                     funit_type = F_GROUP_LEVEL
                     value = _var.value
                 else:
-                    logging.debug(f'Unsupported funit "{funit_name}"')
+                    logging.debug('Unsupported funit "{}"'.format(funit_name))
                     return
 
                 topic = spread.topic.Event(
@@ -294,7 +294,7 @@ class Frontier(Launcher):
                     funit_type = F_PresenceSensorsOn
                     value = False
                 else:
-                    logging.debug(f'Unsupported funit "{funit_name}"')
+                    logging.debug('Unsupported funit "{}"'.format(funit_name))
                     return
 
                 if _var.invalid:
@@ -326,7 +326,7 @@ class Frontier(Launcher):
                     funit_type = F_LightSensorsOn
                     value = False
                 else:
-                    logging.debug(f'Unsupported funit "{funit_name}"')
+                    logging.debug('Unsupported funit "{}"'.format(funit_name))
                     return
 
                 topic = spread.topic.Event(
@@ -334,10 +334,10 @@ class Frontier(Launcher):
                 )
                 retain = False
             else:
-                logging.debug(f'Unsupported topic "{_topic}"')
+                logging.debug('Unsupported topic "{}"'.format(_topic))
                 return
         else:
-            logging.debug(f'Unknown entity({e_id})')
+            logging.debug('Unknown entity({})'.format(e_id))
             return
 
         var = spread.variable.Variable(value, timestamp=timestamp)

@@ -38,7 +38,7 @@ class EngineryNotPresent(EngineryError):
 
 class ProviderNotPresent(EngineryError):
     def __init__(self, _type, _id):
-        super(ProviderNotPresent, self).__init__(f'{_type}({_id}) is not present')
+        super(ProviderNotPresent, self).__init__('{0}({1}) is not present'.format(_type, _id))
 
 
 class StateError(EngineryError):
@@ -52,19 +52,19 @@ class ResponseError(CoreError):
 class ClassifierError(CoreError):
     @classmethod
     def of_funit(cls, funit_type: str, *owner: str):
-        return cls(f'{funit_type} отсутствует в classifier -> {" -> ".join(list(owner))}')
+        return cls('{0} отсутствует в classifier -> {1}'.format(funit_type, " -> ".join(list(owner))))
 
     @classmethod
     def of_action(cls, action: str, *owner: str):
-        return cls(f'Action {action} отсутствует в classifier -> {" -> ".join(list(owner))}')
+        return cls('Action {0} отсутствует в classifier -> {1}'.format(action, " -> ".join(list(owner))))
 
     @classmethod
     def no_action_type(cls, action: str, *owner: str):
-        return cls(f'Action {action} не содержит типов для classifier -> {" -> ".join(list(owner))}')
+        return cls('Action {0} не содержит типов для classifier -> {1}'.format(action, " -> ".join(list(owner))))
 
     @classmethod
     def action_of_func(cls, func: str, *owner: str):
-        return cls(f'Метод {func} не определён в classifier -> {" -> ".join(list(owner))}')
+        return cls('Метод {0} не определён в classifier -> {1}'.format(func, " -> ".join(list(owner))))
 
 
 class HandlingError(BaseException):

@@ -10,7 +10,7 @@ class Condition:
     value = property(fget=lambda self: self._value)
 
     def __str__(self):
-        return f'{self._topic} is {self._value}'
+        return '{0} is {1}'.format(self._topic, self._value)
 
     def __repr__(self): return self.__str__()
 

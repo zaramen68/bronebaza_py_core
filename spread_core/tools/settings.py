@@ -48,12 +48,12 @@ def generate_dump():
                 read_conf(dump, config[DUMP])
             except BaseException as ex:
                 try:
-                    read_conf(dump, f'{config[DUMP]}_{DOUBLE}')
+                    read_conf(dump, '{0}_{1}'.format(config[DUMP], DOUBLE))
                 except:
                     logging.warning('DUMP reading exception: {}'.format(ex))
-        elif os.path.exists(f'{config[DUMP]}_{DOUBLE}'):
+        elif os.path.exists('{0}_{1}'.format(config[DUMP], DOUBLE)):
             try:
-                read_conf(dump, f'{config[DUMP]}_{DOUBLE}')
+                read_conf(dump, '{0}_{1}'.format(config[DUMP], DOUBLE))
             except BaseException as ex:
                 logging.warning('DUMP_double reading exception: {}'.format(ex))
     else:
@@ -114,7 +114,7 @@ def on_exit():
         try:
             with open(config[DUMP], 'w') as f:
                 yaml.dump(dump, f)
-            with open(f'{config[DUMP]}_{DOUBLE}', 'w') as f:
+            with open('{0}_{1}'.format(config[DUMP], DOUBLE), 'w') as f:
                 yaml.dump(dump, f)
         except BaseException as ex:
             logging.error(ex)

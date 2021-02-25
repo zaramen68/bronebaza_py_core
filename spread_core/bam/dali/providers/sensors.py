@@ -405,7 +405,7 @@ class RapidaDaliLightSensor(RapidaDaliSensor):
     def on_event(self, event):
         # if F_ON in self.values and self.values[F_ON] is False:
         #     return
-        logging.debug(f'LIGHT EVENT: {event}')
+        logging.debug('LIGHT EVENT: {}'.format(event))
         self.on_update(STATE_C_LUMINOSITY, UObj(STATE_C_LUMINOSITY, event.value), retain=True)
 
     def get_info(self):
@@ -443,7 +443,7 @@ class RapidaDaliPresenceSensor(RapidaDaliSensor):
         # if F_ON in self.values and self.values[F_ON] is False:
         #     return
         presence = PresenceEvent(event.value)
-        logging.debug(f'PRESENCE EVENT: {event} {presence.value}')
+        logging.debug('PRESENCE EVENT: {0} {1}'.format(event, presence.value))
         self.on_update(STATE_C_PRESENCE, UObj(STATE_C_PRESENCE, presence.value), retain=True)
 
     def get_info(self):

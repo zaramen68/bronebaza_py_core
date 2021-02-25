@@ -35,7 +35,7 @@ class Lom(Manager):
             if self.send_interface:
                 self.send_interface.set_config(**interface_conf)
         except KeyError:
-            raise ProjectError(f'Некорректная конфигурация для менеджера {self}')
+            raise ProjectError('Некорректная конфигурация для менеджера {}'.format(self))
 
         self.read_profiles()
 
@@ -125,7 +125,7 @@ class Lom(Manager):
     def on_event(self, event):
         try:
             if event.dev_eui in self.devices:
-                logging.debug(f'<- {event}')
+                logging.debug('<- {}'.format(event))
                 provider = self.devices[event.dev_eui]
                 for funit_type, data in event.value.items():
                     provider.on_update(funit_type, data)
@@ -159,8 +159,7 @@ class Lom(Manager):
             self._step_event.set()
 
     def log_command(self, topic, variable):
-        logging.info(f'COMMAND {topic.__class__.__name__}: {topic.entity_address.funit_type} {variable.value}; '
-                     f'STACK size = {len(self.actions[COMMAND])}')
+        logging.info('COMMAND {0}: {1} {2}; STACK size = {3}'.format(topic.__class__.__name__, topic.entity_address.funit_type, variable.value, len(self.actions[COMMAND])))
 
     def on_update(self, funit_type, value):
         old_val = self.get_value(funit_type, None)
@@ -192,7 +191,7 @@ class Lom(Manager):
                         self.profiles[_id] = profile
                         need_update = True
                 except BaseException as ex:
-                    raise lom.errors.ParameterError(f'<<{_data}>>: {ex}')
+                    raise lom.errors.ParameterError('<<{0}>>: {1}'.format(_data, ex))
 
         if need_update:
             self._publish_profiles()

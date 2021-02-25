@@ -27,17 +27,17 @@ class Scheduler(manager_interface.ManagerOfBroker):
             try:
                 data = json.loads(data)
             except BaseException as ex:
-                raise InitError(f'Ошибка парсинга файла "{path}": {ex}')
+                raise InitError('Ошибка парсинга файла "{0}": {1}'.format(path, ex))
             self.stack = {}
             for datum in data:
                 try:
                     location = location_of_data(datum)
-                    logging.debug(f'{location}')
+                    logging.debug('{}'.format(location))
                     if location.enabled:
                         for task in location.tasks:
-                            logging.debug(f'    {task}')
+                            logging.debug('    {}'.format(task))
                             for action in task.actions:
-                                logging.debug(f'        {action}')
+                                logging.debug('        {}'.format(action))
 
                             if task.trigger not in self.stack:
                                 self.stack[task.trigger] = []
@@ -47,7 +47,7 @@ class Scheduler(manager_interface.ManagerOfBroker):
 
             self.on_timer()
         else:
-            raise InitError(f'{path} не существует!')
+            raise InitError('{} не существует!'.format(path))
 
     def on_timer(self):
         try:
@@ -55,7 +55,7 @@ class Scheduler(manager_interface.ManagerOfBroker):
             if len(triggers) > 0:
                 trigger = triggers[0]
                 interval = trigger.time_left + 1
-                logging.debug(f'SET TIMER to {interval} sec FOR {trigger}')
+                logging.debug('SET TIMER to {0} sec FOR {1}'.format(interval, trigger))
                 if self.timer:
                     self.timer.cancel()
                 self.timer = Timer(interval=interval, function=self.exec_task, args=[trigger, self.stack[trigger]])
@@ -66,7 +66,7 @@ class Scheduler(manager_interface.ManagerOfBroker):
             logging.exception(ex)
 
     def exec_task(self, _trigger: DateTrigger, _actions: list):
-        logging.debug(f'EXECUTE {_trigger}:')
+        logging.debug('EXECUTE {}:'.format(_trigger))
         for action in _actions:
             try:
                 if isinstance(action, actions.BrokerAction):

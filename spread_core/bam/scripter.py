@@ -31,7 +31,7 @@ class Scripter(manager_interface.ManagerOfBroker):
             try:
                 data = json.loads(data)
             except BaseException as ex:
-                raise InitError(f'Ошибка парсинга файла "{triggers_path}": {ex}')
+                raise InitError('Ошибка парсинга файла "{0}": {1}'.format(triggers_path, ex))
             for trigger_data in data:
                 try:
                     trigger = triggers.of(trigger_data)
@@ -54,9 +54,9 @@ class Scripter(manager_interface.ManagerOfBroker):
                     logging.warning(ex)
 
             if len(self.triggers) == 0:
-                raise InitError(f'Файл "{triggers_path}" не содержит ни одного триггера!')
+                raise InitError('Файл "{}" не содержит ни одного триггера!'.format(triggers_path))
         else:
-            raise InitError(f'{triggers_path} не существует!')
+            raise InitError('{} не существует!'.format(triggers_path))
 
     def on_message(self, topic, variable):
         self.values[str(topic)] = variable.value

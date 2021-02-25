@@ -50,7 +50,7 @@ class BrokerAction(Action):
         self.is_retained = kwargs.get(const.RETAINED, False)
 
     def __str__(self):
-        return f'{self._entity_address.entity_type}[{self._entity_address.entity_id}]: "{self._command}" set {self._value}'
+        return '{0}[{1}]: "{2}" set {3}'.format(self._entity_address.entity_type, self._entity_address.entity_id, self._command, self._value)
 
     @property
     def _entity_address(self) -> EntityAddress:
@@ -78,10 +78,10 @@ class BrokerAction(Action):
             elif isinstance(e_addr, ManagerAddress) and e_addr.funit:
                 funit_id = e_addr.funit[variables.ID]
             else:
-                raise HandlingError(f'Can`t get funit_id')
+                raise HandlingError('Can`t get funit_id')
             var = variables.VariableJocket.create_data(id=int(e_addr.entity_id), cl=funit_id, action=variables.SET, val=_value, key='ByScheduler')
         else:
-            raise HandlingError(f'Topic {self._topic} is not Command-topic')
+            raise HandlingError('Topic {} is not Command-topic'.format(self._topic))
 
         return var
 
@@ -113,10 +113,10 @@ class ScenarioAction(Action):
                 action = action_of_data(action_data)
                 self.actions.append(action)
         else:
-            raise HandlingError(f'Scenarios file "{self.file}" not exist!')
+            raise HandlingError('Scenarios file "{}" not exist!'.format(self.file))
 
     def __str__(self):
-        return f'Scenario of "{self.file}"'
+        return 'Scenario of "{}"'.format(self.file)
 
     @property
     def conditioned(self):

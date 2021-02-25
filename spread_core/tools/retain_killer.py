@@ -42,7 +42,7 @@ class RetainKiller(Launcher):
             else:
                 return
             if data.value == '':
-                print(f'{topic}')
+                print('{}'.format(topic))
         except BaseException as ex:
             print(str(ex))
         finally:
@@ -65,7 +65,7 @@ class RetainKiller(Launcher):
             data = make_tros3(data)
         else:
             return
-        print(f'{data.id}: {data.value}')
+        print('{0}: {1}'.format(data.id, data.value))
 
     def on_message(self, mosq, obj, msg):
         # self.get_value(msg.topic, msg.payload)

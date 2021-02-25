@@ -27,13 +27,13 @@ class Statistic(Launcher):
         super(Statistic, self).__init__()
 
     def start(self):
-        self.subscribe(TopicProject(self.id, f'{ENGINERIES}.json'))
+        self.subscribe(TopicProject(self.id, '{0}.json'.format(ENGINERIES)))
 
     def on_project(self, data):
         data = json.loads(data)
         if ENGINERIES in data:
             try:
-                self.unsubscribe(TopicProject(self.id, f'{ENGINERIES}.json'))
+                self.unsubscribe(TopicProject(self.id, '{0}.json'.format(ENGINERIES)))
                 for e_data in data[ENGINERIES]:
                     if RECIPE in e_data and TYPE in e_data[RECIPE] and INGREDIENTS in e_data[RECIPE]:
                         if e_data[RECIPE][TYPE] == 'Simple' and len(e_data[RECIPE][INGREDIENTS]) > 0:
@@ -60,13 +60,13 @@ class Statistic(Launcher):
             self.timer = None
 
     def on_time_out(self):
-        logging.info(f'{self.cur_e}: unknown')
+        logging.info('{0}: unknown'.format(self.cur_e))
 
     def on_ready(self):
         logging.info('Project({}) loaded'.format(self.id))
 
         class_id = engineries.DimmingLight._cmds.index(engineries.historyResponseId)
-        topic = f'Tros3/Reply/{self.id}/{self.key}/+/{class_id}'
+        topic = 'Tros3/Reply/{0}/{1}/+/{2}'.format(self.id, self.key, class_id)
         self.subscribe(topic)
         self.req()
 
@@ -83,7 +83,7 @@ class Statistic(Launcher):
                 "algorithm": "raw",
                 "startTime": "2020-08-01T00:00:00",
                 "endTime": "2020-09-01T00:00:00",
-                "key": f'{self.key}'
+                "key": '{0}'.format(self.key)
             }
 
             var = VariableTRS3(id=self.cur_e.id, cl=class_id, val=json.dumps(data))
@@ -130,12 +130,12 @@ class Statistic(Launcher):
             except BaseException as ex:
                 logging.exception(ex)
             else:
-                logging.info(f'{variable.id}: {int(period/60/60 * 10)/10}')
+                logging.info('{0}: {1}'.format(variable.id, int(period/60/60 * 10)/10))
 
             self.req()
 
     def on_message(self, mosq, obj, msg):
-        if msg.topic.startswith(f'Tros3/Reply/'):
+        if msg.topic.startswith('Tros3/Reply/'):
             var = VariableTRS3(VariableReader(msg.payload))
             self.on_reply(var)
         else:

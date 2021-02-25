@@ -22,9 +22,9 @@ class Variable:
     flags = property(fget=lambda self: self._flags, doc='flags')
 
     def __str__(self):
-        r = f'{str(self._value).ljust(11, " ")} ({str(self._timestamp)})'
+        r = '{0} ({1})'.format(str(self._value).ljust(11, " "), str(self._timestamp))
         if self._flags:
-            r += f' {";".join(self._flags)}'
+            r += ' {0}'.format(";".join(self._flags))
         return r
 
     def __iter__(self):

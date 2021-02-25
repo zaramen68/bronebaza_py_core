@@ -189,7 +189,7 @@ class BitmapResponse(Response):
     def __str__(self):
         try:
             # return ",".join(self.status)
-            return "; ".join(f'{k}={v}' for k, v in self.status_full.items())
+            return "; ".join('{0}={1}'.format(k, v) for k, v in self.status_full.items())
         # XXX: be more explicit which exception to catch
         except Exception as e:
             return "{}".format(e)

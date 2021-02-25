@@ -82,7 +82,7 @@ class Launcher:
         logging.debug('Unsubscribe from {}'.format(topic))
 
     def publish(self, topic, data, retain=False):
-        logging.debug(f'{"R" if retain else " "} [{topic}]: '.ljust(100, '.') + f' {data}')
+        logging.debug('{0} [{1}]: '.format("R" if retain else " ", topic).ljust(100, '.') + ' {}'.format(data))
         _data = data if isinstance(data, str) else data.pack()
         self.mqttc.publish(str(topic), _data, retain=retain)
 

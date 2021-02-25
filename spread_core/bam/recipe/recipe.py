@@ -5,7 +5,7 @@ class Recipe:
         self._engineries = []
 
     def __str__(self):
-        return f'{self.__class__.__name__}<{self.id}>: {str(self._engineries)}'
+        return '{0}<{1}>: {2}'.format(self.__class__.__name__, self.id, str(self._engineries))
 
     @property
     def engs(self):

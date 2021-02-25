@@ -14,7 +14,7 @@ class Location:
     id = property(fget=get_id, fset=set_id, doc='id')
 
     def __str__(self):
-        return f'{self.name if self.name else self.__class__.__name__}({self.id}){ "DISABLED" if not self.enabled else ""}'
+        return '{0}({1}){2}'.format(self.name if self.name else self.__class__.__name__, self.id,  "DISABLED" if not self.enabled else "")
 
     def __repr__(self):
         return self.__str__()

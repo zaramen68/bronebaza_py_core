@@ -30,7 +30,7 @@ class LFrame:
             data = self.__cmd_id
         else:
             data = ' '.join(str(i) for i in self.pack)
-        return f'{self.__class__.__name__}(<{self.dev_eui}>): {data}'
+        return '{0}(<{1}>): {2}'.format(self.__class__.__name__, self.dev_eui, data)
 
     def __repr__(self):
         return str(self)
@@ -82,7 +82,7 @@ class SetConfig(LCommand):
                 else:
                     req_data.append([int(funit_type), int(val)])
         except BaseException as ex:
-            raise ValueError(f'Parameters error: {ex}')
+            raise ValueError('Parameters error: {0}'.format(ex))
 
         super(SetConfig, self).__init__(dev_eui, [self._cmd_id, *req_data])
 
@@ -249,7 +249,7 @@ class GetConfig(LCommand):
             items = [CONFIGURATION[i][FIELD_ID] if i in CONFIGURATION else int(i) for i in _items]
             super(GetConfig, self).__init__(dev_eui, [self._cmd_id, items])
         except BaseException as ex:
-            raise ValueError(f'Bad parameter: {ex}')
+            raise ValueError('Bad parameter: {0}'.format(ex))
 
     def split(self, max_length: int):
         res = []
@@ -283,7 +283,7 @@ class LAnswer(LFrame):
         if self.__class__ == LAnswer:
             cl = utils.get_subclass(LCommand, lambda sc: issubclass(sc, LCommand) and sc._cmd_id == self._cmd_id)
             name = cl.__name__ if cl else self.__class__.__name__
-            return f'{name}<{self.dev_eui}>: {"SUCCESS" if self.success else "FAILED"} {self.pack}'
+            return '{0}<{1}>: {2} {3}'.format(name, self.dev_eui, "SUCCESS" if self.success else "FAILED", self.pack)
         else:
             return super(LAnswer, self).__str__()
 
@@ -328,7 +328,7 @@ class ConfResponse(LAnswer):
             funit_type, item = self.from_map(c_id)
             if funit_type is not None:
                 if funit_type == FIRMWARE:
-                    val = f'{val >> 4}.{val & 0xF}'
+                    val = '{0}.{1}'.format(val >> 4, val & 0xF)
                 elif funit_type == MC_ADDRESS_GROUP1:
                     val = hex(val)[2:].upper().rjust(8, '0')
                 elif funit_type == USER_PASS:

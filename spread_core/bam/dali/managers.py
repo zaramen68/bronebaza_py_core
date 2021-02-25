@@ -120,10 +120,10 @@ class RapidaDali(Manager):
         _frame = frame.ForwardFrame(len(command_frame) * 8, command_frame)
         _cmd = command.from_frame(_frame)
         if not isinstance(_cmd, command.Command) or len(command_frame) < 2:
-            logging.debug(f'EXTERNAL FRAME [{_data_str}]')
+            logging.debug('EXTERNAL FRAME [{}]'.format(_data_str))
         elif isinstance(_cmd, _GearCommand):
             # DALI_1
-            logging.debug(f'EXTERNAL DALI1 COMMAND [{_data_str}]: {_cmd}')
+            logging.debug('EXTERNAL DALI1 COMMAND [{0}]: {1}'.format(_data_str, _cmd))
 
             if hasattr(_cmd, 'destination'):
                 _provider = None
@@ -147,7 +147,7 @@ class RapidaDali(Manager):
                             _provider.on_command_sended(_cmd)
         else:
             # DALI_2
-            logging.debug(f'EXTERNAL DALI2 FRAME [{_data_str}] of {_cmd}')
+            logging.debug('EXTERNAL DALI2 FRAME [{0}] of {1}'.format(_data_str, _cmd))
 
     def on_event(self, event):
         provider = None
@@ -170,7 +170,7 @@ class RapidaDali(Manager):
             return
 
         if provider is None:
-            logging.debug(f'UNKNOWN DALI2 EVENT: {event}')
+            logging.debug('UNKNOWN DALI2 EVENT: {}'.format(event))
         else:
             provider.on_event(event)
 
