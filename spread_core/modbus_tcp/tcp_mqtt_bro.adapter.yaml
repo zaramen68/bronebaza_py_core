@@ -1,0 +1,5 @@
+include: ['C:\Users\zaram\PycharmProjects\spread-core\spread_core\lklbroker.yaml']
+PROTOCOL: '0000'
+BUS_TIMEOUT: 3
+KILL_TIMEOUT: 3
+DUMP: false

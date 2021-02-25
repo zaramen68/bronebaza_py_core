@@ -1,0 +1,233 @@
+
+
+CONTROLLERS: [
+                {
+                  'type': 'seat_sw',
+                  't_gap': 1000,
+                  'dev': [
+                  {
+                    'host': '10.10.1.198',
+                    'type': 'di',
+                    'di': 0,
+                    'topicId': 660035,
+                    'value': None,
+                    'topicValues': {
+                      'openId': True,
+                      'isOpeningId':False,
+                      'isOpenedId':False,
+                      'closeId': True,
+                      'isClosingId':False,
+                      'isClosedId':False,
+                      'stopId':False,
+                      'isStoppedId':False,
+                      'setClosenessLevelId':True,
+                      'closenessLevelId':10000,
+                      'rotateMinusId':True,
+                      'isRotatingMinusId':True,
+                      'isRotatedMinusId': True,
+                      'rotatePlusId': True,
+                      'isRotatingPlusId': True,
+                      'isRotatedPlusId': True,
+                      'rotationStopId': True,
+                      'isRotationStoppedId': True,
+                      'setRotationAngleId': True,
+                      'rotationAngleId': 100000,
+                    }
+                  },
+                  ]
+                },
+                {
+                  'type': 'seat_sw',
+                  't_gap': 1000,
+                  'dev': [
+                  {
+                    'host': '10.10.1.198',
+                    'type': 'di',
+                    'di': 1,
+                    'topicId': 660036,
+                    'value': None,
+                    'topicValues': {
+                      'openId': True,
+                      'isOpeningId':False,
+                      'isOpenedId':True,
+                      'closeId': True,
+                      'isClosingId':False,
+                      'isClosedId':False,
+                      'stopId':False,
+                      'isStoppedId':False,
+                      'setClosenessLevelId':True,
+                      'closenessLevelId':10000,
+                      'rotateMinusId':True,
+                      'isRotatingMinusId':True,
+                      'isRotatedMinusId': True,
+                      'rotatePlusId': True,
+                      'isRotatingPlusId': True,
+                      'isRotatedPlusId': True,
+                      'rotationStopId': True,
+                      'isRotationStoppedId': True,
+                      'setRotationAngleId': True,
+                      'rotationAngleId': 100000,
+                    }
+                  },
+                  ]
+                },
+                {
+                  'type': 'seat_sw',
+                  't_gap': 1000,
+                  'dev': [
+                  {
+                    'host': '10.10.1.198',
+                    'type': 'di',
+                    'di': 2,
+                    'topicId': 660037,
+                    'value': None,
+                    'topicValues': {
+                      'openId': True,
+                      'isOpeningId':False,
+                      'isOpenedId':False,
+                      'closeId': True,
+                      'isClosingId':False,
+                      'isClosedId':False,
+                      'stopId':False,
+                      'isStoppedId':False,
+                      'setClosenessLevelId':True,
+                      'closenessLevelId':10000,
+                      'rotateMinusId':True,
+                      'isRotatingMinusId':True,
+                      'isRotatedMinusId': True,
+                      'rotatePlusId': True,
+                      'isRotatingPlusId': True,
+                      'isRotatedPlusId': True,
+                      'rotationStopId': True,
+                      'isRotationStoppedId': True,
+                      'setRotationAngleId': True,
+                      'rotationAngleId': 100000,
+                    }
+                  },
+                  ]
+                },
+                {
+                  'type': 'door_sw',
+                  't_gap': 1000,
+                  'dev': [
+                  {
+                    'host': '10.10.1.198',
+                    'type': 'di',
+                    'di': 0,
+                    'topicId': 660034,
+                    'value': None,
+
+                  },
+                  ]
+                },
+                {
+                  'type': 'door_sw',
+                  't_gap': 1000,
+                  'dev': [
+                  {
+                    'host': '10.10.1.198',
+                    'type': 'di',
+                    'di': 1,
+                    'topicId': 660244,
+                    'value': None,
+
+                  },
+                  ]
+                },
+                {
+                  'type': 'door_sw',
+                  't_gap': 1000,
+                  'dev': [
+                  {
+                    'host': '10.10.1.198',
+                    'type': 'di',
+                    'di': 2,
+                    'topicId': 660243,
+                    'value': None,
+
+                  },
+                  ]
+                },
+                {
+                  'type': 'door_sw',
+                  't_gap': 1000,
+                  'dev': [
+                  {
+                    'host': '10.10.1.198',
+                    'type': 'di',
+                    'di': 3,
+                    'topicId': 660245,
+                    'value': None,
+
+                  },
+                  ]
+                },
+                {
+                  'type':'blackout',
+                  't_gap': 1000,
+                  'dev': [
+                    {
+                      'host': '10.10.1.198',
+                      'type': 'di',
+                      'di': 0,
+                      'topicId':'night_key',
+                      'value': None,
+                      'topicValues': {
+                        'value': 0,
+                      }
+                    },
+                    {
+                      'host': '10.10.1.198',
+                      'type': 'di',
+                      'di': 1,
+                      'topicId':'night_key',
+                      'value': None,
+                      'topicValues': {
+                        'value': 0,
+                      }
+                    },
+                    {
+                      'host': '10.10.1.198',
+                      'type': 'di',
+                      'di': 0,
+                      'topicId': 660034,
+                      'value': None,
+                    },
+                    {
+                      'host': '10.10.1.198',
+                      'type': 'di',
+                      'di': 1,
+                      'topicId': 660244,
+                      'value': None,
+                    },
+                    {
+                      'host': '10.10.1.198',
+                      'type': 'di',
+                      'di': 2,
+                      'topicId': 660243,
+                      'value': None,
+                    },
+                    {
+                      'host': '10.10.1.198',
+                      'type': 'di',
+                      'di': 3,
+                      'topicId': 660245,
+                      'value': None,
+                    },
+                  ]
+                },
+                {
+                  'type': 'thermometer',
+                  't_gap': 1000,
+                  'dev': [
+                  {
+                    'host':'10.10.1.196',
+                    'type': 'moxa_temp',
+                    'di': 16,
+                    'value': None,
+                    'topicId': 635558,
+
+                  },
+                  ]
+                }
+            ]

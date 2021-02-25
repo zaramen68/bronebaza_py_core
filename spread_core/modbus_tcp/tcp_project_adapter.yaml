@@ -1,0 +1,3 @@
+include: ['C:\Users\zaram\PycharmProjects\spread-core\spread_core\lklbroker.yaml']
+CTP_PATH: 'C:\Users\zaram\PycharmProjects\spread-core\spread_core\tcp_project.ctp'
+DUMP: false

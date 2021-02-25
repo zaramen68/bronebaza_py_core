@@ -1,0 +1,223 @@
+include: ['C:\Users\zaram\PycharmProjects\spread-core\spread_core\broker.yaml',
+ 'C:\Users\zaram\PycharmProjects\spread-core\spread_core\tcp.controllers.yaml'
+]
+
+PROJ: '2434'
+BUS_ID: '635558'
+BUS_HOST: '10.10.1.198'
+BUS_PORT: 502
+
+
+TOPIC_SUB: {
+             'Jocket/State/2434/Hardware/AppServer/2537/RapidaDali/3171/RapidaDaliDimmer/111427/BrightnessLevel': 0,
+             'Jocket/State/2434/Hardware/AppServer/2537/RapidaDali/3171/RapidaDaliDimmer/111428/BrightnessLevel': 0,
+             'Jocket/State/2434/Hardware/AppServer/2537/RapidaDali/3171/RapidaDaliDimmer/111429/BrightnessLevel': 0,
+             'Jocket/State/2434/Hardware/AppServer/2537/RapidaDali/3171/RapidaDaliDimmer/111430/BrightnessLevel': 0,
+             'Jocket/State/2434/Hardware/AppServer/2537/RapidaDali/3171/RapidaDaliDimmer/111431/BrightnessLevel': 0,
+             'Jocket/State/2434/Hardware/AppServer/2537/RapidaDali/3171/RapidaDaliDimmer/111432/BrightnessLevel': 0,
+}
+
+TOPIC_PUB: {
+ '111427': 'Jocket/Command/2434/LE_SID/Hardware/AppServer/2537/RapidaDali/3171/RapidaDaliDimmer/111427/GroupLevel',
+ '111429': 'Jocket/Command/2434/LE_SID/Hardware/AppServer/2537/RapidaDali/3171/RapidaDaliDimmer/111429/GroupLevel',
+ '111430': 'Jocket/Command/2434/LE_SID/Hardware/AppServer/2537/RapidaDali/3171/RapidaDaliDimmer/111430/GroupLevel',
+ '111431': 'Jocket/Command/2434/LE_SID/Hardware/AppServer/2537/RapidaDali/3171/RapidaDaliDimmer/111431/GroupLevel',
+ '111433': 'Jocket/Command/2434/LE_SID/Hardware/AppServer/2537/RapidaDali/3171/RapidaDaliDimmer/111433/GroupLevel',
+ '111434': 'Jocket/Command/2434/LE_SID/Hardware/AppServer/2537/RapidaDali/3171/RapidaDaliDimmer/111434/GroupLevel',
+ '111435': 'Jocket/Command/2434/LE_SID/Hardware/AppServer/2537/RapidaDali/3171/RapidaDaliDimmer/111435/GroupLevel',
+ '111436': 'Jocket/Command/2434/LE_SID/Hardware/AppServer/2537/RapidaDali/3171/RapidaDaliDimmer/111436/GroupLevel',
+}
+
+MSG_SUB: {
+'111427':'',
+'111429':'',
+'111430':'',
+'111431':'',
+'111432':'',
+'111433':'',
+'111434':'',
+'111435':'',
+'111436':'',
+}
+
+SAVED_DATA: {
+'111427':'',
+'111429':'',
+'111430':'',
+'111431':'',
+'111432':'',
+'111433':'',
+'111434':'',
+'111435':'',
+'111436':'',
+}
+COMMAND_REG_1: {
+'111427':'{"address": {"id": 111427, "class": 31090132}, "key": "{00000000-0000-0000-0000-000000000000}", "action": "set", "timestamp": "2020-09-12T14:09:32.267404", "data": {"value": 0}}',
+'111429':'{"address": {"id": 111429, "class": 31090132}, "key": "{00000000-0000-0000-0000-000000000000}", "action": "set", "timestamp": "2020-09-12T14:09:33.882942", "data": {"value": 0}}',
+'111430':'',
+'111431':'',
+'111432':'',
+'111433':'',
+'111434':'',
+'111435':'',
+'111436':'',
+}
+
+PROTOCOL: '0000'
+
+TCP_DEV: [
+            {             #advantech  seats
+              'host': '10.10.1.198',
+              'port': 502,
+              'dev': [
+                {
+                  'type': 'di',
+                  'di': 0,
+                  'id': 1,           # ID ModBus
+                  'reg': 0,          # номер первого регистра для опроса
+                  'cmd': '0x01',     # команда
+                  'nreg': 1,         # число регистров
+                  'topicId': 660035,
+                  'command': '000100000006010100000001',
+                },
+                {
+                  'type': 'di',
+                  'di': 1,
+                  'id': 1,
+                  'reg': 1,          # номер первого регистра для опроса
+                  'cmd': '0x01',     # команда
+                  'nreg': 1,         # число регистров
+                  'topicId': 660036,
+                  'command': '000100000006010100010001',
+                },
+                {
+                  'type': 'di',
+                  'di': 2,
+                  'id': 1,
+                  'reg': 2,          # номер первого регистра для опроса
+                  'cmd': '0x01',     # команда
+                  'nreg': 1,         # число регистров
+                  'topicId': 660037,
+                  'command': '000100000006010100020001',
+                },
+                  #--------------- двери -----------------
+                {
+                    'type': 'di',
+                    'di': 0,
+                    'id': 1,
+                    'reg': 0,          # номер первого регистра для опроса
+                    'cmd': '0x01',     # команда
+                    'nreg': 1,         # число регистров
+                    'topicId': 660034,
+                    'command': '000100000006010100000001',
+                },
+                {
+                    'type': 'di',
+                    'di': 1,
+                    'id': 1,
+                    'reg': 1,          # номер первого регистра для опроса
+                    'cmd': '0x01',     # команда
+                    'nreg': 1,         # число регистров
+                    'topicId': 660244,
+                    'command': '000100000006010100010001',
+                },
+                {
+                    'type': 'di',
+                    'di': 2,
+                    'id': 1,
+                    'reg': 2,          # номер первого регистра для опроса
+                    'cmd': '0x01',     # команда
+                    'nreg': 1,         # число регистров
+                    'topicId': 660243,
+                    'command': '000100000006010100020001',
+                },
+                {
+                    'type': 'di',
+                    'di': 3,
+                    'id': 1,
+                    'reg': 3,          # номер первого регистра для опроса
+                    'cmd': '0x01',     # команда
+                    'nreg': 1,         # число регистров
+                    'topicId': 660245,
+                    'command': '000100000006010100030001',
+                }
+              ]
+            },
+            {                         #advantech night sw
+              'host': '10.10.1.141',
+              'port': 502,
+              'dev': [
+                {
+                  'type': 'di',
+                  'di': 0,
+                  'id': 1,
+                  'reg': 0,          # номер первого регистра для опроса
+                  'cmd': '0x01',     # команда
+                  'nreg': 1,         # число регистров
+                  'topicId':'night_key',
+                  'command':'000100000006010100000001',
+                  'topicValues': {
+                    'value': 0,
+                  }
+                },
+                {
+                  'type': 'di',
+                  'di': 1,
+                  'id': 1,
+                  'reg': 1,          # номер первого регистра для опроса
+                  'cmd': '0x01',     # команда
+                  'nreg': 1,         # число регистров
+                  'topicId':'night_key',
+                  'command':'000100000006010100010001',
+                  'topicValues': {
+                    'value': 0,
+                  }
+                },
+              ],
+            },
+            {                                          #moxa temp id == id Modbus
+              'host':'10.10.1.198',
+              'port':502,
+              'dev':[
+              {
+                'type': 'moxa_temp',
+                'di': 16,
+                'id': 16,
+                'reg': 258,          # номер первого регистра для опроса
+                'cmd': '0x03',     # команда
+                'nreg': 2,         # число регистров
+                'command':'000100000006100301020002',
+                'topicId':'temp_in',
+                'topicValues': {
+                  'value': 0,
+                }
+              },
+              ]
+
+            },
+            {                                          #moxa temp id == id Modbus
+              'host':'10.10.1.145',
+              'port':502,
+              'dev':[
+              {
+                'type': 'pixel_temp',
+                'di': 2,
+                'id': 2,
+                'reg': 40961,          # номер первого регистра для опроса
+                'cmd': '0x04',     # команда
+                'nreg': 1,         # число регистров
+                'command':'000D000000060204A0010001',
+                'topicId':'temp_pixel',
+                'topicValues': {
+                  'value': 0,
+                }
+              },
+              ]
+
+            }
+
+        ]
+
+BUS_TIMEOUT: 3
+KILL_TIMEOUT: 3
+DUMP: false

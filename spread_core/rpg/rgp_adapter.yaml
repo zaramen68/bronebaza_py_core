@@ -1,0 +1,12 @@
+include: ['D:\PycharmProjects\bronebaza\spread_core\broker.yaml']
+PROJ: '2434'
+BUS_ID: '635558'
+BUS_HOST: '192.168.1.172'
+BUS_PORT: 502
+BUS_HOST_PORT: [['10.10.1.61', 55577],]
+TOPIC_SEND: ['Rapida/0/Can/Bus/Send', 'Rapida/0/Dali/Bus/Send', 'Rapida/0/Modbus/Bus/Send']
+TOPIC_DUMP: ['Rapida/0/Can/Bus/Dump', 'Rapida/0/Dali/Bus/Dump', 'Rapida/0/Modbus/Bus/Dump']
+
+BUS_TIMEOUT: 1
+KILL_TIMEOUT: 1
+DUMP: false

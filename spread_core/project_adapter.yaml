@@ -1,0 +1,3 @@
+include: ['C:\Users\zaram\PycharmProjects\spread-core\spread_core\rabbit_broker.yaml']
+CTP_PATH: 'C:\Users\zaram\PycharmProjects\spread-core\spread_core\throne-project.ctp'
+DUMP: false
