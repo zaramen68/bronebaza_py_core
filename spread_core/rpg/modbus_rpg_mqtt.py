@@ -55,21 +55,21 @@ rpgtopic_dump = config['TOPIC_DUMP']
 current_milli_time = lambda: int(round(time.time() * 1000))
 
 
-class ModBusRPGAdapterLauncher:
+class ModBusRPGAdapterLauncher(Launcher):
     _dumped = False
     _command_event = threading.Event()
 
     def __init__(self):
 
         self._time = current_milli_time()
-        self.mqttc = paho.mqtt.client.Client()
-        self.mqttc.username_pw_set(BROKER_USERNAME, BROKER_PWD)
-        self.mqttc.on_connect = self.on_connect
-        self.mqttc.on_subscribe = self.on_subscribe
-        self.mqttc.on_message = self.on_message
-        self.mqttc.connect(BROKER_HOST, BROKER_PORT)
-        self._manager = self
-        self._stopped = False
+        # self.mqttc = paho.mqtt.client.Client()
+        # self.mqttc.username_pw_set(BROKER_USERNAME, BROKER_PWD)
+        # self.mqttc.on_connect = self.on_connect
+        # self.mqttc.on_subscribe = self.on_subscribe
+        # self.mqttc.on_message = self.on_message
+        # self.mqttc.connect(BROKER_HOST, BROKER_PORT)
+        # self._manager = self
+        # self._stopped = False
 
         self._start_time = time.time()
         self._manager = self
@@ -84,6 +84,7 @@ class ModBusRPGAdapterLauncher:
         #     self..append(ModbusTcpSocket(dev['host'], dev['port'], dev['dev']))
         #
 
+        super(ModBusRPGAdapterLauncher, self).__init__()
 
     def start(self):
         self._command_event.set()
@@ -121,24 +122,24 @@ class ModBusRPGAdapterLauncher:
                     size = len(data)
                     data = bytes.fromhex(data)
                     try:
-                        out = device.send_message(data, size)
-                    except TimeoutError as ex:
-                        logging.exception(ex)
-                        device.kill()
-                        device.create()
-                    except OSError as ex:
-                        logging.exception(ex)
-                        device.kill()
-                        device.create()
+                        self.mqttc.publish(topic=rpgtopic_send[2], payload=data, qos=1, retain=True)
+                    # except TimeoutError as ex:
+                    #     logging.exception(ex)
+                    #     device.kill()
+                    #     device.create()
+                    # except OSError as ex:
+                    #     logging.exception(ex)
+                    #     device.kill()
+                    #     device.create()
 
 
                     except BaseException as ex:
                         logging.exception(ex)
-                    else:
-                        result = str(out)
-                        if result[:4].lower() == transaction_id:
-                            dev_topic = topic_dump.format(PROJECT, device._host, thing['type'], thing['id'], thing['reg'])
-                            self.mqttc.publish(topic=dev_topic, payload=str(out), qos=1, retain=True)
+                    # else:
+                    #     result = str(out)
+                    #     if result[:4].lower() == transaction_id:
+                    #         dev_topic = topic_dump.format(PROJECT, device._host, thing['type'], thing['id'], thing['reg'])
+                    #         self.mqttc.publish(topic=dev_topic, payload=str(out), qos=1, retain=True)
 
 
 
