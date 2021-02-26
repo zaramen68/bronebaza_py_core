@@ -139,7 +139,8 @@ class RGPTCPAdapterLauncher:
             self.mqttc.subscribe(topic)
             logging.debug('Subscribed to {}'.format(topic))
 
-        self.mqttc.loop_forever()
+
+
 
     def start(self):
         self._command_event.set()
@@ -154,8 +155,18 @@ class RGPTCPAdapterLauncher:
         listen.start()
         listen1.start()
         listen2.start()
+
+        self.mqttc.loop_forever()
         # self.test_dali_num()
 
+    def on_connect(self, mqttc, userdata, flags, rc):
+        if rc==0:
+            print("connected OK Returned code=",rc)
+        else:
+            print("Bad connection Returned code=",rc)
+
+    def on_subscribe(self, mqttc, userdata, mid, granted_qos):
+        print("Subscribed: " + str(mid) + " " + str(granted_qos))
 
     def on_message(self, mqttc, userdata, msg):
 
@@ -282,6 +293,7 @@ class RGPTCPAdapterLauncher:
             if n == 2:
                 #  ModBus
                 modBus = data['data']
+                self.mqttc.publish(topic= topic_send[2], payload=str(modBus))
                 print('::::::::::::::::::::: modbus = {0}'.format(str(data['data'])))
             elif n==4:
                 #  Dali
@@ -450,7 +462,7 @@ class RGPTCPAdapterLauncher:
 
 
 def run():
-    RGPTCPAdapterLauncher()
+    RGPTCPAdapterLauncher().start()
 
 
 
