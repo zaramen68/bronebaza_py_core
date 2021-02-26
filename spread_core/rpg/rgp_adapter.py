@@ -135,7 +135,7 @@ class RGPTCPAdapterLauncher:
         self.sock= RGPTcpSocket(HOSTnPORT[0][0], HOSTnPORT[0][1])
         self._start_time = time.time()
 
-        for topic in topic_dump:
+        for topic in topic_send:
             self.mqttc.subscribe(topic)
             logging.debug('Subscribed to {}'.format(topic))
 
@@ -293,7 +293,7 @@ class RGPTCPAdapterLauncher:
             if n == 2:
                 #  ModBus
                 modBus = data['data']
-                self.mqttc.publish(topic= topic_send[2], payload=str(modBus))
+                self.mqttc.publish(topic= topic_dump[2], payload=str(modBus))
                 print('::::::::::::::::::::: modbus = {0}'.format(str(data['data'])))
             elif n==4:
                 #  Dali

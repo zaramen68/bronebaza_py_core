@@ -41,6 +41,9 @@ topic_send = 'ModBus/from_Client/{}'
 topic_dali = 'Jocket/Command/{projet_id}/le_sid/Hardware/AppServer/{server_id}/RapidaDali/{}manager_id/RapidaDaliDimmer/{provider_id}/BrightnessLevel'
 
 protocol = config['PROTOCOL']
+
+rpgtopic_send =config['TOPIC_SEND']
+rpgtopic_dump = config['TOPIC_DUMP']
 # is_night = False
 # night_di0 = False
 # night_di1 = False
