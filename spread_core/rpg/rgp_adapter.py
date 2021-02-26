@@ -89,20 +89,7 @@ class RGPTcpSocket:
         print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
         logging.debug('[->  ]: {}'.format(' '.join(hex(b)[2:].rjust(2, '0').upper() for b in data)))
         print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-       # while len(out) < r_size:
-       #     out += self.sock.recv(1024)
-       #if len(out) > r_size:
-       #     out = out[out.rindex(data[0]):]
-       #  try:
-       #      out=self.sock.recv(256)
-       #  except BaseException as ex:
-       #      out_str = None
-       #      # logging.exception(ex)
-       #      # self.mqttc.publish(topic=topic_dump[1].format(BUS_ID) + '/error', payload=str(ex))
-       #  else:
-       #      logging.debug('[  <-]: {}'.format(' '.join(hex(b)[2:].rjust(2, '0').upper() for b in out)))
-       #      out_str='{}'.format(''.join(hex(b)[2:].rjust(2, '0').upper() for b in out))
-       #  return out_str
+
 
     def recive_data(self):
         self.stop_timer()
@@ -149,9 +136,6 @@ class RGPTCPAdapterLauncher(Launcher):
         listen1 = threading.Thread(target=self.listen_rpg1)
         listen2 = threading.Thread(target=self.askTempr)
 
-        # for topic in topic_send:
-        #     self.mqttc.subscribe(topic)
-        #     logging.debug('Subscribed to {}'.format(topic))
         for topic in topic_dump:
             self.mqttc.subscribe(topic)
             logging.debug('Subscribed to {}'.format(topic))
@@ -203,8 +187,7 @@ class RGPTCPAdapterLauncher(Launcher):
 
         self._stopped = False
         self._command_event.set()
-       # self.mqttc.subscribe(topic_send.format(BUS_ID))
-        #self.mqttc.loop_start()
+
 
 
 
