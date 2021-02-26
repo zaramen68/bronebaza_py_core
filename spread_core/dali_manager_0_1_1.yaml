@@ -1,5 +1,5 @@
-include: ['C:\Users\zaram\PycharmProjects\spread-core\spread_core\rabbit_broker.yaml']
+include: ['/home/awada/bronebaza/bronebaza_py_core/spread_core/rabbit_broker.yaml']
 MANAGER_ID: 3171
 MANAGER_TYPE: 'RapidaDali'
-DUMP: 'C:\Users\zaram\PycharmProjects\spread-core\spread_core\dump\dali_manager_0_1_1.yaml'
+DUMP: '/home/awada/bronebaza/bronebaza_py_core/spread_core/dump/dali_manager_0_1_1.yaml'
 LOG_LEVEL: 10

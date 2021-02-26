@@ -109,10 +109,10 @@ class Thermometer:
             for dev_ice in self._dev:
                 device = dev_ice[0]
                 try:
-                    #tt=out[18:22]
-                    #tk=int(tt, 16)
-                    #tk = tk + 27315
-                    tk = 27315
+                    tt=out[18:22]
+                    tk=int(tt, 16)
+                    tk = tk + 27315
+                    # tk = 27315
                     if self._topicValues['value'] is None:
                         #   initial values
                         self._topicValues['value'] = tk
