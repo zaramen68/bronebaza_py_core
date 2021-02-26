@@ -1,6 +1,7 @@
 import socket
 import threading
 import time
+import paho.mqtt.client
 from threading import Timer
 import bitstring
 from bitstring import BitArray
@@ -19,6 +20,12 @@ HOSTnPORT = config['BUS_HOST_PORT']
 TIMEOUT = config['BUS_TIMEOUT']
 KILL_TIMEOUT = config['KILL_TIMEOUT']
 
+ROJECT_ID = config['PROJECT_ID']
+BROKER_HOST = config['BROKER_HOST']
+BROKER_PORT = config['BROKER_PORT']
+BROKER_USERNAME = config['BROKER_USERNAME']
+BROKER_PWD = config['BROKER_PASSWORD']
+
 OPCODEDISCONNECT = '0x0'
 OPCODECONNECT = '0x1'
 OPCODEERROR = '0x2'
@@ -34,7 +41,7 @@ topic_dump = config['TOPIC_DUMP']
 
 is_lock=False
 
-
+current_milli_time = lambda: int(round(time.time() * 1000))
 
 class RGPTcpSocket:
 
@@ -111,22 +118,28 @@ class RGPTcpSocket:
     #     return self._commands
 
 
-class RGPTCPAdapterLauncher(Launcher):
+class RGPTCPAdapterLauncher:
     _dumped = False
     _command_event = threading.Event()
 
     def __init__(self):
+        self._time = current_milli_time()
+        self.mqttc = paho.mqtt.client.Client()
+        self.mqttc.username_pw_set(BROKER_USERNAME, BROKER_PWD)
+        self.mqttc.on_connect = self.on_connect
+        self.mqttc.on_subscribe = self.on_subscribe
+        self.mqttc.on_message = self.on_message
+        self.mqttc.connect(BROKER_HOST, BROKER_PORT)
         self._manager = self
         self._stopped = False
         self.sock= RGPTcpSocket(HOSTnPORT[0][0], HOSTnPORT[0][1])
         self._start_time = time.time()
-        # for thing in THINGS:
-        #     self.sock.append(RGPTcpSocket(thing['ip'], thing['port'], thing['dev'] ))
 
-        # for host, port in HOSTnPORT:
-        #     self.sock.append(RGPTcpSocket(host, port ))
-        super(RGPTCPAdapterLauncher, self).__init__()
+        for topic in topic_dump:
+            self.mqttc.subscribe(topic)
+            logging.debug('Subscribed to {}'.format(topic))
 
+        self.mqttc.loop_forever()
 
     def start(self):
         self._command_event.set()
@@ -136,9 +149,7 @@ class RGPTCPAdapterLauncher(Launcher):
         listen1 = threading.Thread(target=self.listen_rpg1)
         listen2 = threading.Thread(target=self.askTempr)
 
-        for topic in topic_dump:
-            self.mqttc.subscribe(topic)
-            logging.debug('Subscribed to {}'.format(topic))
+
 
         listen.start()
         listen1.start()
@@ -146,49 +157,17 @@ class RGPTCPAdapterLauncher(Launcher):
         # self.test_dali_num()
 
 
-    def on_message(self, mosq, obj, msg):
+    def on_message(self, mqttc, userdata, msg):
 
-        self._command_event.clear()
-        self._stopped = True
-        global is_lock
-        while is_lock:
-            time.sleep(0.3)
-        is_lock = True
-        host, port, data, flags = msg.payload.decode().split('#')
+        try:
+            topic = self.of(msg.topic)
 
-        data = bytes.fromhex(data)
-        flags = flags.split(':')
-        size = 0
-        for flag in flags:
-            if 'RS' in flag:
-                size = int(flag[2:])
-        device=self.sock
-        if device._port == int(port) and device._host==host:
+        except BaseException as ex:
+            logging.exception(ex)
 
-            try:
-                pass
-                #device.send_message(data, size)
-                #out=data
-                #print(data)
-            except BaseException as ex:
-                logging.exception(ex)
-                # self.mqttc.publish(topic=topic_dump.format(PROJECT, BUS_ID, '0') + '/error', payload=str(ex))
-            else:
-                try:
-                    pass
-                    # out = ''.join(hex(b)[2:].rjust(2, '0') for b in out)
-                    # self.mqttc.publish(topic=topic_dump.format(PROJECT, BUS_ID, '0'), payload=out)
-                    # logging.debug('[  <-]: {}'.format(out))
-                except BaseException as ex:
-                    logging.exception(ex)
-            finally:
-                is_lock = False
-                #device.start_timer()
-
-        self._stopped = False
-        self._command_event.set()
-
-
+    def of(self, topic):
+        arr = topic.split('/')
+        return arr
 
 
     def rpg_listen_fun(self):
