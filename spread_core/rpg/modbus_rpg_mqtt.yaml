@@ -1,0 +1,39 @@
+include: ['C:\Users\zaram\PycharmProjects\spread-core\spread_core\broker.yaml',]
+
+PROJ: '2434'
+BUS_ID: '635558'
+BUS_HOST: '10.10.1.198'
+BUS_PORT: 502
+
+
+
+
+PROTOCOL: '0000'
+
+MODBUS_DEV: [
+
+
+
+
+              'dev':
+              {
+                'type': 'oven_temp',
+                'module_addr': 1,
+                'part': 0,
+                'channel': 0,
+                'id': 16,
+                'reg': 258,          # номер первого регистра для опроса
+                'cmd': '0x03',     # команда
+                'nreg': 2,         # число регистров
+                'command':'07 0A 00 00 E1 03 02 00 10 03 01 02 00 02',
+                'topicId':'temp_in',
+                'topicValues': {
+                  'value': 0,
+                }
+              },
+
+        ]
+
+BUS_TIMEOUT: 3
+KILL_TIMEOUT: 3
+DUMP: false

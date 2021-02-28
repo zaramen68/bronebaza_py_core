@@ -3,6 +3,8 @@ import random
 import socket
 import threading
 import time
+
+import bitstring
 import paho.mqtt.client
 
 from threading import Timer
@@ -28,7 +30,7 @@ KILL_TIMEOUT = config['KILL_TIMEOUT']
 TOPIC_PUB = config['TOPIC_PUB']
 MSG_SUB = config['MSG_SUB']
 SAVED_DATA = config['SAVED_DATA']
-TCP_DEV = config['TCP_DEV']
+MODBUS_DEV = config['MODBUS_DEV']
 
 ROJECT_ID = config['PROJECT_ID']
 BROKER_HOST = config['BROKER_HOST']
@@ -78,7 +80,7 @@ class ModBusRPGAdapterLauncher(Launcher):
         self.sock_night = None
         self.msg_sub=MSG_SUB
         self.saved_data = SAVED_DATA
-        self.devices = TCP_DEV
+        self.devices = MODBUS_DEV
 
         # for dev in TCP_DEV:
         #     self..append(ModbusTcpSocket(dev['host'], dev['port'], dev['dev']))
@@ -92,11 +94,6 @@ class ModBusRPGAdapterLauncher(Launcher):
         listen.start()
 
 
-    def mqtt_listen_fun(self):
-        self.mqttc.subscribe(topic_send.format(BUS_ID))
-     #   self.mqttc.loop_forever()
-        logging.debug('Subscribed to {}'.format(topic_send.format(BUS_ID)))
-
     def write_to_bro(self, topId, num, value):
         out = VariableTRS3(None, topId, num, value)
         self.mqttc.publish(topic=topic_dump.format(PROJECT, str(topId), str(num)), payload=out.pack())
@@ -107,45 +104,73 @@ class ModBusRPGAdapterLauncher(Launcher):
         while True:
             #time.sleep(1)
 #                                             Опрос tcp устройств
-            for device in self.devices:
-                things = device.things()
-                for thing in things[0]:
-                    transaction_id = hex(random.getrandbits(10)).split('x')[1]
-                    transaction_id = make_bytes(transaction_id)
-                    data_body = make_two_bit(hex(thing['id']).split('x')[1]) + \
-                           thing['cmd'].split('x')[1] + \
-                           make_bytes(hex(thing['reg']).split('x')[1]) + make_bytes(hex(thing['nreg']).split('x')[1])
+            for thing in self.devices:
 
-                    data = transaction_id + protocol + make_bytes(str(int(len((data_body))/2))) + data_body
+                can_id=make_can_id(31, thing['module_addr'])
+                canId=make_bytes(can_id.hex)
 
+                byte0 = bitstring.BitArray(8)
+                byte1 = bitstring.BitArray(8)
+                byte0[0]= False
+                byte0[6]= True
+                channel = bitstring.BitArray(hex(thing['channel']))
+                byte1[7]= channel[3]
+                byte1[6]= channel[2]
 
-                    size = len(data)
-                    data = bytes.fromhex(data)
-                    try:
-                        self.mqttc.publish(topic=rpgtopic_send[2], payload=data, qos=1, retain=True)
-                    # except TimeoutError as ex:
-                    #     logging.exception(ex)
-                    #     device.kill()
-                    #     device.create()
-                    # except OSError as ex:
-                    #     logging.exception(ex)
-                    #     device.kill()
-                    #     device.create()
+                sbyte0=str(byte0)[2:]
 
 
-                    except BaseException as ex:
-                        logging.exception(ex)
-                    # else:
-                    #     result = str(out)
-                    #     if result[:4].lower() == transaction_id:
-                    #         dev_topic = topic_dump.format(PROJECT, device._host, thing['type'], thing['id'], thing['reg'])
-                    #         self.mqttc.publish(topic=dev_topic, payload=str(out), qos=1, retain=True)
+                transaction_id = hex(random.getrandbits(10)).split('x')[1]
+                transaction_id = make_bytes(transaction_id)
+
+                data_body = make_two_bit(hex(thing['id']).split('x')[1]) + \
+                       thing['cmd'].split('x')[1] + \
+                       make_bytes(hex(thing['reg']).split('x')[1]) + make_bytes(hex(thing['nreg']).split('x')[1])
+
+                data = canId[2:]+ canId[:2] + byte0.hex + byte1.hex + make_bytes(str(int(len((data_body))/2))) + data_body
+
+
+                size = len(data)
+                data = bytes.fromhex(data)
+                try:
+                    self.mqttc.publish(topic=rpgtopic_send[2], payload=data, qos=1, retain=True)
+
+
+
+                except BaseException as ex:
+                    logging.exception(ex)
+                # else:
+                #     result = str(out)
+                #     if result[:4].lower() == transaction_id:
+                #         dev_topic = topic_dump.format(PROJECT, device._host, thing['type'], thing['id'], thing['reg'])
+                #         self.mqttc.publish(topic=dev_topic, payload=str(out), qos=1, retain=True)
 
 
 
 
 def run():
     ModBusRPGAdapterLauncher()
+
+def make_can_id(addr_from, addr_to):
+    addr_from = bitstring.BitArray(hex(2))
+    addr_to = bitstring.BitArray(hex(31))
+    can_id = bitstring.BitArray(12)
+    delta = can_id.length - addr_to.length
+    bravo = can_id.length - addr_from.length
+    if addr_to.length < 5:
+        for i in range(addr_to.length - 1, 0, -1):
+            can_id[i + 8] = addr_to[i]
+    else:
+        for i in range(addr_to.length - 1, addr_to.length - 6, -1):
+            can_id[i + delta] = addr_to[i]
+    if addr_from.length < 5:
+        for i in range(addr_from.length - 1, 0, -1):
+            can_id[bravo - 5 + i] = addr_from[i]
+    else:
+        for i in range(addr_from.length - 1, addr_from.length - 6, -1):
+            can_id[i - 1] = addr_from[i]
+
+    return can_id
 
 def make_bytes(x):
     bytes_list =list('0000')
