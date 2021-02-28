@@ -43,6 +43,16 @@ is_lock=False
 
 current_milli_time = lambda: int(round(time.time() * 1000))
 
+def make_two_bit(x):
+    bytes_list =list('00')
+    list_x = list(x)
+    i=-1
+    while abs(i) <= len(x):
+        bytes_list[i]=list_x[i]
+        i=i-1
+    return ''.join(bytes_list)
+
+
 class RGPTcpSocket:
 
     def __init__(self, host, port):
@@ -172,6 +182,17 @@ class RGPTCPAdapterLauncher:
 
         try:
             topic = self.of(msg.topic)
+            if topic[2]=='ModBus':
+                mbCommand = msg.payload.decode()
+                opCode = '07'
+                pLen = bytearray(3)
+                pLen[0]=hex(len(mbCommand))
+                pL = opCode + make_two_bit(pLen[0].split('x')[1]) + \
+                    make_two_bit(pLen[1].split('x')[1])+ make_two_bit(pLen[2].split('x')[1])+\
+                    mbCommand
+                size = len(pL)
+                data=bytes.fromhex(pL)
+                self.sock.send_message(data, size)
 
         except BaseException as ex:
             logging.exception(ex)
