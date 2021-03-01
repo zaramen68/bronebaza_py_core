@@ -27,9 +27,11 @@ KILL_TIMEOUT = config['KILL_TIMEOUT']
 #THINGS=config['THINGS']
 #NIGHT_THINGS= config['NIGHT_THINGS']
 #TOPIC_SUB = config['TOPIC_SUB']
-TOPIC_PUB = config['TOPIC_PUB']
-MSG_SUB = config['MSG_SUB']
-SAVED_DATA = config['SAVED_DATA']
+# TOPIC_PUB = config['TOPIC_PUB']
+# MSG_SUB = config['MSG_SUB']
+# SAVED_DATA = config['SAVED_DATA']
+
+
 MODBUS_DEV = config['MODBUS_DEV']
 
 ROJECT_ID = config['PROJECT_ID']
@@ -78,8 +80,7 @@ class ModBusRPGAdapterLauncher(Launcher):
         self._stopped = False
         self.sock=[]
         self.sock_night = None
-        self.msg_sub=MSG_SUB
-        self.saved_data = SAVED_DATA
+
         self.devices = MODBUS_DEV
 
         # for dev in TCP_DEV:
@@ -102,9 +103,10 @@ class ModBusRPGAdapterLauncher(Launcher):
     def listen_all(self):
 
         while True:
-            #time.sleep(1)
-#                                             Опрос tcp устройств
-            for thing in self.devices:
+            time.sleep(5)
+#                                             Опрос modbus устройств
+            for device in self.devices:
+                thing=device['dev']
 
                 can_id=make_can_id(31, thing['module_addr'])
                 canId=make_bytes(can_id.hex)
@@ -127,11 +129,11 @@ class ModBusRPGAdapterLauncher(Launcher):
                        thing['cmd'].split('x')[1] + \
                        make_bytes(hex(thing['reg']).split('x')[1]) + make_bytes(hex(thing['nreg']).split('x')[1])
 
-                data = canId[2:]+ canId[:2] + byte0.hex + byte1.hex + make_bytes(str(int(len((data_body))/2))) + data_body
+                data = canId[2:]+ canId[:2] + byte0.hex + byte1.hex + data_body
 
 
                 size = len(data)
-                data = bytes.fromhex(data)
+                # data = bytes.fromhex(data)
                 try:
                     self.mqttc.publish(topic=rpgtopic_send[2], payload=data, qos=1, retain=True)
 
@@ -152,8 +154,8 @@ def run():
     ModBusRPGAdapterLauncher()
 
 def make_can_id(addr_from, addr_to):
-    addr_from = bitstring.BitArray(hex(2))
-    addr_to = bitstring.BitArray(hex(31))
+    addr_from = bitstring.BitArray(hex(addr_from))
+    addr_to = bitstring.BitArray(hex(addr_to))
     can_id = bitstring.BitArray(12)
     delta = can_id.length - addr_to.length
     bravo = can_id.length - addr_from.length

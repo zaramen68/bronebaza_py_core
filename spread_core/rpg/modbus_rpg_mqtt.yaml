@@ -1,11 +1,12 @@
-include: ['C:\Users\zaram\PycharmProjects\spread-core\spread_core\broker.yaml',]
+include: ['/home/awada/bronebaza/bronebaza_py_core/spread_core/rabbit_broker.yaml',]
 
 PROJ: '2434'
 BUS_ID: '635558'
 BUS_HOST: '10.10.1.198'
 BUS_PORT: 502
 
-
+TOPIC_SEND: ['Rapida/0/Can/Bus/Send', 'Rapida/0/Dali/Bus/Send', 'Rapida/0/Modbus/Bus/Send']
+TOPIC_DUMP: ['Rapida/0/Can/Bus/Dump', 'Rapida/0/Dali/Bus/Dump', 'Rapida/0/Modbus/Bus/Dump']
 
 
 PROTOCOL: '0000'

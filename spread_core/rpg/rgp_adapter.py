@@ -164,7 +164,7 @@ class RGPTCPAdapterLauncher:
 
         listen.start()
         listen1.start()
-        listen2.start()
+        # listen2.start()
 
         self.mqttc.loop_forever()
         # self.test_dali_num()
@@ -182,13 +182,13 @@ class RGPTCPAdapterLauncher:
 
         try:
             topic = self.of(msg.topic)
-            if topic[2]=='ModBus':
+            if topic[2]=='Modbus':
                 mbCommand = msg.payload.decode()
                 opCode = '07'
                 pLen = bytearray(3)
-                pLen[0]=hex(len(mbCommand))
-                pL = opCode + make_two_bit(pLen[0].split('x')[1]) + \
-                    make_two_bit(pLen[1].split('x')[1])+ make_two_bit(pLen[2].split('x')[1])+\
+                pLen[0]=int(len(mbCommand)/2)
+                pL = opCode + make_two_bit(hex(pLen[0]).split('x')[1]) + \
+                    make_two_bit(hex(pLen[1]).split('x')[1])+ make_two_bit(hex(pLen[2]).split('x')[1])+\
                     mbCommand
                 size = len(pL)
                 data=bytes.fromhex(pL)
@@ -314,7 +314,7 @@ class RGPTCPAdapterLauncher:
             if n == 2:
                 #  ModBus
                 modBus = data['data']
-                self.mqttc.publish(topic= topic_dump[2], payload=str(modBus))
+                self.mqttc.publish(topic= topic_dump[2], payload=str(modBus), qos=1, retain=True)
                 print('::::::::::::::::::::: modbus = {0}'.format(str(data['data'])))
             elif n==4:
                 #  Dali
