@@ -194,13 +194,13 @@ class RGPTCPAdapterLauncher:
                 data=bytes.fromhex(pL)
                 self.sock.send_message(data, size)
             elif ('Dali' in  topic) and ('Rapida' in topic):
-                mbCommand = msg.payload.decode()
+                mbCommand = msg.payload.decode().split('#')[0]
                 opCode = '07'
                 pLen = bytearray(3)
                 pLen[0]=int(len(mbCommand)/2)
                 pL = opCode + make_two_bit(hex(pLen[0]).split('x')[1]) + \
                     make_two_bit(hex(pLen[1]).split('x')[1])+ make_two_bit(hex(pLen[2]).split('x')[1])+\
-                    mbCommand
+                    'E203010001'+mbCommand
                 size = len(pL)
                 data=bytes.fromhex(pL)
                 self.sock.send_message(data, size)
@@ -327,9 +327,11 @@ class RGPTCPAdapterLauncher:
                 modBus = data['data']
                 self.mqttc.publish(topic= topic_dump[2], payload=str(modBus), qos=1, retain=True)
                 print('::::::::::::::::::::: modbus = {0}'.format(str(data['data'])))
-            elif n==4:
+            elif n==1:
                 #  Dali
                 daliData =data['data']
+                dataDali = str(daliData)[:4]
+                self.mqttc.publish(topic=topic_dump[3], payload=str(dataDali), qos=1, retain=True)
 
 
 
