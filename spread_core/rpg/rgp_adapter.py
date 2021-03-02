@@ -194,13 +194,13 @@ class RGPTCPAdapterLauncher:
                 data=bytes.fromhex(pL)
                 self.sock.send_message(data, size)
             elif ('Dali' in  topic) and ('Rapida' in topic):
-                mbCommand = msg.payload.decode().split('#')[0]
+                mbCommand = 'E203010001'+msg.payload.decode().split('#')[0]
                 opCode = '07'
                 pLen = bytearray(3)
                 pLen[0]=int(len(mbCommand)/2)
                 pL = opCode + make_two_bit(hex(pLen[0]).split('x')[1]) + \
                     make_two_bit(hex(pLen[1]).split('x')[1])+ make_two_bit(hex(pLen[2]).split('x')[1])+\
-                    'E203010001'+mbCommand
+                    mbCommand
                 size = len(pL)
                 data=bytes.fromhex(pL)
                 self.sock.send_message(data, size)
