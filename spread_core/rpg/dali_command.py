@@ -14,6 +14,15 @@ OPCODECANDATA = '0x7'
 
 from spread_core.tools.settings import config, logging
 
+def make_two_bit(x):
+    bytes_list =list('00')
+    list_x = list(x)
+    i=-1
+    while abs(i) <= len(x):
+        bytes_list[i]=list_x[i]
+        i=i-1
+    return ''.join(bytes_list)
+
 class RGPTcpSocket:
 
     def __init__(self, host, port):
@@ -111,6 +120,42 @@ class RGPTCPAdapterLauncher:
         listen = threading.Thread(target=self.listen_rpg)
 
         listen.start()
+        time.sleep(5)
+        self.daliSendCommand()
+
+    def daliSendCommand(self):
+        i=1
+        ii = hex(int((bin(i) + '1'), 2))
+        ii = ii[2:]
+        if len(ii) == 1:
+            ii = '0' + ii
+        print('ii={0}'.format(ii))
+
+        daliCommand = 'E2 03 01 04 01 {0} 06'.format(ii).replace(' ', '')
+
+        # daliCommand = 'E203010001A301'
+        # daliCommand = 'E2030100010101'
+        opCode = '07'
+        pLen = bytearray(3)
+        pLen[0] = int(len(daliCommand) / 2)
+        pL = opCode + make_two_bit(hex(pLen[0]).split('x')[1]) + \
+             make_two_bit(hex(pLen[1]).split('x')[1]) + make_two_bit(hex(pLen[2]).split('x')[1]) + \
+             daliCommand
+        size = len(pL)
+        data = bytes.fromhex(pL)
+        self.sock.send_message(data, size)
+        time.sleep(3)
+        # daliCommand = 'E203010201FF80'
+        # opCode = '07'
+        # pLen = bytearray(3)
+        # pLen[0] = int(len(daliCommand) / 2)
+        # pL = opCode + make_two_bit(hex(pLen[0]).split('x')[1]) + \
+        #      make_two_bit(hex(pLen[1]).split('x')[1]) + make_two_bit(hex(pLen[2]).split('x')[1]) + \
+        #      daliCommand
+        # size = len(pL)
+        # data = bytes.fromhex(pL)
+        # self.sock.send_message(data, size)
+
 
     def connect_rpg(self):
 
