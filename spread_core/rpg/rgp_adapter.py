@@ -11,6 +11,7 @@ from spread_core.mqtt.variables import VariableTRS3
 from spread_core.tools import settings
 from spread_core.tools.service_launcher import Launcher
 from spread_core.tools.settings import config, logging
+from spread_core.mqtt.variables import VariableJocket
 
 settings.DUMPED = False
 PROJECT=config['PROJ']
@@ -329,9 +330,32 @@ class RGPTCPAdapterLauncher:
                 print('::::::::::::::::::::: modbus = {0}'.format(str(data['data'])))
             elif n==1:
                 #  Dali
-                daliData =data['data']
-                dataDali = str(daliData)[:4]
-                self.mqttc.publish(topic=topic_dump[3], payload=str(dataDali), qos=1, retain=True)
+                bbyte1 = bitstring.BitArray(hex(data['data'][0]))
+                byte1=bitstring.BitArray(8-bbyte1.len)
+                byte1.append(bbyte1)
+                if byte1[2] is not True:
+                    bfl = bitstring.BitArray(6)
+                    bfl.append(byte1[3:5])
+                    fl=bfl.int
+                    b_chann = bitstring.BitArray(5)
+                    b_chann.append(byte1[5:])
+                    i_chann=b_chann.int
+
+                    if fl == 0:
+                        # 8 bit anser
+                        daliData =data['data'][1]
+                        dataDali = str(daliData)[:2]
+                        jocket = VariableJocket.create_data(3171, 31090132,
+                                                            'set', int(dataDali, 16), "{00000000-0000-0000-0000-000000000000}")
+                        self.mqttc.publish(topic=topic_dump[3], payload=dataDali, qos=1, retain=True)
+                    elif fl == 2:
+                        # no anser
+                        print('нет ответа от Dali')
+                    elif fl == 1:
+                        # 2 byte
+                        daliData = data['data'][1:]
+                        self.mqttc.publish(topic=topic_dump[3], payload=str(daliData)[:2], qos=1, retain=True)
+
 
 
 
