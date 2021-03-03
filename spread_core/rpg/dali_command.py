@@ -125,13 +125,13 @@ class RGPTCPAdapterLauncher:
 
     def daliSendCommand(self):
         i=1
-        ii = hex(int((bin(i) + '1'), 2))
+        ii = hex(int((bin(i) + '0'), 2))
         ii = ii[2:]
         if len(ii) == 1:
             ii = '0' + ii
         print('ii={0}'.format(ii))
 
-        daliCommand = 'E2 03 01 04 01 {0} 06'.format(ii).replace(' ', '')
+        daliCommand = 'E2 03 01 04 01 {0} 00'.format(ii).replace(' ', '')
 
         # daliCommand = 'E203010001A301'
         # daliCommand = 'E2030100010101'

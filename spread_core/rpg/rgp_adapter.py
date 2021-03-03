@@ -34,6 +34,8 @@ OPCODEPINGREG = '0x3'
 OPCODEPINGREQ = '0x4'
 OPCODECANDATA = '0x7'
 
+MODBUS_DEV = config['MODBUS_DEV']
+DALI_DEV = config['DALI_DEV']
 
 # topic_dump = 'Tros3/State/{}/{}/{}'
 # topic_send = 'ModBus/from_Client/{}'
@@ -53,6 +55,27 @@ def make_two_bit(x):
         i=i-1
     return ''.join(bytes_list)
 
+class DaliProvider:
+    def __init__(self, rpgClient, mqtt, *args):
+        self._socket = rpgClient
+        self.dev = args
+        self._mqtt = mqtt
+        self._callTime = time.time()
+        self._stateTopic = 'Tros3/State/{0}/Equipment/{1}/{2}/'.format(PROJECT, args['type'], args['id'])
+
+    def callDali(self, data):
+        mbCommand = 'E203010001' + data
+        opCode = '07'
+        pLen = bytearray(3)
+        pLen[0] = int(len(mbCommand) / 2)
+        pL = opCode + make_two_bit(hex(pLen[0]).split('x')[1]) + \
+             make_two_bit(hex(pLen[1]).split('x')[1]) + make_two_bit(hex(pLen[2]).split('x')[1]) + \
+             mbCommand
+        size = len(pL)
+        data = bytes.fromhex(pL)
+        self._callTime = time.time()
+        self._socket.send_message(data, size)
+        return self._callTime
 
 class RGPTcpSocket:
 
@@ -145,10 +168,21 @@ class RGPTCPAdapterLauncher:
         self._stopped = False
         self.sock= RGPTcpSocket(HOSTnPORT[0][0], HOSTnPORT[0][1])
         self._start_time = time.time()
+        self.callDaliTime = current_milli_time
+        self.callModBusTime = current_milli_time
+        self.daliProviders = []
+        self.modbusProviders = []
+        self.daliAnswer=False
+        self.modbusAnswer = False
+        self.callDaliProvider = None
 
         for topic in topic_send:
             self.mqttc.subscribe(topic)
             logging.debug('Subscribed to {}'.format(topic))
+
+        for prov in DALI_DEV:
+            daliDev = DaliProvider(self.sock, self.mqttc, prov)
+            self.daliProviders.append(daliDev)
 
 
 
@@ -194,17 +228,21 @@ class RGPTCPAdapterLauncher:
                 size = len(pL)
                 data=bytes.fromhex(pL)
                 self.sock.send_message(data, size)
-            elif ('Dali' in  topic) and ('Rapida' in topic):
-                mbCommand = 'E203010001'+msg.payload.decode().split('#')[0]
-                opCode = '07'
-                pLen = bytearray(3)
-                pLen[0]=int(len(mbCommand)/2)
-                pL = opCode + make_two_bit(hex(pLen[0]).split('x')[1]) + \
-                    make_two_bit(hex(pLen[1]).split('x')[1])+ make_two_bit(hex(pLen[2]).split('x')[1])+\
-                    mbCommand
-                size = len(pL)
-                data=bytes.fromhex(pL)
-                self.sock.send_message(data, size)
+            elif ('Tros3' in  topic) and ('Command' in topic):
+                # mbCommand = 'E203010001'+msg.payload.decode().split('#')[0]
+                # opCode = '07'
+                # pLen = bytearray(3)
+                # pLen[0]=int(len(mbCommand)/2)
+                # pL = opCode + make_two_bit(hex(pLen[0]).split('x')[1]) + \
+                #     make_two_bit(hex(pLen[1]).split('x')[1])+ make_two_bit(hex(pLen[2]).split('x')[1])+\
+                #     mbCommand
+                # size = len(pL)
+                # data=bytes.fromhex(pL)
+                # self.sock.send_message(data, size)
+                for prov in self.daliProviders:
+                    if prov.dev['id'] == topic[5]:
+                        self.callDaliTime = prov.callDali(msg.payload.decode().split('#')[0])
+                        self.callDaliProvider = prov
 
         except BaseException as ex:
             logging.exception(ex)
@@ -347,7 +385,7 @@ class RGPTCPAdapterLauncher:
                         dataDali = str(daliData)[:2]
                         jocket = VariableJocket.create_data(3171, 31090132,
                                                             'set', int(dataDali, 16), "{00000000-0000-0000-0000-000000000000}")
-                        self.mqttc.publish(topic=topic_dump[3], payload=dataDali, qos=1, retain=True)
+                        self.mqttc.publish(topic=topic_dump[3], payload=jocket.pack(), qos=1, retain=True)
                     elif fl == 2:
                         # no anser
                         print('нет ответа от Dali')
