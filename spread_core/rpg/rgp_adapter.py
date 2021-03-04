@@ -60,18 +60,46 @@ class DaliProvider:
         self._socket = rpgClient
         self.dev = args
         self._mqtt = mqtt
-        self._callTime = current_milli_time()
+        self._callDTime = 0
         self.state = None
         self.group = None
         self._call = None
+        self.answerIs = False
         self._stateTopic = 'Tros3/State/{0}/Equipment/{1}/{2}/'.format(PROJECT, args['type'], args['id'])
 
     @property
     def setValue(self, val):
         self.state = val
 
+    @property
+    def getCallTime(self):
+        return self._callDTime
+
     def getAnswer(self, data):
+        self.answerIs = True
         pass
+
+    def askLevel(self):
+        pass
+
+    def askGroup(self):
+        pass
+
+    def setLevel(self, data):
+        self._call = data
+        mbCommand = 'E203010001' + data
+        opCode = '07'
+        pLen = bytearray(3)
+        pLen[0] = int(len(mbCommand) / 2)
+        pL = opCode + make_two_bit(hex(pLen[0]).split('x')[1]) + \
+             make_two_bit(hex(pLen[1]).split('x')[1]) + make_two_bit(hex(pLen[2]).split('x')[1]) + \
+             mbCommand
+        size = len(pL)
+        data = bytes.fromhex(pL)
+        self._callDTime = current_milli_time()
+        self._socket.send_message(data, size)
+        self.answerIs=False
+        return self._callDTime
 
     def callDali(self, data):
         self._call = data
@@ -84,9 +112,10 @@ class DaliProvider:
              mbCommand
         size = len(pL)
         data = bytes.fromhex(pL)
-        self._callTime = current_milli_time()
+        self._callDTime = current_milli_time()
         self._socket.send_message(data, size)
-        return self._callTime
+        self.answerIs=False
+        return self._callDTime
 
     def dumpMqtt(self, data):
         out = VariableTRS3(None, self.dev['id'], 0, data)
@@ -258,6 +287,15 @@ class RGPTCPAdapterLauncher:
                     if prov.dev['id'] == topic[5]:
                         self.callDaliTime = prov.callDali(VariableTRS3(VariableReader(msg.payload))['value'])
                         self.callDaliProvider = prov
+                        while (prov.getCallTime != 0) and (current_milli_time()-prov.getCallTime < 100):
+                            if prov.answerIs:
+                                break
+                        if prov.answerIs:
+                            # success
+                            pass
+                        else:
+                            # no answer
+                            pass
 
         except BaseException as ex:
             logging.exception(ex)
