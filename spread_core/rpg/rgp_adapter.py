@@ -63,6 +63,7 @@ class DaliProvider:
         self._callTime = current_milli_time()
         self.state = None
         self.group = None
+        self._call = None
         self._stateTopic = 'Tros3/State/{0}/Equipment/{1}/{2}/'.format(PROJECT, args['type'], args['id'])
 
     @property
@@ -73,6 +74,7 @@ class DaliProvider:
         pass
 
     def callDali(self, data):
+        self._call = data
         mbCommand = 'E203010001' + data
         opCode = '07'
         pLen = bytearray(3)
