@@ -1,0 +1,494 @@
+
+
+ID_DEV: [
+                {
+                  'type': 'seat_sw',
+                  't_gap': 1000,
+                  'dev': [
+                  {
+                    'host': '10.10.1.198',
+                    'type': 'di',
+                    'di': 0,
+                    'topicId': 660035,
+                    'value': None,
+                    'topicValues': {
+                      'openId': True,
+                      'isOpeningId':False,
+                      'isOpenedId':False,
+                      'closeId': True,
+                      'isClosingId':False,
+                      'isClosedId':False,
+                      'stopId':False,
+                      'isStoppedId':False,
+                      'setClosenessLevelId':True,
+                      'closenessLevelId':10000,
+                      'rotateMinusId':True,
+                      'isRotatingMinusId':True,
+                      'isRotatedMinusId': True,
+                      'rotatePlusId': True,
+                      'isRotatingPlusId': True,
+                      'isRotatedPlusId': True,
+                      'rotationStopId': True,
+                      'isRotationStoppedId': True,
+                      'setRotationAngleId': True,
+                      'rotationAngleId': 100000,
+                    }
+                  },
+                  ]
+                },
+                {
+                  'type': 'seat_sw',
+                  't_gap': 1000,
+                  'dev': [
+                  {
+                    'host': '10.10.1.198',
+                    'type': 'di',
+                    'di': 1,
+                    'topicId': 660036,
+                    'value': None,
+                    'topicValues': {
+                      'openId': True,
+                      'isOpeningId':False,
+                      'isOpenedId':True,
+                      'closeId': True,
+                      'isClosingId':False,
+                      'isClosedId':False,
+                      'stopId':False,
+                      'isStoppedId':False,
+                      'setClosenessLevelId':True,
+                      'closenessLevelId':10000,
+                      'rotateMinusId':True,
+                      'isRotatingMinusId':True,
+                      'isRotatedMinusId': True,
+                      'rotatePlusId': True,
+                      'isRotatingPlusId': True,
+                      'isRotatedPlusId': True,
+                      'rotationStopId': True,
+                      'isRotationStoppedId': True,
+                      'setRotationAngleId': True,
+                      'rotationAngleId': 100000,
+                    }
+                  },
+                  ]
+                },
+                {
+                  'type': 'seat_sw',
+                  't_gap': 1000,
+                  'dev': [
+                  {
+                    'host': '10.10.1.198',
+                    'type': 'di',
+                    'di': 2,
+                    'topicId': 660037,
+                    'value': None,
+                    'topicValues': {
+                      'openId': True,
+                      'isOpeningId':False,
+                      'isOpenedId':False,
+                      'closeId': True,
+                      'isClosingId':False,
+                      'isClosedId':False,
+                      'stopId':False,
+                      'isStoppedId':False,
+                      'setClosenessLevelId':True,
+                      'closenessLevelId':10000,
+                      'rotateMinusId':True,
+                      'isRotatingMinusId':True,
+                      'isRotatedMinusId': True,
+                      'rotatePlusId': True,
+                      'isRotatingPlusId': True,
+                      'isRotatedPlusId': True,
+                      'rotationStopId': True,
+                      'isRotationStoppedId': True,
+                      'setRotationAngleId': True,
+                      'rotationAngleId': 100000,
+                    }
+                  },
+                  ]
+                },
+                {
+                  'type': 'door_sw',
+                  't_gap': 1000,
+                  'dev': [
+                  {
+                    'host': '10.10.1.198',
+                    'type': 'di',
+                    'di': 0,
+                    'topicId': 660034,
+                    'value': None,
+
+                  },
+                  ]
+                },
+                {
+                  'type': 'door_sw',
+                  't_gap': 1000,
+                  'dev': [
+                  {
+                    'host': '10.10.1.198',
+                    'type': 'di',
+                    'di': 1,
+                    'topicId': 660244,
+                    'value': None,
+
+                  },
+                  ]
+                },
+                {
+                  'type': 'door_sw',
+                  't_gap': 1000,
+                  'dev': [
+                  {
+                    'host': '10.10.1.198',
+                    'type': 'di',
+                    'di': 2,
+                    'topicId': 660243,
+                    'value': None,
+
+                  },
+                  ]
+                },
+                {
+                  'type': 'door_sw',
+                  't_gap': 1000,
+                  'dev': [
+                  {
+                    'host': '10.10.1.198',
+                    'type': 'di',
+                    'di': 3,
+                    'topicId': 660245,
+                    'value': None,
+
+                  },
+                  ]
+                },
+                {
+                  'type':'blackout',
+                  't_gap': 1000,
+                  'dev': [
+                    {
+                      'host': '10.10.1.198',
+                      'type': 'di',
+                      'di': 0,
+                      'topicId':'night_key',
+                      'value': None,
+                      'topicValues': {
+                        'value': 0,
+                      }
+                    },
+                    {
+                      'host': '10.10.1.198',
+                      'type': 'di',
+                      'di': 1,
+                      'topicId':'night_key',
+                      'value': None,
+                      'topicValues': {
+                        'value': 0,
+                      }
+                    },
+                    {
+                      'host': '10.10.1.198',
+                      'type': 'di',
+                      'di': 0,
+                      'topicId': 660034,
+                      'value': None,
+                    },
+                    {
+                      'host': '10.10.1.198',
+                      'type': 'di',
+                      'di': 1,
+                      'topicId': 660244,
+                      'value': None,
+                    },
+                    {
+                      'host': '10.10.1.198',
+                      'type': 'di',
+                      'di': 2,
+                      'topicId': 660243,
+                      'value': None,
+                    },
+                    {
+                      'host': '10.10.1.198',
+                      'type': 'di',
+                      'di': 3,
+                      'topicId': 660245,
+                      'value': None,
+                    },
+                  ]
+                },
+              ]
+
+
+   MODBUS_DEV: [
+
+                {
+                  'type': 'thermometer',
+                  't_gap': 1000,
+                  'dev': [
+                  {
+                    'channel': 0,
+                    'module_addr': 1
+                    'type': 'moxa_temp',
+                    'di': 16,
+                    'value': None,
+                    'topicId': 635558,
+
+                  },
+                  ]
+                }
+            ]
+
+    DALI_DEV: [
+{
+   "recipe": {
+    "type": "Simple",
+    "ingredients": [
+     {
+      "index": 0,
+      "type": "Solid",
+      "id": 111429
+     }
+    ]
+   },
+   "label": "14",
+   "key": "7eac3700-52d4-469b-967b-61e5fba344b2",
+   "attributes": {
+    "positionCount": 101,
+    "lowerLimit": 0,
+    "power": 0,
+    "upperLimit": 100
+   },
+   "type": "DimmingLight",
+   "id": 635561
+  },
+  {
+   "recipe": {
+    "type": "Simple",
+    "ingredients": [
+     {
+      "index": 0,
+      "type": "Solid",
+      "id": 111430
+     }
+    ]
+   },
+   "label": "15",
+   "key": "e6d644d1-e485-42ae-87c6-3e318dc50d91",
+   "attributes": {
+    "positionCount": 101,
+    "lowerLimit": 0,
+    "power": 0,
+    "upperLimit": 100
+   },
+   "type": "DimmingLight",
+   "id": 635562
+  },
+  {
+   "recipe": {
+    "type": "Simple",
+    "ingredients": [
+     {
+      "index": 0,
+      "type": "Solid",
+      "id": 111431
+     }
+    ]
+   },
+   "label": "16",
+   "key": "c3426536-023b-4154-81c8-c4d0bbea6bdf",
+   "attributes": {
+    "positionCount": 101,
+    "lowerLimit": 0,
+    "power": 0,
+    "upperLimit": 100
+   },
+   "type": "DimmingLight",
+   "id": 635563
+  },
+  {
+   "recipe": {
+    "type": "Simple",
+    "ingredients": [
+     {
+      "index": 0,
+      "type": "Solid",
+      "id": 111432
+     }
+    ]
+   },
+   "label": "17",
+   "key": "114615b5-2f5c-48f2-9cf0-61e11efc3227",
+   "attributes": {
+    "positionCount": 101,
+    "lowerLimit": 0,
+    "power": 0,
+    "upperLimit": 100
+   },
+   "type": "DimmingLight",
+   "id": 635564
+  },
+
+  {
+   "recipe": {
+    "type": "Simple",
+    "ingredients": [
+     {
+      "index": 0,
+      "type": "Solid",
+      "id": 111434
+     }
+    ]
+   },
+   "label": "7",
+   "key": "78ce1859-1707-4cf8-b280-235ad69dc71a",
+   "attributes": {
+    "power": 0
+   },
+   "type": "SwitchingLight",
+   "id": 659853
+  },
+  {
+   "recipe": {
+    "type": "Simple",
+    "ingredients": [
+     {
+      "index": 0,
+      "type": "Solid",
+      "id": 111435
+     }
+    ]
+   },
+   "label": "8",
+   "key": "2f70ec6f-e6b4-456c-808b-d8553499396d",
+   "attributes": {
+    "power": 0
+   },
+   "type": "SwitchingLight",
+   "id": 659854
+  },
+  {
+   "recipe": {
+    "type": "Simple",
+    "ingredients": [
+     {
+      "index": 0,
+      "type": "Solid",
+      "id": 111436
+     }
+    ]
+   },
+   "label": "9",
+   "key": "1d7af857-c2ff-4c55-9f60-f6d9ad54bf82",
+   "attributes": {
+    "power": 0
+   },
+   "type": "SwitchingLight",
+   "id": 659855
+  },
+  {
+   "recipe": {
+    "type": "Simple",
+    "ingredients": [
+     {
+      "index": 0,
+      "type": "Solid",
+      "id": 111433
+     }
+    ]
+   },
+   "label": "19",
+   "key": "59fff5c2-fd29-4c0e-a924-af5d0238c4ab",
+   "attributes": {
+    "power": 0
+   },
+   "type": "SwitchingLight",
+   "id": 659856
+  },
+  {
+   "recipe": {
+    "type": "Simple",
+    "ingredients": [
+     {
+      "index": 0,
+      "type": "Solid",
+      "id": 111427
+     }
+    ]
+   },
+   "label": "12",
+   "key": "29a5da7d-4dfd-4a93-b17e-257e294dd29f",
+   "attributes": {
+    "positionCount": 101,
+    "lowerLimit": 0,
+    "power": 0,
+    "upperLimit": 100
+   },
+   "type": "DimmingLight",
+   "id": 659939
+  },
+  ]
+
+
+  DORES_SEARTS_DEV: [
+  {
+   "type": "Shutter",
+   "id": 660034,
+   "key": "7c129acd-1f20-44ba-aa74-5247dd4af55e",
+   "label": "36"
+  },
+  {
+   "attributes": {
+    "direction": "CloseDown"
+   },
+   "type": "Blind",
+   "id": 660035,
+   "key": "c61589bb-28ab-402c-899e-9f21275546da",
+   "label": "37"
+  },
+  {
+   "attributes": {
+    "direction": "CloseDown"
+   },
+   "type": "Blind",
+   "id": 660036,
+   "key": "0a9bb15b-c010-44e3-bec4-42630921f329",
+   "label": "38"
+  },
+  {
+   "attributes": {
+    "direction": "CloseDown"
+   },
+   "type": "Blind",
+   "id": 660037,
+   "key": "16cd35ec-d854-4be9-9839-f48e03aac17c",
+   "label": "39"
+  },
+
+  {
+   "type": "Shutter",
+   "id": 660243,
+   "key": "04c96aef-e646-429f-a4c5-3caaaa0cf96b",
+   "label": "41"
+  },
+  {
+   "type": "Shutter",
+   "id": 660244,
+   "key": "b89359c6-0203-4c86-8e4c-a00e31b406e6",
+   "label": "42"
+  },
+  {
+   "type": "Shutter",
+   "id": 660245,
+   "key": "379bbd34-22d9-4d0c-b1dd-4ce8dee444f8",
+   "label": "43"
+  },
+  {
+   "type": "HeatedFloor",
+   "id": 660300,
+   "key": "d1a965ee-8996-41a6-bd2b-fd7465c33b33",
+   "label": "44"
+  }
+ ]
+}
+
+    ]

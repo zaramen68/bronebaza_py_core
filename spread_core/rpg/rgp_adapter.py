@@ -7,7 +7,7 @@ import bitstring
 from bitstring import BitArray
 import array
 
-from spread_core.mqtt.variables import VariableTRS3
+from spread_core.mqtt.variables import VariableTRS3, VariableReader
 from spread_core.tools import settings
 from spread_core.tools.service_launcher import Launcher
 from spread_core.tools.settings import config, logging
@@ -60,8 +60,17 @@ class DaliProvider:
         self._socket = rpgClient
         self.dev = args
         self._mqtt = mqtt
-        self._callTime = time.time()
+        self._callTime = current_milli_time()
+        self.state = None
+        self.group = None
         self._stateTopic = 'Tros3/State/{0}/Equipment/{1}/{2}/'.format(PROJECT, args['type'], args['id'])
+
+    @property
+    def setValue(self, val):
+        self.state = val
+
+    def getAnswer(self, data):
+        pass
 
     def callDali(self, data):
         mbCommand = 'E203010001' + data
@@ -73,9 +82,13 @@ class DaliProvider:
              mbCommand
         size = len(pL)
         data = bytes.fromhex(pL)
-        self._callTime = time.time()
+        self._callTime = current_milli_time()
         self._socket.send_message(data, size)
         return self._callTime
+
+    def dumpMqtt(self, data):
+        out = VariableTRS3(None, self.dev['id'], 0, data)
+        self._mqtt.publish(topic=self._stateTopic, payload=out.pack(), qos=1, retain=True)
 
 class RGPTcpSocket:
 
@@ -168,8 +181,8 @@ class RGPTCPAdapterLauncher:
         self._stopped = False
         self.sock= RGPTcpSocket(HOSTnPORT[0][0], HOSTnPORT[0][1])
         self._start_time = time.time()
-        self.callDaliTime = current_milli_time
-        self.callModBusTime = current_milli_time
+        self.callDaliTime = current_milli_time()
+        self.callModBusTime = current_milli_time()
         self.daliProviders = []
         self.modbusProviders = []
         self.daliAnswer=False
@@ -241,7 +254,7 @@ class RGPTCPAdapterLauncher:
                 # self.sock.send_message(data, size)
                 for prov in self.daliProviders:
                     if prov.dev['id'] == topic[5]:
-                        self.callDaliTime = prov.callDali(msg.payload.decode().split('#')[0])
+                        self.callDaliTime = prov.callDali(VariableTRS3(VariableReader(msg.payload))['value'])
                         self.callDaliProvider = prov
 
         except BaseException as ex:
@@ -368,31 +381,36 @@ class RGPTCPAdapterLauncher:
                 print('::::::::::::::::::::: modbus = {0}'.format(str(data['data'])))
             elif n==1:
                 #  Dali
-                bbyte1 = bitstring.BitArray(hex(data['data'][0]))
-                byte1=bitstring.BitArray(8-bbyte1.len)
-                byte1.append(bbyte1)
-                if byte1[2] is not True:
-                    bfl = bitstring.BitArray(6)
-                    bfl.append(byte1[3:5])
-                    fl=bfl.int
-                    b_chann = bitstring.BitArray(5)
-                    b_chann.append(byte1[5:])
-                    i_chann=b_chann.int
+                if (current_milli_time()-self.callDaliTime)<=100:
+                    bbyte1 = bitstring.BitArray(hex(data['data'][0]))
+                    byte1=bitstring.BitArray(8-bbyte1.len)
+                    byte1.append(bbyte1)
+                    if byte1[2] is not True:
+                        bfl = bitstring.BitArray(6)
+                        bfl.append(byte1[3:5])
+                        fl=bfl.int
+                        b_chann = bitstring.BitArray(5)
+                        b_chann.append(byte1[5:])
+                        i_chann=b_chann.int
 
-                    if fl == 0:
-                        # 8 bit anser
-                        daliData =data['data'][1]
-                        dataDali = str(daliData)[:2]
-                        jocket = VariableJocket.create_data(3171, 31090132,
-                                                            'set', int(dataDali, 16), "{00000000-0000-0000-0000-000000000000}")
-                        self.mqttc.publish(topic=topic_dump[3], payload=jocket.pack(), qos=1, retain=True)
-                    elif fl == 2:
-                        # no anser
-                        print('нет ответа от Dali')
-                    elif fl == 1:
-                        # 2 byte
-                        daliData = data['data'][1:]
-                        self.mqttc.publish(topic=topic_dump[3], payload=str(daliData)[:2], qos=1, retain=True)
+                        if fl == 0:
+                            # 8 bit anser
+                            daliData =data['data'][1]
+                            dataDali = str(daliData)[:2]
+                            self.callDaliProvider.setValue(dataDali)
+                            self.callDaliProvider.dumpMqtt(dataDali)
+                            # jocket = VariableJocket.create_data(3171, 31090132,
+                            #                                     'set', int(dataDali, 16), "{00000000-0000-0000-0000-000000000000}")
+                            # self.mqttc.publish(topic=topic_dump[3], payload=jocket.pack(), qos=1, retain=True)
+
+                        elif fl == 2:
+                            # no anser
+                            print('нет ответа от Dali')
+                        elif fl == 1:
+                            # 2 byte
+                            daliData = data['data'][1:]
+                            self.callDaliProvider.getAnswer(daliData)
+                            # self.mqttc.publish(topic=topic_dump[3], payload=str(daliData)[:2], qos=1, retain=True)
 
 
 
