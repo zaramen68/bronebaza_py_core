@@ -325,7 +325,7 @@ class RGPTCPAdapterLauncher:
 
             self.callDaliTime = prov.callDali(dd)
             self.callDaliProvider = prov
-            while (prov.getCallTime != 0) and (current_milli_time() - prov.getCallTime < 100):
+            while (prov.getCallTime != 0) and (current_milli_time() - prov.getCallTime < 1000):
 
                 if prov.answerIs:
                     print('answerIs = True')
