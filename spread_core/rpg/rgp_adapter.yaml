@@ -1,11 +1,128 @@
 include: ['/home/awada/bronebaza/bronebaza_py_core/spread_core/rabbit_broker.yaml']
-PROJ: '2434'
+
+PROJ: 2434
 BUS_ID: '635558'
 BUS_HOST: '192.168.1.172'
 BUS_PORT: 502
 BUS_HOST_PORT: [['10.10.1.61', 55577],]
 TOPIC_SEND: ['Rapida/0/Can/Bus/Send', 'Rapida/0/Dali/Bus/Send', 'Rapida/0/Modbus/Bus/Send', 'Bus/Send/Rapida/0/Dali/#']
 TOPIC_DUMP: ['Rapida/0/Can/Bus/Dump', 'Rapida/0/Dali/Bus/Dump', 'Rapida/0/Modbus/Bus/Dump', 'Bus/Dump/Rapida/0/Dali/1/1']
+
+MODBUS_DEV: [
+      {
+        'type': 'thermometer',
+        't_gap': 1000,
+        'dev': [
+        {
+          'channel': 0,
+          'module_addr': 1,
+          'type': 'moxa_temp',
+          'di': 16,
+          'value': None,
+          'topicId': 635558,
+
+        },
+        ]
+      },
+]
+
+DALI_DEV: [
+      {
+      "dadr": 4,
+      "attributes": {
+          "positionCount": 101,
+          "lowerLimit": 0,
+          "power": 0,
+          "upperLimit": 100
+       },
+      "type": "DimmingLight",
+      "id": 635561
+      },
+
+      {
+       "dadr": 2,
+       "attributes": {
+          "positionCount": 101,
+          "lowerLimit": 0,
+          "power": 0,
+          "upperLimit": 100
+       },
+       "type": "DimmingLight",
+       "id": 635562
+      },
+
+      {
+      "dadr": 5,
+      "attributes": {
+          "positionCount": 101,
+          "lowerLimit": 0,
+          "power": 0,
+          "upperLimit": 100
+       },
+      "type": "DimmingLight",
+      "id": 635563
+      },
+
+      {
+      "dadr": 0,
+      "attributes": {
+          "positionCount": 101,
+          "lowerLimit": 0,
+          "power": 0,
+          "upperLimit": 100
+      },
+      "type": "DimmingLight",
+      "id": 635564
+      },
+
+      {
+      "dadr": 7,
+      "attributes": {
+          "power": 0
+      },
+      "type": "SwitchingLight",
+      "id": 659853
+      },
+
+      {
+      "dadr": 8,
+      "attributes": {
+          "power": 0
+      },
+      "type": "SwitchingLight",
+      "id": 659854
+      },
+
+      {
+      "dadr": 9,
+      "attributes": {
+          "power": 0
+      },
+      "type": "SwitchingLight",
+      "id": 659855
+      },
+
+      {
+      "dadr": 6,
+      "attributes": {
+          "power": 0
+      },
+      "type": "SwitchingLight",
+      "id": 659856
+      },
+
+      {
+      "dadr": 3,
+      "attributes": {
+          "positionCount": 101,
+          "lowerLimit": 0,
+          "power": 0,
+          "upperLimit": 100
+      },
+      "type": "DimmingLight",
+      "id": 659939
+      },
+]
 
 BUS_TIMEOUT: 1
 KILL_TIMEOUT: 1

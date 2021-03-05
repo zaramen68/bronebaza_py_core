@@ -34,6 +34,8 @@ OPCODEPINGREG = '0x3'
 OPCODEPINGREQ = '0x4'
 OPCODECANDATA = '0x7'
 
+QUERY_ACTUAL_LEVEL='A0'
+
 MODBUS_DEV = config['MODBUS_DEV']
 DALI_DEV = config['DALI_DEV']
 
@@ -58,16 +60,18 @@ def make_two_bit(x):
 class DaliProvider:
     def __init__(self, rpgClient, mqtt, *args):
         self._socket = rpgClient
-        self.dev = args
+        self.dev = args[0]
         self._mqtt = mqtt
         self._callDTime = 0
         self.state = None
         self.group = None
         self._call = None
         self.answerIs = False
-        self._stateTopic = 'Tros3/State/{0}/Equipment/{1}/{2}/'.format(PROJECT, args['type'], args['id'])
+        self.dadr = args[0]['dadr']
+        self._stateTopic = 'Tros3/State/{}/Equipment/{}/{}/'.format(PROJECT, args[0]['type'], args[0]['id'])
+        self.answer = None
 
-    @property
+
     def setValue(self, val):
         self.state = val
 
@@ -111,9 +115,9 @@ class DaliProvider:
              make_two_bit(hex(pLen[1]).split('x')[1]) + make_two_bit(hex(pLen[2]).split('x')[1]) + \
              mbCommand
         size = len(pL)
-        data = bytes.fromhex(pL)
+        dd = bytes.fromhex(pL)
         self._callDTime = current_milli_time()
-        self._socket.send_message(data, size)
+        self._socket.send_message(dd, size)
         self.answerIs=False
         return self._callDTime
 
@@ -243,9 +247,11 @@ class RGPTCPAdapterLauncher:
 
         listen.start()
         listen1.start()
-        # listen2.start()
 
+        # listen2.start()
+        self.start_dali()
         self.mqttc.loop_forever()
+
         # self.test_dali_num()
 
     def on_connect(self, mqttc, userdata, flags, rc):
@@ -304,6 +310,30 @@ class RGPTCPAdapterLauncher:
         arr = topic.split('/')
         return arr
 
+    def start_dali(self):
+
+        for prov  in self.daliProviders:
+            dd = QUERY_ACTUAL_LEVEL
+            devaddr=bitstring.BitArray(hex(prov.dadr))
+            daddr = bitstring.BitArray(6 - devaddr.length)
+            daddr.append(devaddr)
+            addrbyte = bitstring.BitArray(bin(0))
+            addrbyte.append(daddr)
+            addrbyte.append(bitstring.BitArray(bin(1)))
+            dd = addrbyte.hex + dd
+
+            self.callDaliTime = prov.callDali(dd)
+            self.callDaliProvider = prov
+            while (prov.getCallTime != 0) and (current_milli_time() - prov.getCallTime < 100):
+                if prov.answerIs:
+                    break
+            if prov.answerIs:
+
+                # success
+                pass
+            else:
+                # no answer
+                pass
 
     def rpg_listen_fun(self):
 
