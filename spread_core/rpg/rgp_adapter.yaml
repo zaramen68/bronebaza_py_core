@@ -64,7 +64,7 @@ DALI_DEV: [
       },
 
       {
-      "dadr": 0,
+      "dadr": 1,
       "attributes": {
           "positionCount": 101,
           "lowerLimit": 0,

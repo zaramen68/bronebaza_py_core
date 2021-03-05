@@ -326,7 +326,9 @@ class RGPTCPAdapterLauncher:
             self.callDaliTime = prov.callDali(dd)
             self.callDaliProvider = prov
             while (prov.getCallTime != 0) and (current_milli_time() - prov.getCallTime < 100):
+
                 if prov.answerIs:
+                    print('answerIs = True')
                     break
             if prov.answerIs:
 
@@ -466,7 +468,11 @@ class RGPTCPAdapterLauncher:
 
                         if fl == 0:
                             # 8 bit anser
+
                             daliData =data['data'][1]
+
+                            print('dali 1 byte answer {}'.format(str(daliData)))
+
                             self.callDaliProvider.getAnswer(daliData)
                             dataDali = str(daliData)[:2]
                             self.callDaliProvider.setValue(dataDali)
