@@ -80,6 +80,7 @@ class DaliProvider:
         return self._callDTime
 
     def getAnswer(self, data):
+        print('dali answer is {}'.format(str(data)))
         self.answerIs = True
         pass
 
@@ -132,7 +133,7 @@ class RGPTcpSocket:
         self._killer = None
         self._port=port
         self._host=host
-#        self.devices=kwargs
+
         self.sock=None
         #self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         #self.sock.settimeout(TIMEOUT)
@@ -466,6 +467,7 @@ class RGPTCPAdapterLauncher:
                         if fl == 0:
                             # 8 bit anser
                             daliData =data['data'][1]
+                            self.callDaliProvider.getAnswer(daliData)
                             dataDali = str(daliData)[:2]
                             self.callDaliProvider.setValue(dataDali)
                             self.callDaliProvider.dumpMqtt(dataDali)
@@ -474,12 +476,14 @@ class RGPTCPAdapterLauncher:
                             # self.mqttc.publish(topic=topic_dump[3], payload=jocket.pack(), qos=1, retain=True)
 
                         elif fl == 2:
+
+
                             # no anser
                             print('нет ответа от Dali')
                         elif fl == 1:
                             # 2 byte
                             daliData = data['data'][1:]
-                            self.callDaliProvider.getAnswer(daliData)
+                            print('dali 2 byte answer == {}'.format(str(daliData)))
                             # self.mqttc.publish(topic=topic_dump[3], payload=str(daliData)[:2], qos=1, retain=True)
 
 
