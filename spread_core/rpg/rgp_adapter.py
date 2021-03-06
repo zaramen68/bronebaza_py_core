@@ -35,6 +35,7 @@ OPCODEPINGREQ = '0x4'
 OPCODECANDATA = '0x7'
 
 QUERY_ACTUAL_LEVEL='A0'
+DALI_GAP = 100
 
 MODBUS_DEV = config['MODBUS_DEV']
 DALI_DEV = config['DALI_DEV']
@@ -64,6 +65,10 @@ class DaliProvider:
         self._mqtt = mqtt
         self._callDTime = 0
         self.state = None
+        self.isValid = None
+        self.oneByteAnswer = None
+        self.twoByteAnswer = None
+        self.typeOfQuery = None # 0 - no answer, 1 - need answer
         self.group = None
         self._call = None
         self.answerIs = False
@@ -221,7 +226,12 @@ class RGPTCPAdapterLauncher:
         self.callModBusTime = current_milli_time()
         self.daliProviders = []
         self.modbusProviders = []
-        self.daliAnswer=False
+        self.daliAnswer=None   # 0 - no answer,
+                                # 1 - ok,
+        #                        -1 - 8 bit answer - no needed answer,
+        #                        -2 - 8 bit answer - no echo from dali
+        #                        -3 - error on dali line
+        self.isDaliQueried = False
         self.modbusAnswer = False
         self.callDaliProvider = None
 
@@ -314,6 +324,7 @@ class RGPTCPAdapterLauncher:
     def start_dali(self):
 
         for prov  in self.daliProviders:
+
             dd = QUERY_ACTUAL_LEVEL
             devaddr=bitstring.BitArray(hex(prov.dadr))
             daddr = bitstring.BitArray(6 - devaddr.length)
@@ -322,10 +333,16 @@ class RGPTCPAdapterLauncher:
             addrbyte.append(daddr)
             addrbyte.append(bitstring.BitArray(bin(1)))
             dd = addrbyte.hex + dd
+            prov.answerIs = False
+            prov.typeOfQuery = 1      # 8 bit answer is needed
+            prov.twoByteAnswer = None
+            prov.oneByteAnswer = None
 
             self.callDaliTime = prov.callDali(dd)
+            self.isDaliQueried = True
+
             self.callDaliProvider = prov
-            while (prov.getCallTime != 0) and (current_milli_time() - prov.getCallTime < 1000):
+            while (prov.getCallTime != 0) and ((current_milli_time() - prov.getCallTime) < (DALI_GAP+50)):
 
                 if prov.answerIs:
                     print('answerIs = True')
@@ -454,10 +471,11 @@ class RGPTCPAdapterLauncher:
                 print('::::::::::::::::::::: modbus = {0}'.format(str(data['data'])))
             elif n==1:
                 #  Dali
-                if (current_milli_time()-self.callDaliTime)<=100:
+                if (current_milli_time()-self.callDaliTime)<= DALI_GAP:
                     bbyte1 = bitstring.BitArray(hex(data['data'][0]))
                     byte1=bitstring.BitArray(8-bbyte1.len)
                     byte1.append(bbyte1)
+
                     if byte1[2] is not True:
                         bfl = bitstring.BitArray(6)
                         bfl.append(byte1[3:5])
@@ -468,30 +486,72 @@ class RGPTCPAdapterLauncher:
 
                         if fl == 0:
                             # 8 bit anser
-
                             daliData =data['data'][1]
 
                             print('dali 1 byte answer {}'.format(str(daliData)))
 
-                            self.callDaliProvider.getAnswer(daliData)
-                            dataDali = str(daliData)[:2]
-                            self.callDaliProvider.setValue(dataDali)
-                            self.callDaliProvider.dumpMqtt(dataDali)
+                            if (self.callDaliProvider.typeOfQuery == 1) and \
+                                    (self.callDaliProvider.oneByteAnswer is None) and \
+                                    (self.callDaliProvider.twoByteAnswer is not None):
+                                self.callDaliProvider.oneByteAnswer = daliData
+                                self.callDaliProvider.getAnswer(daliData)
+                                dataDali = str(daliData)[:2]
+                                self.callDaliProvider.Value(dataDali)
+                                self.callDaliProvider.dumpMqtt(dataDali)
+                                self.daliAnswer = 1
+                                self.callDaliProvider.isValid = True
+                            elif (self.callDaliProvider.typeOfQuery != 1):
+                                print('no answer needed')
+                                self.daliAnswer = -1
+
+                            elif (self.callDaliProvider.twoByteAnswer is None):
+                                print ('no echo from dali - only 8 bit')
+                                self.daliAnswer = -2
+
+                            elif (self.callDaliProvider.oneByteAnswer is not None):
+                                print ('8 bit answer is already on')
+
+                            self.isDaliQueried = False
                             # jocket = VariableJocket.create_data(3171, 31090132,
                             #                                     'set', int(dataDali, 16), "{00000000-0000-0000-0000-000000000000}")
                             # self.mqttc.publish(topic=topic_dump[3], payload=jocket.pack(), qos=1, retain=True)
 
-                        elif fl == 2:
+                        elif fl == 2: # no anser
+                            #daliData = data['data'][1]
+                            if (self.callDaliProvider is not None):
+                                self.callDaliProvider.getAnswer('no answer from dali')
+                                self.callDaliProvider.Value = None
+                                self.callDaliProvider.oneByteAnswer = None
+                                self.callDaliProvider.twoByteAnswer = None
+                                self.callDaliProvider.isValid = False
 
+                            self.daliAnswer = 0
+                            self.isDaliQueried = False
 
-                            # no anser
                             print('нет ответа от Dali')
                         elif fl == 1:
                             # 2 byte
                             daliData = data['data'][1:]
+                            self.callDaliProvider.twoByteAnswer = daliData
+                            if (self.callDaliProvider.typeOfQuery == 0):
+                                self.callDaliProvider.getAnswer(daliData)
+                                self.daliAnswer = 1
+                                self.isDaliQueried = False
+                                self.callDaliProvider.isValid = True
                             print('dali 2 byte answer == {}'.format(str(daliData)))
                             # self.mqttc.publish(topic=topic_dump[3], payload=str(daliData)[:2], qos=1, retain=True)
+                    else:
+                        #  error on dali
+                        self.daliAnswer = -3
+                        self.isDaliQueried = False
+                        print('!!!!!!!!!!!   Dali error      !!!!!!!!!')
 
+                        if (self.callDaliProvider is not None):
+                            self.callDaliProvider.getAnswer('!!!!!!!!!!!   Dali error      !!!!!!!!!')
+                            self.callDaliProvider.Value = None
+                            self.callDaliProvider.oneByteAnswer = None
+                            self.callDaliProvider.twoByteAnswer = None
+                            self.callDaliProvider.isValid = False
 
 
 
