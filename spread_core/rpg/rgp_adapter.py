@@ -321,17 +321,68 @@ class RGPTCPAdapterLauncher:
                 # self.sock.send_message(data, size)
                 for prov in self.daliProviders:
                     if prov.dev['id'] == topic[5]:
-                        self.callDaliTime = prov.callDali(VariableTRS3(VariableReader(msg.payload))['value'])
-                        self.callDaliProvider = prov
-                        while (prov.getCallTime != 0) and (current_milli_time()-prov.getCallTime < 100):
-                            if prov.answerIs:
-                                break
-                        if prov.answerIs:
-                            # success
-                            pass
-                        else:
-                            # no answer
-                            pass
+                        if topic[4] == 'DimmingLight':
+                            if topic[6] == 3:
+                                # set level command
+                                dd = VariableTRS3(VariableReader(msg.payload))['value']
+                                devaddr = bitstring.BitArray(hex(prov.dadr))
+                                daddr = bitstring.BitArray(6 - devaddr.length)
+                                daddr.append(devaddr)
+                                addrbyte = bitstring.BitArray(bin(0))
+                                addrbyte.append(daddr)
+                                addrbyte.append(bitstring.BitArray(bin(0)))
+                                dd = addrbyte.hex + dd
+                                prov.answerIs = False
+                                prov.typeOfQuery = 0  # 8 bit answer is needed
+                                prov.twoByteAnswer = None
+                                prov.oneByteAnswer = None
+                                self.isDaliQueried = True
+                                self.callDaliTime = prov.callDali(dd)
+                                self.callDaliProvider = prov
+                                while (prov.getCallTime != 0) and (current_milli_time()-prov.getCallTime < 100):
+                                    if prov.answerIs:
+                                        break
+                                if prov.answerIs:
+                                    # success
+                                    pass
+                                else:
+                                    # no answer
+                                    pass
+                            elif topic[6] == 1:
+                                # isOn command
+                                pass
+                            elif topic[6] == 0:
+                                # isOn command
+                                pass
+                        elif topic[4] == 'SwitchingLightLight':
+                            if topic[6] == 0:
+                                # set isOn command
+                                dd = VariableTRS3(VariableReader(msg.payload))['value']
+                                if dd == True:
+                                    dd='FF'
+                                devaddr = bitstring.BitArray(hex(prov.dadr))
+                                daddr = bitstring.BitArray(6 - devaddr.length)
+                                daddr.append(devaddr)
+                                addrbyte = bitstring.BitArray(bin(0))
+                                addrbyte.append(daddr)
+                                addrbyte.append(bitstring.BitArray(bin(0)))
+                                dd = addrbyte.hex + dd
+                                prov.answerIs = False
+                                prov.typeOfQuery = 0  # 8 bit answer is needed
+                                prov.twoByteAnswer = None
+                                prov.oneByteAnswer = None
+                                self.isDaliQueried = True
+                                self.callDaliTime = prov.callDali(dd)
+                                self.callDaliProvider = prov
+                                while (prov.getCallTime != 0) and (current_milli_time()-prov.getCallTime < 100):
+                                    if prov.answerIs:
+                                        break
+                                if prov.answerIs:
+                                    # success
+                                    pass
+                                else:
+                                    # no answer
+                                    pass
 
         except BaseException as ex:
             logging.exception(ex)
