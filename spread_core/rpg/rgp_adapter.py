@@ -254,14 +254,17 @@ class RGPTCPAdapterLauncher:
         self.modbusAnswer = False
         self.callDaliProvider = None
 
-        for topic in topic_send:
-            self.mqttc.subscribe(topic)
-            logging.debug('Subscribed to {}'.format(topic))
+
 
         for prov in DALI_DEV:
             daliDev = DaliProvider(self.sock, self.mqttc, prov)
             self.daliProviders.append(daliDev)
 
+        for prov in self.daliProviders:
+            for index in prov.dev['FunctionUnitIndex']:
+                topic = 'Tros3/Command/{}/Equipment/{}/{}/{}'.format(PROJECT, prov.dev['type'], prov.dev['id'], index)
+                self.mqttc.subscribe(topic)
+                logging.debug('Subscribed to {}'.format(topic))
 
 
 
