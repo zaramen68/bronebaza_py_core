@@ -52,6 +52,12 @@ is_lock=False
 
 current_milli_time = lambda: int(round(time.time() * 1000))
 
+def isONID(x):
+    if x == 'SwitchingLightLight':
+        return 2
+    elif x == 'DimmingLight':
+        return 3
+
 def make_two_bit(x):
     bytes_list =list('00')
     list_x = list(x)
@@ -78,7 +84,7 @@ class DaliProvider:
         self.answerIs = False
         self.dadr = args[0]['dadr']
         self._stateTopicLevel = 'Tros3/State/{}/Equipment/{}/{}/4'.format(PROJECT, args[0]['type'], args[0]['id'])
-        self._stateTopicIsOn = 'Tros3/State/{}/Equipment/{}/{}/3'.format(PROJECT, args[0]['type'], args[0]['id'])
+        self._stateTopicIsOn = 'Tros3/State/{}/Equipment/{}/{}/{}'.format(PROJECT, args[0]['type'], args[0]['id'], isONID(args[0]['type']))
         self.answer = None
 
 
