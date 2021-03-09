@@ -446,7 +446,7 @@ class RGPTCPAdapterLauncher:
                 prov.isValid = False
                 prov.dumpMqtt(data=False, fl=1)
 
-            if prov.isValid == True:
+            if prov.isValid == True and prov.dev['type'] == 'DimmingLight':
                 # query level
                 dd = QUERY_ACTUAL_LEVEL
                 devaddr = bitstring.BitArray(hex(prov.dadr))
@@ -474,12 +474,10 @@ class RGPTCPAdapterLauncher:
                         break
                 if prov.answerIs and self.daliAnswer != 0:
                     # success
-                    if prov.dev['type'] == 'DimmingLight':
 
-                        prov.dumpMqtt(data=int(prov.state, 16), fl=0)
 
-                    elif prov.dev['type'] == 'SwittingLight':
-                        prov.dumpMqtt(data=hex_to_bool(prov.state), fl=1)
+                    prov.dumpMqtt(data=int(prov.state, 16), fl=0)
+
 
 
 
