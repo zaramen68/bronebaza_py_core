@@ -38,6 +38,7 @@ QUERY_ACTUAL_LEVEL='A0'
 QUERY_GROU_07 = 'C0'
 QUERY_GROU_811 = 'C1'
 QUERY_IS_ON = '93'
+QUERY_STATE ='90'
 DALI_GAP = 100
 
 MODBUS_DEV = config['MODBUS_DEV']
@@ -51,6 +52,12 @@ topic_dump = config['TOPIC_DUMP']
 is_lock=False
 
 current_milli_time = lambda: int(round(time.time() * 1000))
+
+def hex_to_bool(x):
+    if x=='FE'or x=='fe' or x=='FF' or 'ff':
+        return True
+    elif x=='00':
+        return False
 
 def isONID(x):
     if x == 'SwitchingLight':
@@ -334,7 +341,7 @@ class RGPTCPAdapterLauncher:
                                 addrbyte = bitstring.BitArray(bin(0))
                                 addrbyte.append(daddr)
                                 addrbyte.append(bitstring.BitArray(bin(0)))
-                                dd = addrbyte.hex + dd
+                                dd = addrbyte.hex + make_two_bit(hex(dd).split('x')[1])
                                 prov.answerIs = False
                                 prov.typeOfQuery = 0  # 8 bit answer is needed
                                 prov.twoByteAnswer = None
@@ -357,35 +364,39 @@ class RGPTCPAdapterLauncher:
                             elif topic[6] == 0:
                                 # isOn command
                                 pass
-                        elif topic[4] == 'SwitchingLightLight':
+                        elif topic[4] == 'SwitchingLigh':
+                            dd = VariableTRS3(VariableReader(msg.payload))['value']
                             if topic[6] == 0:
                                 # set isOn command
-                                dd = VariableTRS3(VariableReader(msg.payload))['value']
+
                                 if dd == True:
-                                    dd='FF'
-                                devaddr = bitstring.BitArray(hex(prov.dadr))
-                                daddr = bitstring.BitArray(6 - devaddr.length)
-                                daddr.append(devaddr)
-                                addrbyte = bitstring.BitArray(bin(0))
-                                addrbyte.append(daddr)
-                                addrbyte.append(bitstring.BitArray(bin(0)))
-                                dd = addrbyte.hex + dd
-                                prov.answerIs = False
-                                prov.typeOfQuery = 0  # 8 bit answer is needed
-                                prov.twoByteAnswer = None
-                                prov.oneByteAnswer = None
-                                self.isDaliQueried = True
-                                self.callDaliTime = prov.callDali(dd)
-                                self.callDaliProvider = prov
-                                while (prov.getCallTime != 0) and (current_milli_time()-prov.getCallTime < 100):
-                                    if prov.answerIs:
-                                        break
+                                    dd='FE'
+                            elif topic[6] == 1:
+                                if dd == True:
+                                    dd='00'
+                            devaddr = bitstring.BitArray(hex(prov.dadr))
+                            daddr = bitstring.BitArray(6 - devaddr.length)
+                            daddr.append(devaddr)
+                            addrbyte = bitstring.BitArray(bin(0))
+                            addrbyte.append(daddr)
+                            addrbyte.append(bitstring.BitArray(bin(0)))
+                            dd = addrbyte.hex + dd
+                            prov.answerIs = False
+                            prov.typeOfQuery = 0  # 8 bit answer is needed
+                            prov.twoByteAnswer = None
+                            prov.oneByteAnswer = None
+                            self.isDaliQueried = True
+                            self.callDaliTime = prov.callDali(dd)
+                            self.callDaliProvider = prov
+                            while (prov.getCallTime != 0) and (current_milli_time()-prov.getCallTime < 100):
                                 if prov.answerIs:
-                                    # success
-                                    pass
-                                else:
-                                    # no answer
-                                    pass
+                                    break
+                            if prov.answerIs:
+                                # success
+                                pass
+                            else:
+                                # no answer
+                                pass
 
         except BaseException as ex:
             logging.exception(ex)
@@ -397,8 +408,8 @@ class RGPTCPAdapterLauncher:
     def start_dali(self):
 
         for prov  in self.daliProviders:
-            # query level
-            dd = QUERY_IS_ON
+            # query state
+            dd = QUERY_STATE
             devaddr=bitstring.BitArray(hex(prov.dadr))
             daddr = bitstring.BitArray(6 - devaddr.length)
             daddr.append(devaddr)
@@ -411,10 +422,10 @@ class RGPTCPAdapterLauncher:
             prov.twoByteAnswer = None
             prov.oneByteAnswer = None
 
-            self.callDaliTime = prov.callDali(dd)
             self.isDaliQueried = True
-
             self.callDaliProvider = prov
+            self.callDaliTime = prov.callDali(dd)
+
             while (prov.getCallTime != 0) and \
                     ((current_milli_time() - prov.getCallTime) < (DALI_GAP+50)) and \
                     self.daliAnswer !=0:
@@ -422,18 +433,61 @@ class RGPTCPAdapterLauncher:
                 if prov.answerIs:
                     print('answerIs = True')
                     break
-            if prov.answerIs and self.daliAnswer != 0:
-                if prov.state == "FF" or prov.state == "ff":
-                    prov.state = True
-                prov.dumpMqtt(data=prov.state, fl=1)
+            if prov.answerIs and self.daliAnswer != 0:     # success
+                state = bitstring.BitArray(hex(int(prov.state, 16)))
 
-                # success
 
-            else:
-                prov.state = False
+                prov.dumpMqtt(data=state[1], fl=1)
+
+
+
+            else:                                           # no answer
+                prov.state = None
                 prov.isValid = False
-                # no answer
-                prov.dumpMqtt(data=prov.state, fl=1)
+                prov.dumpMqtt(data=False, fl=1)
+
+            if prov.isValid == True:
+                # query level
+                dd = QUERY_ACTUAL_LEVEL
+                devaddr = bitstring.BitArray(hex(prov.dadr))
+                daddr = bitstring.BitArray(6 - devaddr.length)
+                daddr.append(devaddr)
+                addrbyte = bitstring.BitArray(bin(0))
+                addrbyte.append(daddr)
+                addrbyte.append(bitstring.BitArray(bin(1)))
+                dd = addrbyte.hex + dd
+                prov.answerIs = False
+                prov.typeOfQuery = 1  # 8 bit answer is needed
+                prov.twoByteAnswer = None
+                prov.oneByteAnswer = None
+
+                self.isDaliQueried = True
+                self.callDaliProvider = prov
+                self.callDaliTime = prov.callDali(dd)
+
+                while (prov.getCallTime != 0) and \
+                        ((current_milli_time() - prov.getCallTime) < (DALI_GAP + 50)) and \
+                        self.daliAnswer != 0:
+
+                    if prov.answerIs:
+                        print('answerIs = True')
+                        break
+                if prov.answerIs and self.daliAnswer != 0:
+                    # success
+                    if prov.dev['type'] == 'DimmingLight':
+
+                        prov.dumpMqtt(data=int(prov.state, 16), fl=0)
+
+                    elif prov.dev['type'] == 'SwittingLight':
+                        prov.dumpMqtt(data=hex_to_bool(prov.state), fl=1)
+
+
+
+                else:  # no answer
+                    prov.state = None
+                    prov.isValid = False
+
+                    prov.dumpMqtt(data=prov.state, fl=1)
 
             #  query groups
             dd = QUERY_GROU_07
