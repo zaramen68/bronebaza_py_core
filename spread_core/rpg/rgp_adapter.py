@@ -130,8 +130,33 @@ class DaliProvider:
         self.answerIs=False
         return self._callDTime
 
-    def callDali(self, data):
+    def callDali(self, data, resp=False):
         self._call = data
+
+        addr_from = bitstring.BitArray(hex(31))[3:]
+        addr_to_ = bitstring.BitArray(hex(self.dev['bus']))
+        addr_to = bitstring.BitArray(5-addr_to_.length)
+        addr_to.append(addr_to_)
+        addr_from.append(addr_to)
+        can_id = bitstring.BitArray(12-addr_from.length)
+        can_id.append(addr_from)
+
+        byte0 = bitstring.BitArray(1)
+        echo = bitstring.BitArray(1)
+        reserve = bitstring.BitArray(1)
+        cls = bitstring.BitArray(5)
+        cls[4]=True
+        byte0.append(echo)
+        byte0.append(reserve)
+        byte0.append(cls)
+
+        byte1 = bitstring.BitArray(8)
+        byte1[5]=resp
+
+        byte2=bitstring.BitArray(8)
+        byte2[7-self.dev['channal']]
+
+        dCommand = can_id.hex + byte0.hex
         mbCommand = 'E203010001' + data
         opCode = '07'
         pLen = bytearray(3)

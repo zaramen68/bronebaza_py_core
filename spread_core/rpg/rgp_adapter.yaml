@@ -28,6 +28,8 @@ MODBUS_DEV: [
 
 DALI_DEV: [
       {
+      "channal": 0,
+      "bus": 1,
       "dadr": 4,
       "attributes": {
           "positionCount": 101,
@@ -41,19 +43,23 @@ DALI_DEV: [
       },
 
       {
-       "dadr": 2,
-       "attributes": {
+      "channal": 0,
+      "bus": 1,
+      "dadr": 2,
+      "attributes": {
           "positionCount": 101,
           "lowerLimit": 0,
           "power": 0,
           "upperLimit": 100
-       },
-       "type": "DimmingLight",
-       "FunctionUnitIndex": {"onId": 0, "offId": 1, "setLevelId": 3},
-       "id": 635562
+      },
+      "type": "DimmingLight",
+      "FunctionUnitIndex": {"onId": 0, "offId": 1, "setLevelId": 3},
+      "id": 635562
       },
 
       {
+      "channal": 0,
+      "bus": 1,
       "dadr": 5,
       "attributes": {
           "positionCount": 101,
@@ -67,6 +73,8 @@ DALI_DEV: [
       },
 
       {
+      "channal": 0,
+      "bus": 1,
       "dadr": 1,
       "attributes": {
           "positionCount": 101,
@@ -80,6 +88,8 @@ DALI_DEV: [
       },
 
       {
+      "channal": 0,
+      "bus": 1,
       "dadr": 7,
       "attributes": {
           "power": 0
@@ -90,6 +100,8 @@ DALI_DEV: [
       },
 
       {
+      "channal": 0,
+      "bus": 1,
       "dadr": 8,
       "attributes": {
           "power": 0
@@ -100,6 +112,8 @@ DALI_DEV: [
       },
 
       {
+      "channal": 0,
+      "bus": 1,
       "dadr": 9,
       "attributes": {
           "power": 0
@@ -110,6 +124,8 @@ DALI_DEV: [
       },
 
       {
+      "channal": 0,
+      "bus": 1,
       "dadr": 6,
       "attributes": {
           "power": 0
@@ -120,6 +136,8 @@ DALI_DEV: [
       },
 
       {
+      "channal": 0,
+      "bus": 1,
       "dadr": 3,
       "attributes": {
           "positionCount": 101,
