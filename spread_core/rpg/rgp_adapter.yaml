@@ -36,7 +36,7 @@ DALI_DEV: [
           "upperLimit": 100
        },
       "type": "DimmingLight",
-      "FunctionUnitIndex": ["onId": 0, "offId": 1, "setLevelId": 3],
+      "FunctionUnitIndex": {"onId": 0, "offId": 1, "setLevelId": 3},
       "id": 635561
       },
 
@@ -49,7 +49,7 @@ DALI_DEV: [
           "upperLimit": 100
        },
        "type": "DimmingLight",
-       "FunctionUnitIndex": ["onId": 0, "offId": 1, "setLevelId": 3],
+       "FunctionUnitIndex": {"onId": 0, "offId": 1, "setLevelId": 3},
        "id": 635562
       },
 
@@ -62,7 +62,7 @@ DALI_DEV: [
           "upperLimit": 100
        },
       "type": "DimmingLight",
-      "FunctionUnitIndex": ["onId": 0, "offId": 1, "setLevelId": 3],
+      "FunctionUnitIndex": {"onId": 0, "offId": 1, "setLevelId": 3},
       "id": 635563
       },
 
@@ -75,7 +75,7 @@ DALI_DEV: [
           "upperLimit": 100
       },
       "type": "DimmingLight",
-      "FunctionUnitIndex": ["onId": 0, "offId": 1, "setLevelId": 3],
+      "FunctionUnitIndex": {"onId": 0, "offId": 1, "setLevelId": 3},
       "id": 635564
       },
 
@@ -85,7 +85,7 @@ DALI_DEV: [
           "power": 0
       },
       "type": "SwitchingLight",
-      "FunctionUnitIndex": ["onId": 0, "offId": 1],
+      "FunctionUnitIndex": {"onId": 0, "offId": 1},
       "id": 659853
       },
 
@@ -95,7 +95,7 @@ DALI_DEV: [
           "power": 0
       },
       "type": "SwitchingLight",
-      "FunctionUnitIndex": ["onId": 0, "offId": 1],
+      "FunctionUnitIndex": {"onId": 0, "offId": 1},
       "id": 659854
       },
 
@@ -105,7 +105,7 @@ DALI_DEV: [
           "power": 0
       },
       "type": "SwitchingLight",
-      "FunctionUnitIndex": ["onId": 0, "offId": 1],
+      "FunctionUnitIndex": {"onId": 0, "offId": 1},
       "id": 659855
       },
 
@@ -115,7 +115,7 @@ DALI_DEV: [
           "power": 0
       },
       "type": "SwitchingLight",
-      "FunctionUnitIndex": ["onId": 0, "offId": 1],
+      "FunctionUnitIndex": {"onId": 0, "offId": 1},
       "id": 659856
       },
 
@@ -128,7 +128,7 @@ DALI_DEV: [
           "upperLimit": 100
       },
       "type": "DimmingLight",
-      "FunctionUnitIndex": ["onId": 0, "offId": 1, "setLevelId": 3],
+      "FunctionUnitIndex": {"onId": 0, "offId": 1, "setLevelId": 3},
       "id": 659939
       },
 ]

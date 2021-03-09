@@ -261,8 +261,8 @@ class RGPTCPAdapterLauncher:
             self.daliProviders.append(daliDev)
 
         for prov in self.daliProviders:
-            for index in prov.dev['FunctionUnitIndex']:
-                topic = 'Tros3/Command/{}/Equipment/{}/{}/{}'.format(PROJECT, prov.dev['type'], prov.dev['id'], index)
+            for index, val in prov.dev['FunctionUnitIndex'].items():
+                topic = 'Tros3/Command/{}/Equipment/{}/{}/{}'.format(PROJECT, prov.dev['type'], prov.dev['id'], val)
                 self.mqttc.subscribe(topic)
                 logging.debug('Subscribed to {}'.format(topic))
 
@@ -423,14 +423,17 @@ class RGPTCPAdapterLauncher:
                     print('answerIs = True')
                     break
             if prov.answerIs and self.daliAnswer != 0:
+                if prov.state == "FF" or prov.state == "ff":
+                    prov.state = True
                 prov.dumpMqtt(data=prov.state, fl=1)
 
                 # success
 
             else:
+                prov.state = False
                 prov.isValid = False
                 # no answer
-                pass
+                prov.dumpMqtt(data=prov.state, fl=1)
 
             #  query groups
             dd = QUERY_GROU_07
@@ -638,7 +641,7 @@ class RGPTCPAdapterLauncher:
                                 self.callDaliProvider.oneByteAnswer = daliData
                                 self.callDaliProvider.getAnswer(daliData)
                                 dataDali = str(daliData)[:2]
-                                self.callDaliProvider.Value(dataDali)
+                                self.callDaliProvider.setValue(dataDali)
                                 # self.callDaliProvider.dumpMqtt(dataDali)
                                 self.daliAnswer = 1
                                 self.callDaliProvider.isValid = True

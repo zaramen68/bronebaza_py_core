@@ -131,7 +131,7 @@ class RGPTCPAdapterLauncher:
             ii = '0' + ii
         print('ii={0}'.format(ii))
 
-        daliCommand = 'E2 03 01 04 01 {0} A0'.format(ii).replace(' ', '')
+        daliCommand = 'E2 03 01 04 01 {0} 93'.format(ii).replace(' ', '')
 
         # daliCommand = 'E203010001A301'
         # daliCommand = 'E2030100010101'
