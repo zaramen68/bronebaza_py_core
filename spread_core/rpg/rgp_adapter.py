@@ -476,7 +476,7 @@ class RGPTCPAdapterLauncher:
                     # success
 
 
-                    prov.dumpMqtt(data=int(prov.state, 16), fl=0)
+                    prov.dumpMqtt(data=int(prov.state, 16))
 
 
 
