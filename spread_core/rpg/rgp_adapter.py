@@ -74,6 +74,15 @@ def make_two_bit(x):
         i=i-1
     return ''.join(bytes_list)
 
+def make_bytes(x):
+    bytes_list =list('0000')
+    list_x = list(x)
+    i=-1
+    while abs(i) <= len(x):
+        bytes_list[i]=list_x[i]
+        i=i-1
+    return ''.join(bytes_list)
+
 class DaliProvider:
     def __init__(self, rpgClient, mqtt, *args):
         self._socket = rpgClient
@@ -140,6 +149,8 @@ class DaliProvider:
         addr_from.append(addr_to)
         can_id = bitstring.BitArray(12-addr_from.length)
         can_id.append(addr_from)
+        canId = make_bytes(can_id.hex)
+
 
         byte0 = bitstring.BitArray(1)
         echo = bitstring.BitArray(1)
@@ -154,10 +165,11 @@ class DaliProvider:
         byte1[5]=resp
 
         byte2=bitstring.BitArray(8)
-        byte2[7-self.dev['channal']]
+        byte2[7-self.dev['channel']]=True
 
-        dCommand = can_id.hex + byte0.hex
-        mbCommand = 'E203010001' + data
+        dCommand = canId[2:] + canId[:2] + byte0.hex + byte1.hex + byte2.hex
+        # mbCommand = 'E203010001' + data
+        mbCommand = dCommand + data
         opCode = '07'
         pLen = bytearray(3)
         pLen[0] = int(len(mbCommand) / 2)

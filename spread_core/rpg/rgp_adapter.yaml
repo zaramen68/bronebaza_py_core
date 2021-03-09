@@ -28,7 +28,7 @@ MODBUS_DEV: [
 
 DALI_DEV: [
       {
-      "channal": 0,
+      "channel": 0,
       "bus": 1,
       "dadr": 4,
       "attributes": {
@@ -43,7 +43,7 @@ DALI_DEV: [
       },
 
       {
-      "channal": 0,
+      "channel": 0,
       "bus": 1,
       "dadr": 2,
       "attributes": {
@@ -58,7 +58,7 @@ DALI_DEV: [
       },
 
       {
-      "channal": 0,
+      "channel": 0,
       "bus": 1,
       "dadr": 5,
       "attributes": {
@@ -73,7 +73,7 @@ DALI_DEV: [
       },
 
       {
-      "channal": 0,
+      "channel": 0,
       "bus": 1,
       "dadr": 1,
       "attributes": {
@@ -88,7 +88,7 @@ DALI_DEV: [
       },
 
       {
-      "channal": 0,
+      "channel": 0,
       "bus": 1,
       "dadr": 7,
       "attributes": {
@@ -100,7 +100,7 @@ DALI_DEV: [
       },
 
       {
-      "channal": 0,
+      "channel": 0,
       "bus": 1,
       "dadr": 8,
       "attributes": {
@@ -112,7 +112,7 @@ DALI_DEV: [
       },
 
       {
-      "channal": 0,
+      "channel": 0,
       "bus": 1,
       "dadr": 9,
       "attributes": {
@@ -124,7 +124,7 @@ DALI_DEV: [
       },
 
       {
-      "channal": 0,
+      "channel": 0,
       "bus": 1,
       "dadr": 6,
       "attributes": {
@@ -136,7 +136,7 @@ DALI_DEV: [
       },
 
       {
-      "channal": 0,
+      "channel": 0,
       "bus": 1,
       "dadr": 3,
       "attributes": {
