@@ -53,7 +53,7 @@ is_lock=False
 current_milli_time = lambda: int(round(time.time() * 1000))
 
 def isONID(x):
-    if x == 'SwitchingLightLight':
+    if x == 'SwitchingLight':
         return 2
     elif x == 'DimmingLight':
         return 3
