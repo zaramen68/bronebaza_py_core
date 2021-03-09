@@ -146,10 +146,10 @@ class DaliProvider:
         self.answerIs=False
         return self._callDTime
 
-    def dumpMqtt(self, data=None, fl=None):
+    def dumpMqtt(self, data=None, fl=None, flInvalid = False):
         if data == None:
             data = self.state
-        out = VariableTRS3(None, self.dev['id'], 0, data)
+        out = VariableTRS3(None, self.dev['id'], 0, data, invalid=(not self.isValid))
         if fl == None:
             clientTopic = self._stateTopicLevel
         elif fl == 1:
@@ -444,7 +444,7 @@ class RGPTCPAdapterLauncher:
             else:                                           # no answer
                 prov.state = None
                 prov.isValid = False
-                prov.dumpMqtt(data=False, fl=1)
+                prov.dumpMqtt(data=False, fl=1, flInvalid=True)
 
             if prov.isValid == True and prov.dev['type'] == 'DimmingLight':
                 # query level
@@ -474,18 +474,11 @@ class RGPTCPAdapterLauncher:
                         break
                 if prov.answerIs and self.daliAnswer != 0:
                     # success
-
-
                     prov.dumpMqtt(data=int(prov.state, 16))
-
-
-
-
                 else:  # no answer
                     prov.state = None
                     prov.isValid = False
-
-                    prov.dumpMqtt(data=prov.state, fl=1)
+                    prov.dumpMqtt(data=prov.state, fl=1, flInvalid=True)
 
             #  query groups
             dd = QUERY_GROU_07
