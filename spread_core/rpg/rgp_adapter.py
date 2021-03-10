@@ -119,7 +119,8 @@ def Byte0(clss, cmd=False):
         cls = cls_[(cls_.length - 5):]
     byte0.append(echo)
     byte0.append(reserve)
-    return byte0.append(cls)
+    byte0.append(cls)
+    return byte0
 
 class ModBusProvider:
     def __init__(self, rpgClient, mqtt, *args):
