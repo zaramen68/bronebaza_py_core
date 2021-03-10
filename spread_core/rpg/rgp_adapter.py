@@ -177,7 +177,7 @@ class ModBusProvider:
         self.answerIs=False
         return self._callDTime
 
-    def callModBus(self, data, part=False):
+    def callModBus(self, data = None, part=False):
         self._call = data
 
         # addr_from = bitstring.BitArray(hex(31))[3:]
@@ -211,6 +211,13 @@ class ModBusProvider:
         byte1_ = bitstring.BitArray(hex(self.dev['dev']['channel']))[:2]
         byte1.append(byte1_)
 
+        data_id = make_two_bit(hex(self.dev['dev']['maddr']).split('x')[1])
+        data_command = make_two_bit(self.dev['attrib']['command'].split('x')[1])
+        data_reg = make_bytes(hex(self.dev['attrib']['reg']).split('x')[1])
+        data_nreg = make_bytes(hex(self.dev['attrib']['nreg']).split('x')[1])
+
+        if data is None:
+            data = data_id + data_command + data_reg[2:] + data_reg[:2] + data_nreg[2:] + data_nreg[:2]
 
         dCommand = canId[2:] + canId[:2] + byte0.hex + byte1.hex
         # mbCommand = 'E203010001' + data
