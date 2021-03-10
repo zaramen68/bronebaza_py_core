@@ -120,6 +120,7 @@ def Byte0(clss, cmd=False):
     byte0.append(echo)
     byte0.append(reserve)
     byte0.append(cls)
+
     return byte0
 
 class ModBusProvider:
@@ -127,7 +128,7 @@ class ModBusProvider:
         self._socket = rpgClient
         self.dev = args[0]
         self._mqtt = mqtt
-        self._callDTime = 0
+        self._callMTime = 0
         self.state = None
         self.isValid = None
         self.oneByteAnswer = None
@@ -148,63 +149,24 @@ class ModBusProvider:
 
     @property
     def getCallTime(self):
-        return self._callDTime
+        return self._callMTime
 
     def getAnswer(self, data):
-        print('dali answer is {}'.format(str(data)))
+        print('modbus answer is {}'.format(str(data)))
         self.answerIs = True
         pass
 
     def askLevel(self):
         pass
 
-    def askGroup(self):
-        pass
 
     def setLevel(self, data):
-        # set level on dali device
-        self._call = data
-        mbCommand = 'E203010001' + data
-        opCode = '07'
-        pLen = bytearray(3)
-        pLen[0] = int(len(mbCommand) / 2)
-        pL = opCode + make_two_bit(hex(pLen[0]).split('x')[1]) + \
-             make_two_bit(hex(pLen[1]).split('x')[1]) + make_two_bit(hex(pLen[2]).split('x')[1]) + \
-             mbCommand
-        size = len(pL)
-        data = bytes.fromhex(pL)
-        self._callDTime = current_milli_time()
-        self._socket.send_message(data, size)
-        self.answerIs=False
-        return self._callDTime
+        pass
 
     def callModBus(self, data = None, part=False):
+
         self._call = data
-
-        # addr_from = bitstring.BitArray(hex(31))[3:]
-        # addr_to_ = bitstring.BitArray(hex(self.dev['bus']))
-        # addr_to = bitstring.BitArray(5-addr_to_.length)
-        # addr_to.append(addr_to_)
-        # addr_from.append(addr_to)
-        # can_id = bitstring.BitArray(12-addr_from.length)
-        # can_id.append(addr_from)
-        # canId = make_bytes(can_id.hex)
-
         canId = CanId(31, self.dev['dev']['bus'])
-
-        # byte0 = bitstring.BitArray(1)
-        # echo = bitstring.BitArray(1)
-        # reserve = bitstring.BitArray(1)
-        # cls_ = bitstring.BitArray(hex(2))
-        # if cls_.length < 5:
-        #     cls=bitstring.BitArray(5-cls_.length)
-        #     cls.append(cls_)
-        # elif cls_.length >= 5:
-        #     cls = cls_[(cls_.length-5):]
-        # byte0.append(echo)
-        # byte0.append(reserve)
-        # byte0.append(cls)
-
         byte0 = Byte0(2)
 
         byte1 = bitstring.BitArray(6)
@@ -231,10 +193,10 @@ class ModBusProvider:
              mbCommand
         size = len(pL)
         dd = bytes.fromhex(pL)
-        self._callDTime = current_milli_time()
+
         self._socket.send_message(dd, size)
         self.answerIs=False
-        return self._callDTime
+        self._callMTime = current_milli_time()
 
     def dumpMqtt(self, data=None):
         if data == None:
@@ -861,8 +823,22 @@ class RGPTCPAdapterLauncher:
             if n == 2:
                 #  ModBus
                 modBus = data['data']
+                bbyte1 = bitstring.BitArray(hex(data['data'][0]))
+                byte1 = bitstring.BitArray(8 - bbyte1.len)
+                byte1.append(bbyte1)
+                if byte1[4] is not True:   #   CMD or not CMD
+                    if byte1[5] is not True:  #   PART or not PART
+                        mbchann_ = byte1[2:]
+                        mbchann = mbchann_.uint
+                        maddr = int(modBus[1], 16)
+                        fcode = modBus[2]
+                        nbite = int(modBus[3], 16)
+                        modBusData = modBus[3:(3+nbite)]
+                        print(':::modbus byte1 = {0} chann={1} id={2} fcode={3} nbite={4} data = {5}'.format(byte1.bin, mbchann_.bin, maddr, \
+                                                                                       fcode.bin, nbite, str(modBusData)))
                 self.mqttc.publish(topic= topic_dump[2], payload=str(modBus), qos=1, retain=True)
-                print('::::::::::::::::::::: modbus = {0}'.format(str(data['data'])))
+                print('===========mbus======={}'.format(str(modBus)))
+
             elif n==1:
                 #  Dali
                 if (current_milli_time()-self.callDaliTime)<= DALI_GAP:
@@ -1030,6 +1006,12 @@ class RGPTCPAdapterLauncher:
         out = VariableTRS3(None, topId, num, value)
         self.mqttc.publish(topic=topic_dump.format(PROJECT, str(topId), str(num)), payload=out.pack())
         logging.debug('[  <-]: {}'.format(out))
+
+    def modbusQuery(self):
+        while True:
+            for prov in self.modbusProviders:
+                if (current_milli_time() - prov.getCallTime)>= prov.time_gap:
+                    prov.callModBus()
 
     def askTempr(self):
         device = self.sock

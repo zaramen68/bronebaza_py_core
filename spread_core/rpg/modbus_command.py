@@ -174,17 +174,18 @@ class RGPTCPAdapterLauncher:
 
     def modbusSendCommand(self):
 
-        channel = 0
+        opCode = '07'
+        channel = 1
         bus=1
-        maddr = 16
+        maddr = 1
         command = '0x03'
-        reg = 258
+        reg = 6
         nreg =1
         canId = CanId(31, bus)
 
 
         part = False
-        byte0 = Byte0(2)
+        byte0 = Byte0(clss=2, cmd=True)
 
         byte1 = bitstring.BitArray(6)
         byte1[5] = part
@@ -202,7 +203,11 @@ class RGPTCPAdapterLauncher:
         dCommand = canId[2:] + canId[:2] + byte0.hex + byte1.hex
 
         mbCommand = dCommand + data
-        opCode = '07'
+
+
+        # mbCommand = canId[2:] + canId[:2] + byte0.hex + '04'+ '01'+ '03'+'00'+'00'
+        # mbCommand = canId[2:] + canId[:2] + byte0.hex + '42'+'01'
+
         pLen = bytearray(3)
         pLen[0] = int(len(mbCommand) / 2)
         pL = opCode + make_two_bit(hex(pLen[0]).split('x')[1]) + \

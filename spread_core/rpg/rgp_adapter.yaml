@@ -11,7 +11,7 @@ TOPIC_DUMP: ['Rapida/0/Can/Bus/Dump', 'Rapida/0/Dali/Bus/Dump', 'Rapida/0/Modbus
 MODBUS_DEV: [
       {
         'type': 'thermometer',
-        't_gap': 1000,
+        't_gap': 8000,
         'dev':
         {
           'channel': 0,
@@ -23,6 +23,26 @@ MODBUS_DEV: [
         },
         'attrib': {
         'reg': 258,
+        'nreg': 1,
+        'command': '0x03',
+
+        }
+
+      },
+        {
+        'type': 'CO',
+        't_gap': 8000,
+        'dev':
+        {
+          'channel': 1,
+          'bus': 1,
+          'maddr': 1,
+          'type': 'COSensor',
+          'value': None,
+          'id': 635559,
+        },
+        'attrib': {
+        'reg': 6,
         'nreg': 1,
         'command': '0x03',
 
