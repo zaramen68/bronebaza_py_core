@@ -83,10 +83,48 @@ def make_bytes(x):
         i=i-1
     return ''.join(bytes_list)
 
+def CanId(addrFrom, addrTo):
+    addr_from_ = bitstring.BitArray(hex(addrFrom))
+    addr_to_ = bitstring.BitArray(hex(addrTo))
+    if addr_from_.length < 5:
+        addr_from = bitstring.BitArray(5-addr_from_.length)
+        addr_from.append(addr_from_)
+    elif addr_from_.length >= 5:
+        addr_from = addr_from_[(addr_from_.length-5):]
+
+    if addr_to_.length < 5:
+        addr_to = bitstring.BitArray(5 - addr_to_.length)
+        addr_to.append(addr_to_)
+    elif addr_to_.length >= 5:
+        addr_to = addr_to_[(addr_to_.length - 5):]
+
+    addr_from.append(addr_to)
+    can_id = bitstring.BitArray(12 - addr_from.length)
+    can_id.append(addr_from)
+
+    return make_bytes(can_id.hex)
+
+def Byte0(clss, cmd=False):
+
+    byte0 = bitstring.BitArray(1)
+    byte0[0]=cmd
+
+    echo = bitstring.BitArray(1)
+    reserve = bitstring.BitArray(1)
+    cls_ = bitstring.BitArray(hex(clss))
+    if cls_.length < 5:
+        cls = bitstring.BitArray(5 - cls_.length)
+        cls.append(cls_)
+    elif cls_.length >= 5:
+        cls = cls_[(cls_.length - 5):]
+    byte0.append(echo)
+    byte0.append(reserve)
+    return byte0.append(cls)
+
 class ModBusProvider:
     def __init__(self, rpgClient, mqtt, *args):
         self._socket = rpgClient
-        self.dev = args[0]['dev']
+        self.dev = args[0]
         self._mqtt = mqtt
         self._callDTime = 0
         self.state = None
@@ -139,35 +177,42 @@ class ModBusProvider:
         self.answerIs=False
         return self._callDTime
 
-    def callModBus(self, data, resp=False):
+    def callModBus(self, data, part=False):
         self._call = data
 
-        addr_from = bitstring.BitArray(hex(31))[3:]
-        addr_to_ = bitstring.BitArray(hex(self.dev['bus']))
-        addr_to = bitstring.BitArray(5-addr_to_.length)
-        addr_to.append(addr_to_)
-        addr_from.append(addr_to)
-        can_id = bitstring.BitArray(12-addr_from.length)
-        can_id.append(addr_from)
-        canId = make_bytes(can_id.hex)
+        # addr_from = bitstring.BitArray(hex(31))[3:]
+        # addr_to_ = bitstring.BitArray(hex(self.dev['bus']))
+        # addr_to = bitstring.BitArray(5-addr_to_.length)
+        # addr_to.append(addr_to_)
+        # addr_from.append(addr_to)
+        # can_id = bitstring.BitArray(12-addr_from.length)
+        # can_id.append(addr_from)
+        # canId = make_bytes(can_id.hex)
+
+        canId = CanId(31, self.dev['dev']['bus'])
+
+        # byte0 = bitstring.BitArray(1)
+        # echo = bitstring.BitArray(1)
+        # reserve = bitstring.BitArray(1)
+        # cls_ = bitstring.BitArray(hex(2))
+        # if cls_.length < 5:
+        #     cls=bitstring.BitArray(5-cls_.length)
+        #     cls.append(cls_)
+        # elif cls_.length >= 5:
+        #     cls = cls_[(cls_.length-5):]
+        # byte0.append(echo)
+        # byte0.append(reserve)
+        # byte0.append(cls)
+
+        byte0 = Byte0(2)
+
+        byte1 = bitstring.BitArray(6)
+        byte1[5]=part
+        byte1_ = bitstring.BitArray(hex(self.dev['dev']['channel']))[:2]
+        byte1.append(byte1_)
 
 
-        byte0 = bitstring.BitArray(1)
-        echo = bitstring.BitArray(1)
-        reserve = bitstring.BitArray(1)
-        cls = bitstring.BitArray(5)
-        cls[4]=True
-        byte0.append(echo)
-        byte0.append(reserve)
-        byte0.append(cls)
-
-        byte1 = bitstring.BitArray(8)
-        byte1[5]=resp
-
-        byte2=bitstring.BitArray(8)
-        byte2[7-self.dev['channel']]=True
-
-        dCommand = canId[2:] + canId[:2] + byte0.hex + byte1.hex + byte2.hex
+        dCommand = canId[2:] + canId[:2] + byte0.hex + byte1.hex
         # mbCommand = 'E203010001' + data
         mbCommand = dCommand + data
         opCode = '07'
@@ -413,6 +458,10 @@ class RGPTCPAdapterLauncher:
         for prov in DALI_DEV:
             daliDev = DaliProvider(self.sock, self.mqttc, prov)
             self.daliProviders.append(daliDev)
+
+        for prov in MODBUS_DEV:
+            modbusDev = ModBusProvider(self.sock, self.mqttc, prov)
+            self.modbusProviders.append(modbusDev)
 
         for prov in self.daliProviders:
             for index, val in prov.dev['FunctionUnitIndex'].items():
