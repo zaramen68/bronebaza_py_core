@@ -83,6 +83,116 @@ def make_bytes(x):
         i=i-1
     return ''.join(bytes_list)
 
+class ModBusProvider:
+    def __init__(self, rpgClient, mqtt, *args):
+        self._socket = rpgClient
+        self.dev = args[0]['dev']
+        self._mqtt = mqtt
+        self._callDTime = 0
+        self.state = None
+        self.isValid = None
+        self.oneByteAnswer = None
+        self.twoByteAnswer = None
+        self.typeOfQuery = None # 0 - no answer, 1 - need answer
+        self.bus = args[0]['dev']['bus']
+        self.time_gap = args[0]['t_gap']
+        self._call = None
+        self.answerIs = False
+        self.madr = args[0]['dev']['madr']
+        self.reg = args[0]['attrib']['reg']
+        self._stateTopicLevel = 'Tros3/State/{}/Equipment/{}/{}/0'.format(PROJECT, args[0]['dev']['type'], args[0]['dev']['id'])
+        self.answer = None
+
+
+    def setValue(self, val):
+        self.state = val
+
+    @property
+    def getCallTime(self):
+        return self._callDTime
+
+    def getAnswer(self, data):
+        print('dali answer is {}'.format(str(data)))
+        self.answerIs = True
+        pass
+
+    def askLevel(self):
+        pass
+
+    def askGroup(self):
+        pass
+
+    def setLevel(self, data):
+        # set level on dali device
+        self._call = data
+        mbCommand = 'E203010001' + data
+        opCode = '07'
+        pLen = bytearray(3)
+        pLen[0] = int(len(mbCommand) / 2)
+        pL = opCode + make_two_bit(hex(pLen[0]).split('x')[1]) + \
+             make_two_bit(hex(pLen[1]).split('x')[1]) + make_two_bit(hex(pLen[2]).split('x')[1]) + \
+             mbCommand
+        size = len(pL)
+        data = bytes.fromhex(pL)
+        self._callDTime = current_milli_time()
+        self._socket.send_message(data, size)
+        self.answerIs=False
+        return self._callDTime
+
+    def callModBus(self, data, resp=False):
+        self._call = data
+
+        addr_from = bitstring.BitArray(hex(31))[3:]
+        addr_to_ = bitstring.BitArray(hex(self.dev['bus']))
+        addr_to = bitstring.BitArray(5-addr_to_.length)
+        addr_to.append(addr_to_)
+        addr_from.append(addr_to)
+        can_id = bitstring.BitArray(12-addr_from.length)
+        can_id.append(addr_from)
+        canId = make_bytes(can_id.hex)
+
+
+        byte0 = bitstring.BitArray(1)
+        echo = bitstring.BitArray(1)
+        reserve = bitstring.BitArray(1)
+        cls = bitstring.BitArray(5)
+        cls[4]=True
+        byte0.append(echo)
+        byte0.append(reserve)
+        byte0.append(cls)
+
+        byte1 = bitstring.BitArray(8)
+        byte1[5]=resp
+
+        byte2=bitstring.BitArray(8)
+        byte2[7-self.dev['channel']]=True
+
+        dCommand = canId[2:] + canId[:2] + byte0.hex + byte1.hex + byte2.hex
+        # mbCommand = 'E203010001' + data
+        mbCommand = dCommand + data
+        opCode = '07'
+        pLen = bytearray(3)
+        pLen[0] = int(len(mbCommand) / 2)
+        pL = opCode + make_two_bit(hex(pLen[0]).split('x')[1]) + \
+             make_two_bit(hex(pLen[1]).split('x')[1]) + make_two_bit(hex(pLen[2]).split('x')[1]) + \
+             mbCommand
+        size = len(pL)
+        dd = bytes.fromhex(pL)
+        self._callDTime = current_milli_time()
+        self._socket.send_message(dd, size)
+        self.answerIs=False
+        return self._callDTime
+
+    def dumpMqtt(self, data=None):
+        if data == None:
+            data = self.state
+        out = VariableTRS3(None, self.dev['id'], 0, data, invalid=(not self.isValid))
+
+        clientTopic = self._stateTopicLevel
+
+        self._mqtt.publish(topic=clientTopic, payload=out.pack(), qos=1, retain=True)
+
+
 class DaliProvider:
     def __init__(self, rpgClient, mqtt, *args):
         self._socket = rpgClient

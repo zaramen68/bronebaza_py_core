@@ -12,17 +12,22 @@ MODBUS_DEV: [
       {
         'type': 'thermometer',
         't_gap': 1000,
-        'dev': [
+        'dev':
         {
           'channel': 0,
-          'module_addr': 1,
-          'type': 'moxa_temp',
-          'di': 16,
+          'bus': 1,
+          'maddr': 16,
+          'type': 'TemperatureSensor',
           'value': None,
-          'topicId': 635558,
-
+          'id': 635558,
         },
-        ]
+        'attrib': {
+        'reg': 258,
+        'nreg': 2,
+        'command': '0x03',
+
+        }
+
       },
 ]
 
