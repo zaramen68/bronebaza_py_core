@@ -178,7 +178,7 @@ class RGPTCPAdapterLauncher:
         bus=1
         maddr = 16
         command = '0x03'
-        reg = 513
+        reg = 258
         nreg =1
         canId = CanId(31, bus)
 
@@ -197,7 +197,7 @@ class RGPTCPAdapterLauncher:
         data_nreg = make_bytes(hex(nreg).split('x')[1])
 
 
-        data = data_id + data_command + data_reg[2:] + data_reg[:2] + data_nreg
+        data = data_id + data_command + data_reg + data_nreg
 
         dCommand = canId[2:] + canId[:2] + byte0.hex + byte1.hex
 

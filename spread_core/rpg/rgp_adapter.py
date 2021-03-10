@@ -218,7 +218,7 @@ class ModBusProvider:
         data_nreg = make_bytes(hex(self.dev['attrib']['nreg']).split('x')[1])
 
         if data is None:
-            data = data_id + data_command + data_reg[2:] + data_reg[:2] + data_nreg[2:] + data_nreg[:2]
+            data = data_id + data_command + data_reg + data_nreg
 
         dCommand = canId[2:] + canId[:2] + byte0.hex + byte1.hex
         # mbCommand = 'E203010001' + data
