@@ -138,7 +138,7 @@ class ModBusProvider:
         self.time_gap = args[0]['t_gap']
         self._call = None
         self.answerIs = False
-        self.madr = args[0]['dev']['madr']
+        self.maddr = args[0]['dev']['maddr']
         self.reg = args[0]['attrib']['reg']
         self._stateTopicLevel = 'Tros3/State/{}/Equipment/{}/{}/0'.format(PROJECT, args[0]['dev']['type'], args[0]['dev']['id'])
         self.answer = None
@@ -447,15 +447,16 @@ class RGPTCPAdapterLauncher:
         # self.rpg_listen_fun()
         listen = threading.Thread(target=self.listen_rpg)
         listen1 = threading.Thread(target=self.listen_rpg1)
-        listen2 = threading.Thread(target=self.askTempr)
+        listen2 = threading.Thread(target=self.modbusQuery)
 
 
 
         listen.start()
         listen1.start()
 
-        # listen2.start()
         self.start_dali()
+
+        listen2.start()
         self.mqttc.loop_forever()
 
         # self.test_dali_num()
