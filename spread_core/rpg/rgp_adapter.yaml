@@ -22,7 +22,7 @@ MODBUS_DEV: [
           'id': 635558,
         },
         'attrib': {
-        'reg': 258,
+        'reg': 513,
         'nreg': 1,
         'command': '0x03',
 
