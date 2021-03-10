@@ -831,12 +831,12 @@ class RGPTCPAdapterLauncher:
                     if byte1[5] is not True:  #   PART or not PART
                         mbchann_ = byte1[2:]
                         mbchann = mbchann_.uint
-                        maddr = int(modBus[1], 16)
-                        fcode = modBus[2]
-                        nbite = int(modBus[3], 16)
+                        maddr = modBus[1]
+                        fcode = hex(modBus[2])
+                        nbite = modBus[3]
                         modBusData = modBus[3:(3+nbite)]
                         print(':::modbus byte1 = {0} chann={1} id={2} fcode={3} nbite={4} data = {5}'.format(byte1.bin, mbchann_.bin, maddr, \
-                                                                                       fcode.bin, nbite, str(modBusData)))
+                                                                                       str(fcode), nbite, str(modBusData)))
                 self.mqttc.publish(topic= topic_dump[2], payload=str(modBus), qos=1, retain=True)
                 print('===========mbus======={}'.format(str(modBus)))
 
