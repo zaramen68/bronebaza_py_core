@@ -158,6 +158,7 @@ class ModBusProvider:
         if self.lastState is None:
             self.lastState = val
             self.lastStateInt = self.stateInt
+            self.dumpMqtt()
 
     @property
     def getCallTime(self):
@@ -217,7 +218,7 @@ class ModBusProvider:
     def dumpMqtt(self, data=None):
         if data == None:
             data = self.stateInt
-        out = VariableTRS3(None, self.dev['id'], 0, data, invalid=(not self.isValid))
+        out = VariableTRS3(None, self.dev['dev']['id'], 0, data, invalid=(not self.isValid))
 
         clientTopic = self._stateTopicLevel
 
@@ -253,9 +254,9 @@ class DaliProvider:
         return self._callDTime
 
     def getAnswer(self, data):
-        print('dali answer is {}'.format(str(data)))
+        print('dali answer is {}'.format(data))
         self.answerIs = True
-        pass
+
 
     def askLevel(self):
         pass
@@ -326,7 +327,9 @@ class DaliProvider:
 
     def dumpMqtt(self, data=None, fl=None, flInvalid = False):
         if data == None:
-            data = self.state
+            data_ = self.state
+            data = data.int
+
         out = VariableTRS3(None, self.dev['id'], 0, data, invalid=(not self.isValid))
         if fl == None:
             clientTopic = self._stateTopicLevel
@@ -617,12 +620,9 @@ class RGPTCPAdapterLauncher:
                     print('answerIs = True')
                     break
             if prov.answerIs and self.daliAnswer != 0:     # success
-                state = bitstring.BitArray(hex(int(prov.state, 16)))
-
-
-                prov.dumpMqtt(data=state[1], fl=1)
-
-
+                # state = bitstring.BitArray(hex(int(prov.state, 16)))
+                state=prov.state
+                prov.dumpMqtt(data=state[5], fl=1)
 
             else:                                           # no answer
                 prov.state = None
@@ -657,7 +657,8 @@ class RGPTCPAdapterLauncher:
                         break
                 if prov.answerIs and self.daliAnswer != 0:
                     # success
-                    prov.dumpMqtt(data=int(prov.state, 16))
+                    # prov.dumpMqtt(data=prov.state)
+                    prov.dumpMqtt()
                 else:  # no answer
                     prov.state = None
                     prov.isValid = False
@@ -880,16 +881,17 @@ class RGPTCPAdapterLauncher:
 
                         if fl == 0:
                             # 8 bit anser
-                            daliData =data['data'][1]
+                            daliData =bitstring.BitArray(hex(data['data'][1]))
 
-                            print('dali 1 byte answer {}'.format(str(daliData)))
+                            print('dali 1 byte answer {}'.format(daliData.bin))
 
                             if (self.callDaliProvider.typeOfQuery == 1) and \
                                     (self.callDaliProvider.oneByteAnswer is None) and \
                                     (self.callDaliProvider.twoByteAnswer is not None):
                                 self.callDaliProvider.oneByteAnswer = daliData
                                 self.callDaliProvider.getAnswer(daliData)
-                                dataDali = str(daliData)[:2]
+                                dataDali = bitstring.BitArray(8-daliData.length)
+                                dataDali.append(daliData)
                                 self.callDaliProvider.setValue(dataDali)
                                 # self.callDaliProvider.dumpMqtt(dataDali)
                                 self.daliAnswer = 1
