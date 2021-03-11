@@ -130,11 +130,15 @@ class ModBusProvider:
         self._mqtt = mqtt
         self._callMTime = 0
         self.state = None
+        self.stateInt = 0
+        self.lastState = None
+        self.lastStateInt = 0
         self.isValid = None
         self.oneByteAnswer = None
         self.twoByteAnswer = None
         self.typeOfQuery = None # 0 - no answer, 1 - need answer
         self.bus = args[0]['dev']['bus']
+        self.channel = args[0]['dev']['channel']
         self.time_gap = args[0]['t_gap']
         self._call = None
         self.answerIs = False
@@ -145,7 +149,15 @@ class ModBusProvider:
 
 
     def setValue(self, val):
+        self.isValid=True
+        b_=''
         self.state = val
+        for b in val:
+            b_=b_+hex(b).split('x')[1]
+        self.stateInt = int(b_, 16)
+        if self.lastState is None:
+            self.lastState = val
+            self.lastStateInt = self.stateInt
 
     @property
     def getCallTime(self):
@@ -160,8 +172,12 @@ class ModBusProvider:
         pass
 
 
-    def setLevel(self, data):
-        pass
+    def work(self):
+        if abs(self.stateInt-self.lastStateInt)/self.stateInt*100. >= self.dev['pres']:
+            self.lastState = self.state
+            self.lastStateInt = self.stateInt
+            self.dumpMqtt()
+
 
     def callModBus(self, data = None, part=False):
 
@@ -200,7 +216,7 @@ class ModBusProvider:
 
     def dumpMqtt(self, data=None):
         if data == None:
-            data = self.state
+            data = self.stateInt
         out = VariableTRS3(None, self.dev['id'], 0, data, invalid=(not self.isValid))
 
         clientTopic = self._stateTopicLevel
@@ -829,15 +845,22 @@ class RGPTCPAdapterLauncher:
                 byte1.append(bbyte1)
                 if byte1[4] is not True:   #   CMD or not CMD
                     if byte1[5] is not True:  #   PART or not PART
-                        mbchann_ = byte1[2:]
+                        mbchann_ = byte1[-2:]
                         mbchann = mbchann_.uint
                         maddr = modBus[1]
                         fcode = hex(modBus[2])
                         nbite = modBus[3]
-                        modBusData = modBus[3:(3+nbite)]
+                        modBusData = modBus[4:(4+nbite)]
                         print(':::modbus byte1 = {0} chann={1} id={2} fcode={3} nbite={4} data = {5}'.format(byte1.bin, mbchann_.bin, maddr, \
                                                                                        str(fcode), nbite, str(modBusData)))
-                self.mqttc.publish(topic= topic_dump[2], payload=str(modBus), qos=1, retain=True)
+                        for dev in self.modbusProviders:
+                            if dev.channel == mbchann and dev.maddr == maddr:
+                                dev.setValue(modBusData)
+                                dev.getAnswer(modBusData)
+                                dev.work()
+
+                                pass
+                # self.mqttc.publish(topic= topic_dump[2], payload=str(modBus), qos=1, retain=True)
                 print('===========mbus======={}'.format(str(modBus)))
 
             elif n==1:
