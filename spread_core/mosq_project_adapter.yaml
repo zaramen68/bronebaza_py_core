@@ -1,0 +1,3 @@
+include: ['/home/awada/bronebaza/bronebaza_py_core/spread_core/broker.yaml']
+CTP_PATH: '/home/awada/bronebaza/bronebaza_py_core/spread_core/throne-project.ctp'
+DUMP: false

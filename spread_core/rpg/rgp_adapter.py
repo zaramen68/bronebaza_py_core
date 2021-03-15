@@ -63,7 +63,7 @@ def isONID(x):
     if x == 'SwitchingLight':
         return 2
     elif x == 'DimmingLight':
-        return 3
+        return 2
 
 def make_two_bit(x):
     bytes_list =list('00')
@@ -222,7 +222,7 @@ class ModBusProvider:
 
         clientTopic = self._stateTopicLevel
 
-        self._mqtt.publish(topic=clientTopic, payload=out.pack(), qos=1, retain=True)
+        self._mqtt.publish(topic=clientTopic, payload=out.pack(), qos=0, retain=True)
 
 
 class DaliProvider:
@@ -326,16 +326,19 @@ class DaliProvider:
         return self._callDTime
 
     def dumpMqtt(self, data=None, fl=None, flInvalid = False):
-        if data == None:
+        if data == None and self.state is not None:
             data_ = self.state
-            data = data.int
+            data = data_.int
 
-        out = VariableTRS3(None, self.dev['id'], 0, data, invalid=(not self.isValid))
+        # out = VariableTRS3(None, self.dev['id'], 0, data, invalid=(not self.isValid))
+        # if self.isValid == False:
+        #     data = None
+        out = VariableTRS3(None, self.dev['id'], 0, data)
         if fl == None:
             clientTopic = self._stateTopicLevel
         elif fl == 1:
             clientTopic = self._stateTopicIsOn
-        self._mqtt.publish(topic=clientTopic, payload=out.pack(), qos=1, retain=True)
+        self._mqtt.publish(topic=clientTopic, payload=out.pack(), qos=0, retain=True)
 
 class RGPTcpSocket:
 
@@ -627,7 +630,7 @@ class RGPTCPAdapterLauncher:
             else:                                           # no answer
                 prov.state = None
                 prov.isValid = False
-                prov.dumpMqtt(data=False, fl=1, flInvalid=True)
+                prov.dumpMqtt(data=None, fl=1, flInvalid=True)
 
             if prov.isValid == True and prov.dev['type'] == 'DimmingLight':
                 # query level
