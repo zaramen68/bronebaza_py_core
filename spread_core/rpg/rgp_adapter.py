@@ -550,9 +550,36 @@ class RGPTCPAdapterLauncher:
                             elif int(topic[4]) == 5:
                                 # isOn command
                                 pass
-                            elif int(topic[4]) == 6:
-                                # isOff command
-                                pass
+                            elif int(topic[4]) == 6:  # isOff
+
+                                dd_ = VariableTRS3(VariableReader(msg.payload))['value']
+                                if dd_ is True:
+                                    dd = 0
+                                    devaddr = bitstring.BitArray(hex(prov.dadr))
+                                    daddr = bitstring.BitArray(6 - devaddr.length)
+                                    daddr.append(devaddr)
+                                    addrbyte = bitstring.BitArray(bin(0))
+                                    addrbyte.append(daddr)
+                                    addrbyte.append(bitstring.BitArray(bin(0)))
+                                    dd = addrbyte.hex + make_two_bit(hex(dd).split('x')[1])
+                                    prov.answerIs = False
+                                    prov.typeOfQuery = 0  # 8 bit answer is needed
+                                    prov.twoByteAnswer = None
+                                    prov.oneByteAnswer = None
+                                    self.isDaliQueried = True
+                                    self.callDaliTime = prov.callDali(dd)
+                                    self.callDaliProvider = prov
+                                    while (prov.getCallTime != 0) and (current_milli_time()-prov.getCallTime < 100):
+                                        if prov.answerIs:
+                                            break
+                                    if prov.answerIs:
+                                        # success
+                                        pass
+                                    else:
+                                        # no answer
+                                        pass
+                                else:
+                                    pass
                         elif prov.dev['type'] == 'SwitchingLigh':
                             dd = VariableTRS3(VariableReader(msg.payload))['value']
                             if int(topic[4]) == 3:
