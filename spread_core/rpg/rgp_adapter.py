@@ -519,9 +519,9 @@ class RGPTCPAdapterLauncher:
                 # data=bytes.fromhex(pL)
                 # self.sock.send_message(data, size)
                 for prov in self.daliProviders:
-                    if prov.dev['id'] == topic[3]:
+                    if prov.dev['id'] == int(topic[3]):
                         if prov.dev['type'] == 'DimmingLight':
-                            if topic[4] == 7:
+                            if int(topic[4]) == 7:
                                 # set level command
                                 dd = VariableTRS3(VariableReader(msg.payload))['value']
                                 devaddr = bitstring.BitArray(hex(prov.dadr))
@@ -547,20 +547,20 @@ class RGPTCPAdapterLauncher:
                                 else:
                                     # no answer
                                     pass
-                            elif topic[4] == 5:
+                            elif int(topic[4]) == 5:
                                 # isOn command
                                 pass
-                            elif topic[4] == 6:
+                            elif int(topic[4]) == 6:
                                 # isOff command
                                 pass
                         elif prov.dev['type'] == 'SwitchingLigh':
                             dd = VariableTRS3(VariableReader(msg.payload))['value']
-                            if topic[4] == 3:
+                            if int(topic[4]) == 3:
                                 # set isOn command
 
                                 if dd == True:
                                     dd='FE'
-                            elif topic[4] == 4:
+                            elif int(topic[4]) == 4:
                                 if dd == True:
                                     dd='00'
                             devaddr = bitstring.BitArray(hex(prov.dadr))
