@@ -325,15 +325,15 @@ class DaliProvider:
         self.answerIs=False
         return self._callDTime
 
-    def dumpMqtt(self, data=None, fl=None, flInvalid = False):
+    def dumpMqtt(self, data=None, fl=None, comm = 0, flInvalid = False):
         if data == None and self.state is not None:
             data_ = self.state
-            data = data_.int
+            data = data_.uint
 
         # out = VariableTRS3(None, self.dev['id'], 0, data, invalid=(not self.isValid))
         # if self.isValid == False:
         #     data = None
-        out = VariableTRS3(None, self.dev['id'], 0, data)
+        out = VariableTRS3(None, self.dev['id'], comm, data)
         if fl == None:
             clientTopic = self._stateTopicLevel
         elif fl == 1:
@@ -625,12 +625,12 @@ class RGPTCPAdapterLauncher:
             if prov.answerIs and self.daliAnswer != 0:     # success
                 # state = bitstring.BitArray(hex(int(prov.state, 16)))
                 state=prov.state
-                prov.dumpMqtt(data=state[5], fl=1)
+                prov.dumpMqtt(data=state[5], fl=1, comm = 2)
 
             else:                                           # no answer
                 prov.state = None
                 prov.isValid = False
-                prov.dumpMqtt(data=None, fl=1, flInvalid=True)
+                prov.dumpMqtt(data=None, fl=1, comm = 2, flInvalid=True)
 
             if prov.isValid == True and prov.dev['type'] == 'DimmingLight':
                 # query level
@@ -661,11 +661,11 @@ class RGPTCPAdapterLauncher:
                 if prov.answerIs and self.daliAnswer != 0:
                     # success
                     # prov.dumpMqtt(data=prov.state)
-                    prov.dumpMqtt()
+                    prov.dumpMqtt(data=int(prov.state.uint/254*100), comm = 4)
                 else:  # no answer
                     prov.state = None
                     prov.isValid = False
-                    prov.dumpMqtt(data=prov.state, fl=1, flInvalid=True)
+                    # prov.dumpMqtt(data=prov.state, fl=1, comm = 4, flInvalid=True)
 
             #  query groups
             dd = QUERY_GROU_07
@@ -869,7 +869,7 @@ class RGPTCPAdapterLauncher:
 
             elif n==1:
                 #  Dali
-                if (current_milli_time()-self.callDaliTime)<= DALI_GAP:
+                # if (current_milli_time()-self.callDaliTime)<= DALI_GAP:
                     bbyte1 = bitstring.BitArray(hex(data['data'][0]))
                     byte1=bitstring.BitArray(8-bbyte1.len)
                     byte1.append(bbyte1)
@@ -951,8 +951,8 @@ class RGPTCPAdapterLauncher:
                             self.callDaliProvider.oneByteAnswer = None
                             self.callDaliProvider.twoByteAnswer = None
                             self.callDaliProvider.isValid = False
-                else:
-                    self.daliAnswer = -4
+                # else:
+                #     self.daliAnswer = -4
 
 
 

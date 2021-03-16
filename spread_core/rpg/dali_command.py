@@ -131,12 +131,12 @@ class RGPTCPAdapterLauncher:
             ii = '0' + ii
         print('ii={0}'.format(ii))
 
-        daliCommand = 'E2 03 01 04 01 {0} 90'.format(ii).replace(' ', '')
+        daliCommand = 'E2 03 01 04 01 {0} A0'.format(ii).replace(' ', '')
 
-        # daliCommand = 'E203010001A301'
+        # daliCommand = 'E203010001A307'
         # daliCommand = 'E2030100010101'
         #daliCommand = 'E203010001FE00'
-
+        # daliCommand = 'E203010101FE80'
         opCode = '07'
         pLen = bytearray(3)
         pLen[0] = int(len(daliCommand) / 2)
@@ -147,7 +147,7 @@ class RGPTCPAdapterLauncher:
         data = bytes.fromhex(pL)
         self.sock.send_message(data, size)
         time.sleep(3)
-        # daliCommand = 'E203010201FF80'
+
         # opCode = '07'
         # pLen = bytearray(3)
         # pLen[0] = int(len(daliCommand) / 2)
@@ -240,9 +240,11 @@ class RGPTCPAdapterLauncher:
                     modBus = data['data']
                     # self.mqttc.publish(topic= topic_dump[2], payload=str(modBus), qos=1, retain=True)
                     print('::::::::::::::::::::: modbus = {0}'.format(str(data['data'])))
-                elif n==4:
+                elif n==1:
                     #  Dali
                     daliData =data['data']
+                    dataD=bitstring.BitArray(hex(daliData[1]))
+                    print(dataD.unit)
 
 
 
