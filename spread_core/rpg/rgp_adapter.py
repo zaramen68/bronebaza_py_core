@@ -523,7 +523,7 @@ class RGPTCPAdapterLauncher:
                         if prov.dev['type'] == 'DimmingLight':
                             if int(topic[4]) == 7:
                                 # set level command
-                                dd_ = VariableTRS3(VariableReader(msg.payload))['value']
+                                dd_ = VariableTRS3(VariableReader(msg.payload)).value
                                 dd=int(dd_/100*254)
                                 devaddr = bitstring.BitArray(hex(prov.dadr))
                                 daddr = bitstring.BitArray(6 - devaddr.length)
@@ -550,7 +550,7 @@ class RGPTCPAdapterLauncher:
                                     pass
                             elif int(topic[4]) == 5:   # isOn command
 
-                                dd_ = VariableTRS3(VariableReader(msg.payload))['value']
+                                dd_ = VariableTRS3(VariableReader(msg.payload)).value
                                 if dd_ is True:
                                     dd = 254
                                     devaddr = bitstring.BitArray(hex(prov.dadr))
@@ -581,7 +581,7 @@ class RGPTCPAdapterLauncher:
                                     pass
                             elif int(topic[4]) == 6:  # isOff
 
-                                dd_ = VariableTRS3(VariableReader(msg.payload))['value']
+                                dd_ = VariableTRS3(VariableReader(msg.payload)).value
                                 if dd_ is True:
                                     dd = 0
                                     devaddr = bitstring.BitArray(hex(prov.dadr))
@@ -610,7 +610,7 @@ class RGPTCPAdapterLauncher:
                                 else:
                                     pass
                         elif prov.dev['type'] == 'SwitchingLigh':
-                            dd = VariableTRS3(VariableReader(msg.payload))['value']
+                            dd = VariableTRS3(VariableReader(msg.payload)).value
                             if int(topic[4]) == 3:
                                 # set isOn command
 
