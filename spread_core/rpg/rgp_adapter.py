@@ -543,8 +543,9 @@ class RGPTCPAdapterLauncher:
                                     if prov.answerIs:
                                         break
                                 if prov.answerIs:
+                                    prov.dumpMqtt(data=int(prov.state.uint / 254 * 100), comm=4)
                                     # success
-                                    pass
+
                                 else:
                                     # no answer
                                     pass
