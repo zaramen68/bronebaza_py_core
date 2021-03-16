@@ -457,7 +457,7 @@ class RGPTCPAdapterLauncher:
 
         for prov in self.daliProviders:
             for index, val in prov.dev['FunctionUnitIndex'].items():
-                topic = 'Tros3/Command/{}/Equipment/{}/{}/{}'.format(PROJECT, prov.dev['type'], prov.dev['id'], val)
+                topic = 'Tros3/Command/{}/#'.format(PROJECT)
                 self.mqttc.subscribe(topic)
                 logging.debug('Subscribed to {}'.format(topic))
 
@@ -519,9 +519,9 @@ class RGPTCPAdapterLauncher:
                 # data=bytes.fromhex(pL)
                 # self.sock.send_message(data, size)
                 for prov in self.daliProviders:
-                    if prov.dev['id'] == topic[5]:
-                        if topic[4] == 'DimmingLight':
-                            if topic[6] == 3:
+                    if prov.dev['id'] == topic[4]:
+                        if prov.dev['type'] == 'DimmingLight':
+                            if topic[5] == 7:
                                 # set level command
                                 dd = VariableTRS3(VariableReader(msg.payload))['value']
                                 devaddr = bitstring.BitArray(hex(prov.dadr))
@@ -547,20 +547,20 @@ class RGPTCPAdapterLauncher:
                                 else:
                                     # no answer
                                     pass
-                            elif topic[6] == 1:
+                            elif topic[5] == 5:
                                 # isOn command
                                 pass
-                            elif topic[6] == 0:
+                            elif topic[5] == 6:
                                 # isOn command
                                 pass
-                        elif topic[4] == 'SwitchingLigh':
+                        elif prov.dev['type'] == 'SwitchingLigh':
                             dd = VariableTRS3(VariableReader(msg.payload))['value']
-                            if topic[6] == 0:
+                            if topic[5] == 3:
                                 # set isOn command
 
                                 if dd == True:
                                     dd='FE'
-                            elif topic[6] == 1:
+                            elif topic[5] == 4:
                                 if dd == True:
                                     dd='00'
                             devaddr = bitstring.BitArray(hex(prov.dadr))
