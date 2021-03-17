@@ -556,99 +556,54 @@ class RGPTCPAdapterLauncher:
                                 grList = []  #список групп
                                 dd_ = VariableTRS3(VariableReader(msg.payload)).value
                                 dd=int(dd_/100*254)
-                                n=0
-                                for gr in prov.groupList:
-                                    if gr:
-                                        grComm = GroupDaliAddtessComm(n, dd)
-                                        grList.append(n)
-
-                                        prov.answerIs = False
-                                        prov.typeOfQuery = 0  # no answer
-                                        prov.twoByteAnswer = None
-                                        prov.oneByteAnswer = None
-                                        self.isDaliQueried = True
-                                        self.callDaliTime = prov.callDali(grComm)
-                                        self.callDaliProvider = prov
-                                        while (prov.getCallTime != 0) and (current_milli_time()-prov.getCallTime < 100):
-                                            if prov.answerIs:
-                                                break
-                                        if prov.answerIs:
-                                            prov.dumpMqtt(data=int(prov.state.uint / 254 * 100), comm=4)
-                                            # success
-
-                                        else:
-                                            # no answer
-                                            pass
-                                    n=n+1
-                                qList = []
-                                for gr in grList:
-                                    qList = qList+self.daliGroup[gr]
-                                qList = list(set(qList))    # формирование списка DALI устройств для опроса
-                                for daliDevice in qList:
-                                    self.queryOfDaliDevice(daliDevice)
-
-
-                            elif int(topic[4]) == 5:   # isOn command
+                            elif int(topic[4]) == 5:  # isOn command
 
                                 dd_ = VariableTRS3(VariableReader(msg.payload)).value
                                 if dd_ is True:
                                     dd = 254
-                                    devaddr = bitstring.BitArray(hex(prov.dadr))
-                                    daddr = bitstring.BitArray(6 - devaddr.length)
-                                    daddr.append(devaddr)
-                                    addrbyte = bitstring.BitArray(bin(0))
-                                    addrbyte.append(daddr)
-                                    addrbyte.append(bitstring.BitArray(bin(0)))
-                                    dd = addrbyte.hex + make_two_bit(hex(dd).split('x')[1])
-                                    prov.answerIs = False
-                                    prov.typeOfQuery = 0  # 8 bit answer is needed
-                                    prov.twoByteAnswer = None
-                                    prov.oneByteAnswer = None
-                                    self.isDaliQueried = True
-                                    self.callDaliTime = prov.callDali(dd)
-                                    self.callDaliProvider = prov
-                                    while (prov.getCallTime != 0) and (current_milli_time() - prov.getCallTime < 100):
-                                        if prov.answerIs:
-                                            break
-                                    if prov.answerIs:
-                                        # success
-                                        pass
-                                    else:
-                                        # no answer
-                                        pass
-                                else:
-
-                                    pass
                             elif int(topic[4]) == 6:  # isOff
 
                                 dd_ = VariableTRS3(VariableReader(msg.payload)).value
                                 if dd_ is True:
                                     dd = 0
-                                    devaddr = bitstring.BitArray(hex(prov.dadr))
-                                    daddr = bitstring.BitArray(6 - devaddr.length)
-                                    daddr.append(devaddr)
-                                    addrbyte = bitstring.BitArray(bin(0))
-                                    addrbyte.append(daddr)
-                                    addrbyte.append(bitstring.BitArray(bin(0)))
-                                    dd = addrbyte.hex + make_two_bit(hex(dd).split('x')[1])
+                            n=0
+                            for gr in prov.groupList:
+                                if gr:
+                                    grComm = GroupDaliAddtessComm(n, dd)
+                                    grList.append(n)
+
                                     prov.answerIs = False
-                                    prov.typeOfQuery = 0  # 8 bit answer is needed
+                                    prov.typeOfQuery = 0  # no answer
                                     prov.twoByteAnswer = None
                                     prov.oneByteAnswer = None
                                     self.isDaliQueried = True
-                                    self.callDaliTime = prov.callDali(dd)
+                                    self.callDaliTime = prov.callDali(grComm)
                                     self.callDaliProvider = prov
                                     while (prov.getCallTime != 0) and (current_milli_time()-prov.getCallTime < 100):
                                         if prov.answerIs:
                                             break
-                                    if prov.answerIs:
-                                        # success
-                                        pass
-                                    else:
-                                        # no answer
-                                        pass
-                                else:
-                                    pass
+                                    # if prov.answerIs:
+                                    #     prov.dumpMqtt(data=int(prov.state.uint / 254 * 100), comm=4)
+                                    #     # success
+                                    #
+                                    # else:
+                                    #     # no answer
+                                    #     pass
+                                n=n+1
+
+                            qList = []
+                            for gr in grList:
+                                qList = qList+self.daliGroup[gr]
+                            qList = list(set(qList))    # формирование списка DALI устройств для опроса
+                            for daliDevice in qList:
+                                self.queryOfDaliDevice(daliDevice)
+
+
+                            else:             # not 7, 6, 5
+                                pass
+
+
+
                         elif prov.dev['type'] == 'SwitchingLigh':
                             dd = VariableTRS3(VariableReader(msg.payload)).value
                             if int(topic[4]) == 3:
