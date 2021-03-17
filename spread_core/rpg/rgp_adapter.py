@@ -551,9 +551,10 @@ class RGPTCPAdapterLauncher:
                 for prov in self.daliProviders:
                     if prov.dev['id'] == int(topic[3]):
                         if prov.dev['type'] == 'DimmingLight':
+                            grList = []  #список групп
                             if int(topic[4]) == 7:
                                 # set group level command
-                                grList = []  #список групп
+
                                 dd_ = VariableTRS3(VariableReader(msg.payload)).value
                                 dd=int(dd_/100*254)
                             elif int(topic[4]) == 5:  # isOn command
