@@ -585,7 +585,7 @@ class RGPTCPAdapterLauncher:
                                     qList = qList+self.daliGroup[gr]
                                 qList = list(set(qList))    # формирование списка DALI устройств для опроса
                                 for daliDevice in qList:
-                                    self.queryOfDaliDevice(daliDev=daliDevice)
+                                    self.queryOfDaliDevice(daliDevice)
 
 
                             elif int(topic[4]) == 5:   # isOn command
