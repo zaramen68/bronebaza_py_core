@@ -4,6 +4,7 @@ import time
 import paho.mqtt.client
 from threading import Timer
 import bitstring
+import copy
 from bitstring import BitArray
 import array
 
@@ -103,6 +104,42 @@ def CanId(addrFrom, addrTo):
     can_id.append(addr_from)
 
     return make_bytes(can_id.hex)
+
+def ShortDaliAddtessComm(devAddr, data, cfl=0):
+
+    devaddr = bitstring.BitArray(hex(devAddr))
+    daddr = bitstring.BitArray(6 - devaddr.length)
+    daddr.append(devaddr)
+    addrbyte = bitstring.BitArray(bin(0))
+    addrbyte.append(daddr)
+    addrbyte.append(bitstring.BitArray(bin(cfl)))
+    if isinstance(data, int):
+        dd = addrbyte.hex + make_two_bit(hex(data).split('x')[1])
+    elif isinstance(data, str):
+        dd_=data.split('x')
+        if len(dd_)>1:
+            dd = addrbyte.hex + make_two_bit(dd_[1])
+        else:
+            dd = addrbyte.hex + make_two_bit(dd_[0])
+    return dd
+
+def GroupDaliAddtessComm(groupAddr, data, cfl=0):
+
+    devaddr = bitstring.BitArray(hex(groupAddr))
+    daddr = bitstring.BitArray(6 - devaddr.length)
+    daddr.append(devaddr)
+    addrbyte = bitstring.BitArray(bin(1))
+    addrbyte.append(daddr)
+    addrbyte.append(bitstring.BitArray(bin(cfl)))
+    if isinstance(data, int):
+        dd = addrbyte.hex + make_two_bit(hex(data).split('x')[1])
+    elif isinstance(data, str):
+        dd_=data.split('x')
+        if len(dd_)>1:
+            dd = addrbyte.hex + make_two_bit(dd_[1])
+        else:
+            dd = addrbyte.hex + make_two_bit(dd_[0])
+    return dd
 
 def Byte0(clss, cmd=False):
 
@@ -238,6 +275,7 @@ class DaliProvider:
         self.typeOfQuery = None # 0 - no answer, 1 - need answer
         self.group1 = bitstring.BitArray(8)
         self.group2 = bitstring.BitArray(8)
+        self.groupList=list()
         self._call = None
         self.answerIs = False
         self.dadr = args[0]['dadr']
@@ -435,6 +473,7 @@ class RGPTCPAdapterLauncher:
         self.callModBusTime = current_milli_time()
         self.daliProviders = []
         self.modbusProviders = []
+        self.daliGroup = [[] for i in range(0, 16)]
         self.daliAnswer=None   # 0 - no answer,
                                 # 1 - ok,
         #                        -1 - 8 bit answer - no needed answer,
@@ -508,47 +547,47 @@ class RGPTCPAdapterLauncher:
                 data=bytes.fromhex(pL)
                 self.sock.send_message(data, size)
             elif ('Tros3' in  topic) and ('Command' in topic):
-                # mbCommand = 'E203010001'+msg.payload.decode().split('#')[0]
-                # opCode = '07'
-                # pLen = bytearray(3)
-                # pLen[0]=int(len(mbCommand)/2)
-                # pL = opCode + make_two_bit(hex(pLen[0]).split('x')[1]) + \
-                #     make_two_bit(hex(pLen[1]).split('x')[1])+ make_two_bit(hex(pLen[2]).split('x')[1])+\
-                #     mbCommand
-                # size = len(pL)
-                # data=bytes.fromhex(pL)
-                # self.sock.send_message(data, size)
+
                 for prov in self.daliProviders:
                     if prov.dev['id'] == int(topic[3]):
                         if prov.dev['type'] == 'DimmingLight':
                             if int(topic[4]) == 7:
-                                # set level command
+                                # set group level command
+                                grList = []  #список групп
                                 dd_ = VariableTRS3(VariableReader(msg.payload)).value
                                 dd=int(dd_/100*254)
-                                devaddr = bitstring.BitArray(hex(prov.dadr))
-                                daddr = bitstring.BitArray(6 - devaddr.length)
-                                daddr.append(devaddr)
-                                addrbyte = bitstring.BitArray(bin(0))
-                                addrbyte.append(daddr)
-                                addrbyte.append(bitstring.BitArray(bin(0)))
-                                dd = addrbyte.hex + make_two_bit(hex(dd).split('x')[1])
-                                prov.answerIs = False
-                                prov.typeOfQuery = 0  # 8 bit answer is needed
-                                prov.twoByteAnswer = None
-                                prov.oneByteAnswer = None
-                                self.isDaliQueried = True
-                                self.callDaliTime = prov.callDali(dd)
-                                self.callDaliProvider = prov
-                                while (prov.getCallTime != 0) and (current_milli_time()-prov.getCallTime < 100):
-                                    if prov.answerIs:
-                                        break
-                                if prov.answerIs:
-                                    prov.dumpMqtt(data=int(prov.state.uint / 254 * 100), comm=4)
-                                    # success
+                                n=0
+                                for gr in prov.groupList:
+                                    if gr:
+                                        grComm = GroupDaliAddtessComm(n, dd)
+                                        grList.append(n)
 
-                                else:
-                                    # no answer
-                                    pass
+                                        prov.answerIs = False
+                                        prov.typeOfQuery = 0  # no answer
+                                        prov.twoByteAnswer = None
+                                        prov.oneByteAnswer = None
+                                        self.isDaliQueried = True
+                                        self.callDaliTime = prov.callDali(grComm)
+                                        self.callDaliProvider = prov
+                                        while (prov.getCallTime != 0) and (current_milli_time()-prov.getCallTime < 100):
+                                            if prov.answerIs:
+                                                break
+                                        if prov.answerIs:
+                                            prov.dumpMqtt(data=int(prov.state.uint / 254 * 100), comm=4)
+                                            # success
+
+                                        else:
+                                            # no answer
+                                            pass
+                                    n=n+1
+                                qList = []
+                                for gr in grList:
+                                    qList = qList+self.daliGroup[gr]
+                                qList = list(set(qList))    # формирование списка DALI устройств для опроса
+                                for daliDevice in qList:
+                                    self.queryOfDaliDevice(daliDev=daliDevice)
+
+
                             elif int(topic[4]) == 5:   # isOn command
 
                                 dd_ = VariableTRS3(VariableReader(msg.payload)).value
@@ -651,18 +690,77 @@ class RGPTCPAdapterLauncher:
         arr = topic.split('/')
         return arr
 
+    def queryOfDaliDevice(self, daliDev):
+        # query state
+        dd = ShortDaliAddtessComm(daliDev.dadr, QUERY_STATE, 1)
+
+        daliDev.answerIs = False
+        daliDev.typeOfQuery = 1  # 8 bit answer is needed
+        daliDev.twoByteAnswer = None
+        daliDev.oneByteAnswer = None
+
+        self.isDaliQueried = True
+        self.callDaliProvider = daliDev
+        self.callDaliTime = daliDev.callDali(dd)
+
+        while (daliDev.getCallTime != 0) and \
+                ((current_milli_time() - daliDev.getCallTime) < (DALI_GAP + 50)) and \
+                self.daliAnswer != 0:
+
+            if daliDev.answerIs:
+                print('answerIs = True')
+                break
+        if daliDev.answerIs and self.daliAnswer != 0:  # success
+            # state = bitstring.BitArray(hex(int(prov.state, 16)))
+            state = copy.deepcopy(daliDev.state)
+            daliDev.dumpMqtt(data=state[5], fl=1, comm=2)
+
+        else:  # no answer
+            daliDev.state = None
+            daliDev.isValid = False
+            daliDev.dumpMqtt(data=None, fl=1, comm=2, flInvalid=True)
+
+        if daliDev.isValid == True and daliDev.dev['type'] == 'DimmingLight':
+            # query level
+            dd = ShortDaliAddtessComm(daliDev.dadr, QUERY_ACTUAL_LEVEL, 1)
+
+            daliDev.answerIs = False
+            daliDev.typeOfQuery = 1  # 8 bit answer is needed
+            daliDev.twoByteAnswer = None
+            daliDev.oneByteAnswer = None
+
+            self.isDaliQueried = True
+            self.callDaliProvider = daliDev
+            self.callDaliTime = daliDev.callDali(dd)
+
+            while (daliDev.getCallTime != 0) and \
+                    ((current_milli_time() - daliDev.getCallTime) < (DALI_GAP + 50)) and \
+                    self.daliAnswer != 0:
+
+                if daliDev.answerIs:
+                    print('answerIs = True')
+                    break
+            if daliDev.answerIs and self.daliAnswer != 0:
+                # success
+                # prov.dumpMqtt(data=prov.state)
+                daliDev.dumpMqtt(data=int(daliDev.state.uint / 254 * 100), comm=4)
+            else:  # no answer
+                daliDev.state = None
+                daliDev.isValid = False
+
     def start_dali(self):
 
         for prov  in self.daliProviders:
             # query state
-            dd = QUERY_STATE
-            devaddr=bitstring.BitArray(hex(prov.dadr))
-            daddr = bitstring.BitArray(6 - devaddr.length)
-            daddr.append(devaddr)
-            addrbyte = bitstring.BitArray(bin(0))
-            addrbyte.append(daddr)
-            addrbyte.append(bitstring.BitArray(bin(1)))
-            dd = addrbyte.hex + dd
+            dd = ShortDaliAddtessComm(prov.dadr, QUERY_STATE, 1)
+            # dd = QUERY_STATE
+            # devaddr=bitstring.BitArray(hex(prov.dadr))
+            # daddr = bitstring.BitArray(6 - devaddr.length)
+            # daddr.append(devaddr)
+            # addrbyte = bitstring.BitArray(bin(0))
+            # addrbyte.append(daddr)
+            # addrbyte.append(bitstring.BitArray(bin(1)))
+            # dd = addrbyte.hex + dd
             prov.answerIs = False
             prov.typeOfQuery = 1      # 8 bit answer is needed
             prov.twoByteAnswer = None
@@ -691,14 +789,15 @@ class RGPTCPAdapterLauncher:
 
             if prov.isValid == True and prov.dev['type'] == 'DimmingLight':
                 # query level
-                dd = QUERY_ACTUAL_LEVEL
-                devaddr = bitstring.BitArray(hex(prov.dadr))
-                daddr = bitstring.BitArray(6 - devaddr.length)
-                daddr.append(devaddr)
-                addrbyte = bitstring.BitArray(bin(0))
-                addrbyte.append(daddr)
-                addrbyte.append(bitstring.BitArray(bin(1)))
-                dd = addrbyte.hex + dd
+                dd = ShortDaliAddtessComm(prov.dadr, QUERY_ACTUAL_LEVEL, 1)
+                # dd = QUERY_ACTUAL_LEVEL
+                # devaddr = bitstring.BitArray(hex(prov.dadr))
+                # daddr = bitstring.BitArray(6 - devaddr.length)
+                # daddr.append(devaddr)
+                # addrbyte = bitstring.BitArray(bin(0))
+                # addrbyte.append(daddr)
+                # addrbyte.append(bitstring.BitArray(bin(1)))
+                # dd = addrbyte.hex + dd
                 prov.answerIs = False
                 prov.typeOfQuery = 1  # 8 bit answer is needed
                 prov.twoByteAnswer = None
@@ -725,14 +824,16 @@ class RGPTCPAdapterLauncher:
                     # prov.dumpMqtt(data=prov.state, fl=1, comm = 4, flInvalid=True)
 
             #  query groups
-            dd = QUERY_GROU_07
-            devaddr = bitstring.BitArray(hex(prov.dadr))
-            daddr = bitstring.BitArray(6 - devaddr.length)
-            daddr.append(devaddr)
-            addrbyte = bitstring.BitArray(bin(0))
-            addrbyte.append(daddr)
-            addrbyte.append(bitstring.BitArray(bin(1)))
-            dd = addrbyte.hex + dd
+            dd= ShortDaliAddtessComm(prov.dadr, QUERY_GROU_07, 1)
+
+            # dd = QUERY_GROU_07
+            # devaddr = bitstring.BitArray(hex(prov.dadr))
+            # daddr = bitstring.BitArray(6 - devaddr.length)
+            # daddr.append(devaddr)
+            # addrbyte = bitstring.BitArray(bin(0))
+            # addrbyte.append(daddr)
+            # addrbyte.append(bitstring.BitArray(bin(1)))
+            # dd = addrbyte.hex + dd
             prov.answerIs = False
             prov.typeOfQuery = 1  # 8 bit answer is needed
             prov.twoByteAnswer = None
@@ -750,21 +851,25 @@ class RGPTCPAdapterLauncher:
                     print('answerIs = True')
                     break
             if prov.answerIs and self.daliAnswer != 0:
-                prov.group1 = prov.state
+                prov.group1 = copy.deepcopy(prov.state)
+                prov.groupList = list(prov.group1)
+
+
                 # success
             else:
                 prov.isValid = False
                 # no answer
                 pass
             #######################################
-            dd = QUERY_GROU_811
-            devaddr = bitstring.BitArray(hex(prov.dadr))
-            daddr = bitstring.BitArray(6 - devaddr.length)
-            daddr.append(devaddr)
-            addrbyte = bitstring.BitArray(bin(0))
-            addrbyte.append(daddr)
-            addrbyte.append(bitstring.BitArray(bin(1)))
-            dd = addrbyte.hex + dd
+            dd = ShortDaliAddtessComm(prov.dadr, QUERY_GROU_811, 1)
+            # dd = QUERY_GROU_811
+            # devaddr = bitstring.BitArray(hex(prov.dadr))
+            # daddr = bitstring.BitArray(6 - devaddr.length)
+            # daddr.append(devaddr)
+            # addrbyte = bitstring.BitArray(bin(0))
+            # addrbyte.append(daddr)
+            # addrbyte.append(bitstring.BitArray(bin(1)))
+            # dd = addrbyte.hex + dd
             prov.answerIs = False
             prov.typeOfQuery = 1  # 8 bit answer is needed
             prov.twoByteAnswer = None
@@ -782,12 +887,18 @@ class RGPTCPAdapterLauncher:
                     print('answerIs = True')
                     break
             if prov.answerIs and self.daliAnswer != 0:
-                prov.group2 = prov.state
+                prov.group2 = copy.deepcopy(prov.state)
+                prov.groupList = list(prov.group2).extend(prov.groupList)
+                prov.groupList.reverse()
                 # success
             else:
                 prov.isValid = False
                 # no answer
-                pass
+            n=0
+            for grp in prov.groupList:
+                if grp:
+                    self.daliGroup[n].append(prov)
+                n=n+1
 
     def rpg_listen_fun(self):
 
