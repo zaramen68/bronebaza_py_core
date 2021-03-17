@@ -752,88 +752,82 @@ class RGPTCPAdapterLauncher:
 
         for prov  in self.daliProviders:
             # query state
-            dd = ShortDaliAddtessComm(prov.dadr, QUERY_STATE, 1)
-            # dd = QUERY_STATE
-            # devaddr=bitstring.BitArray(hex(prov.dadr))
-            # daddr = bitstring.BitArray(6 - devaddr.length)
-            # daddr.append(devaddr)
-            # addrbyte = bitstring.BitArray(bin(0))
-            # addrbyte.append(daddr)
-            # addrbyte.append(bitstring.BitArray(bin(1)))
-            # dd = addrbyte.hex + dd
-            prov.answerIs = False
-            prov.typeOfQuery = 1      # 8 bit answer is needed
-            prov.twoByteAnswer = None
-            prov.oneByteAnswer = None
-
-            self.isDaliQueried = True
-            self.callDaliProvider = prov
-            self.callDaliTime = prov.callDali(dd)
-
-            while (prov.getCallTime != 0) and \
-                    ((current_milli_time() - prov.getCallTime) < (DALI_GAP+50)) and \
-                    self.daliAnswer !=0:
-
-                if prov.answerIs:
-                    print('answerIs = True')
-                    break
-            if prov.answerIs and self.daliAnswer != 0:     # success
-                # state = bitstring.BitArray(hex(int(prov.state, 16)))
-                state=prov.state
-                prov.dumpMqtt(data=state[5], fl=1, comm = 2)
-
-            else:                                           # no answer
-                prov.state = None
-                prov.isValid = False
-                prov.dumpMqtt(data=None, fl=1, comm = 2, flInvalid=True)
-
-            if prov.isValid == True and prov.dev['type'] == 'DimmingLight':
-                # query level
-                dd = ShortDaliAddtessComm(prov.dadr, QUERY_ACTUAL_LEVEL, 1)
-                # dd = QUERY_ACTUAL_LEVEL
-                # devaddr = bitstring.BitArray(hex(prov.dadr))
-                # daddr = bitstring.BitArray(6 - devaddr.length)
-                # daddr.append(devaddr)
-                # addrbyte = bitstring.BitArray(bin(0))
-                # addrbyte.append(daddr)
-                # addrbyte.append(bitstring.BitArray(bin(1)))
-                # dd = addrbyte.hex + dd
-                prov.answerIs = False
-                prov.typeOfQuery = 1  # 8 bit answer is needed
-                prov.twoByteAnswer = None
-                prov.oneByteAnswer = None
-
-                self.isDaliQueried = True
-                self.callDaliProvider = prov
-                self.callDaliTime = prov.callDali(dd)
-
-                while (prov.getCallTime != 0) and \
-                        ((current_milli_time() - prov.getCallTime) < (DALI_GAP + 50)) and \
-                        self.daliAnswer != 0:
-
-                    if prov.answerIs:
-                        print('answerIs = True')
-                        break
-                if prov.answerIs and self.daliAnswer != 0:
-                    # success
-                    # prov.dumpMqtt(data=prov.state)
-                    prov.dumpMqtt(data=int(prov.state.uint/254*100), comm = 4)
-                else:  # no answer
-                    prov.state = None
-                    prov.isValid = False
-                    # prov.dumpMqtt(data=prov.state, fl=1, comm = 4, flInvalid=True)
+            self.queryOfDaliDevice(prov)
+            # dd = ShortDaliAddtessComm(prov.dadr, QUERY_STATE, 1)
+            # # dd = QUERY_STATE
+            # # devaddr=bitstring.BitArray(hex(prov.dadr))
+            # # daddr = bitstring.BitArray(6 - devaddr.length)
+            # # daddr.append(devaddr)
+            # # addrbyte = bitstring.BitArray(bin(0))
+            # # addrbyte.append(daddr)
+            # # addrbyte.append(bitstring.BitArray(bin(1)))
+            # # dd = addrbyte.hex + dd
+            # prov.answerIs = False
+            # prov.typeOfQuery = 1      # 8 bit answer is needed
+            # prov.twoByteAnswer = None
+            # prov.oneByteAnswer = None
+            #
+            # self.isDaliQueried = True
+            # self.callDaliProvider = prov
+            # self.callDaliTime = prov.callDali(dd)
+            #
+            # while (prov.getCallTime != 0) and \
+            #         ((current_milli_time() - prov.getCallTime) < (DALI_GAP+50)) and \
+            #         self.daliAnswer !=0:
+            #
+            #     if prov.answerIs:
+            #         print('answerIs = True')
+            #         break
+            # if prov.answerIs and self.daliAnswer != 0:     # success
+            #     # state = bitstring.BitArray(hex(int(prov.state, 16)))
+            #     state=prov.state
+            #     prov.dumpMqtt(data=state[5], fl=1, comm = 2)
+            #
+            # else:                                           # no answer
+            #     prov.state = None
+            #     prov.isValid = False
+            #     prov.dumpMqtt(data=None, fl=1, comm = 2, flInvalid=True)
+            #
+            # if prov.isValid == True and prov.dev['type'] == 'DimmingLight':
+            #     # query level
+            #     dd = ShortDaliAddtessComm(prov.dadr, QUERY_ACTUAL_LEVEL, 1)
+            #     # dd = QUERY_ACTUAL_LEVEL
+            #     # devaddr = bitstring.BitArray(hex(prov.dadr))
+            #     # daddr = bitstring.BitArray(6 - devaddr.length)
+            #     # daddr.append(devaddr)
+            #     # addrbyte = bitstring.BitArray(bin(0))
+            #     # addrbyte.append(daddr)
+            #     # addrbyte.append(bitstring.BitArray(bin(1)))
+            #     # dd = addrbyte.hex + dd
+            #     prov.answerIs = False
+            #     prov.typeOfQuery = 1  # 8 bit answer is needed
+            #     prov.twoByteAnswer = None
+            #     prov.oneByteAnswer = None
+            #
+            #     self.isDaliQueried = True
+            #     self.callDaliProvider = prov
+            #     self.callDaliTime = prov.callDali(dd)
+            #
+            #     while (prov.getCallTime != 0) and \
+            #             ((current_milli_time() - prov.getCallTime) < (DALI_GAP + 50)) and \
+            #             self.daliAnswer != 0:
+            #
+            #         if prov.answerIs:
+            #             print('answerIs = True')
+            #             break
+            #     if prov.answerIs and self.daliAnswer != 0:
+            #         # success
+            #         # prov.dumpMqtt(data=prov.state)
+            #         prov.dumpMqtt(data=int(prov.state.uint/254*100), comm = 4)
+            #     else:  # no answer
+            #         prov.state = None
+            #         prov.isValid = False
+            #         # prov.dumpMqtt(data=prov.state, fl=1, comm = 4, flInvalid=True)
 
             #  query groups
+            # query groups
             dd= ShortDaliAddtessComm(prov.dadr, QUERY_GROU_07, 1)
 
-            # dd = QUERY_GROU_07
-            # devaddr = bitstring.BitArray(hex(prov.dadr))
-            # daddr = bitstring.BitArray(6 - devaddr.length)
-            # daddr.append(devaddr)
-            # addrbyte = bitstring.BitArray(bin(0))
-            # addrbyte.append(daddr)
-            # addrbyte.append(bitstring.BitArray(bin(1)))
-            # dd = addrbyte.hex + dd
             prov.answerIs = False
             prov.typeOfQuery = 1  # 8 bit answer is needed
             prov.twoByteAnswer = None
