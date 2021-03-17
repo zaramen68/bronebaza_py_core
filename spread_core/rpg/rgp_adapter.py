@@ -826,73 +826,76 @@ class RGPTCPAdapterLauncher:
 
             #  query groups
             # query groups
-            dd= ShortDaliAddtessComm(prov.dadr, QUERY_GROU_07, 1)
+            if prov.isValid:
+                dd= ShortDaliAddtessComm(prov.dadr, QUERY_GROU_811, 1)
 
-            prov.answerIs = False
-            prov.typeOfQuery = 1  # 8 bit answer is needed
-            prov.twoByteAnswer = None
-            prov.oneByteAnswer = None
+                prov.answerIs = False
+                prov.typeOfQuery = 1  # 8 bit answer is needed
+                prov.twoByteAnswer = None
+                prov.oneByteAnswer = None
 
-            self.callDaliTime = prov.callDali(dd)
-            self.isDaliQueried = True
+                self.callDaliTime = prov.callDali(dd)
+                self.isDaliQueried = True
 
-            self.callDaliProvider = prov
-            while (prov.getCallTime != 0) and \
-                    ((current_milli_time() - prov.getCallTime) < (DALI_GAP + 50)) and \
-                    self.daliAnswer != 0:
+                self.callDaliProvider = prov
+                while (prov.getCallTime != 0) and \
+                        ((current_milli_time() - prov.getCallTime) < (DALI_GAP + 50)) and \
+                        self.daliAnswer != 0:
 
-                if prov.answerIs:
-                    print('answerIs = True')
-                    break
-            if prov.answerIs and self.daliAnswer != 0:
-                prov.group1 = copy.deepcopy(prov.state)
-                prov.groupList = list(prov.group1)
+                    if prov.answerIs:
+                        print('answerIs = True')
+                        break
+                if prov.answerIs and self.daliAnswer != 0:
+                    prov.group2 = copy.deepcopy(prov.state)
+                    prov.groupList = list(prov.group2)
 
 
-                # success
-            else:
-                prov.isValid = False
-                # no answer
-                pass
-            #######################################
-            dd = ShortDaliAddtessComm(prov.dadr, QUERY_GROU_811, 1)
-            # dd = QUERY_GROU_811
-            # devaddr = bitstring.BitArray(hex(prov.dadr))
-            # daddr = bitstring.BitArray(6 - devaddr.length)
-            # daddr.append(devaddr)
-            # addrbyte = bitstring.BitArray(bin(0))
-            # addrbyte.append(daddr)
-            # addrbyte.append(bitstring.BitArray(bin(1)))
-            # dd = addrbyte.hex + dd
-            prov.answerIs = False
-            prov.typeOfQuery = 1  # 8 bit answer is needed
-            prov.twoByteAnswer = None
-            prov.oneByteAnswer = None
+                    # success
+                else:
+                    prov.isValid = False
+                    # no answer
+                    pass
+                #######################################
+                dd = ShortDaliAddtessComm(prov.dadr, QUERY_GROU_07, 1)
+                # dd = QUERY_GROU_811
+                # devaddr = bitstring.BitArray(hex(prov.dadr))
+                # daddr = bitstring.BitArray(6 - devaddr.length)
+                # daddr.append(devaddr)
+                # addrbyte = bitstring.BitArray(bin(0))
+                # addrbyte.append(daddr)
+                # addrbyte.append(bitstring.BitArray(bin(1)))
+                # dd = addrbyte.hex + dd
+                prov.answerIs = False
+                prov.typeOfQuery = 1  # 8 bit answer is needed
+                prov.twoByteAnswer = None
+                prov.oneByteAnswer = None
 
-            self.callDaliTime = prov.callDali(dd)
-            self.isDaliQueried = True
+                self.callDaliTime = prov.callDali(dd)
+                self.isDaliQueried = True
 
-            self.callDaliProvider = prov
-            while (prov.getCallTime != 0) and \
-                    ((current_milli_time() - prov.getCallTime) < (DALI_GAP + 50)) and \
-                    self.daliAnswer != 0:
+                self.callDaliProvider = prov
+                while (prov.getCallTime != 0) and \
+                        ((current_milli_time() - prov.getCallTime) < (DALI_GAP + 50)) and \
+                        self.daliAnswer != 0:
 
-                if prov.answerIs:
-                    print('answerIs = True')
-                    break
-            if prov.answerIs and self.daliAnswer != 0:
-                prov.group2 = copy.deepcopy(prov.state)
-                prov.groupList = list(prov.group2).extend(prov.groupList)
-                prov.groupList.reverse()
-                # success
-            else:
-                prov.isValid = False
-                # no answer
-            n=0
-            for grp in prov.groupList:
-                if grp:
-                    self.daliGroup[n].append(prov)
-                n=n+1
+                    if prov.answerIs:
+                        print('answerIs = True')
+                        break
+                if prov.answerIs and self.daliAnswer != 0:
+                    prov.group1 = copy.deepcopy(prov.state)
+                    prov.groupList.extend(list(prov.group1))
+                    prov.groupList.reverse()
+                    # success
+                else:
+                    prov.isValid = False
+                    # no answer
+                if prov.isValid:
+
+                    n=0
+                    for grp in prov.groupList:
+                        if grp:
+                            self.daliGroup[n].append(prov)
+                        n=n+1
 
     def rpg_listen_fun(self):
 
