@@ -45,6 +45,8 @@ QUERY_STATE ='90'
 QUERY_FADE_TIME='A5'
 DALI_GAP = 100
 
+MIN_FADE_TIME = 0.5
+
 MODBUS_DEV = config['MODBUS_DEV']
 DALI_DEV = config['DALI_DEV']
 
@@ -743,9 +745,13 @@ class RGPTCPAdapterLauncher:
                 daliDev.isValid = False
 
     def queryDali(self, starTime, dev):
+        if dev.fadeTime == 0:
+            delta = MIN_FADE_TIME
+        else:
+            delta = dev.fadeTime
         while True:
             self.queryOfDaliDevice(dev)
-            if (current_milli_time() - starTime) > dev.fadeTime*1000:
+            if (current_milli_time() - starTime) > delta*1000:
                 break
 
     def start_dali(self):
