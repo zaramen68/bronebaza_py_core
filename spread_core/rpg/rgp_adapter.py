@@ -513,12 +513,14 @@ class RGPTCPAdapterLauncher:
             modbusDev = ModBusProvider(self.sock, self.mqttc, prov)
             self.modbusProviders.append(modbusDev)
 
-        for prov in self.daliProviders:
-            for index, val in prov.dev['FunctionUnitIndex'].items():
-                topic = 'Tros3/Command/{}/#'.format(PROJECT)
-                self.mqttc.subscribe(topic)
-                logging.debug('Subscribed to {}'.format(topic))
-
+        # for prov in self.daliProviders:
+        #     for index, val in prov.dev['FunctionUnitIndex'].items():
+        #         topic = 'Jocket/Command/{}/#'.format(PROJECT)
+        #         self.mqttc.subscribe(topic)
+        #         logging.debug('Subscribed to {}'.format(topic))
+        topic = 'Tros3/Command/{}/#'.format(PROJECT)
+        self.mqttc.subscribe(topic)
+        logging.debug('Subscribed to {}'.format(topic))
 
 
     def start(self):
@@ -554,7 +556,7 @@ class RGPTCPAdapterLauncher:
 
         try:
             topic = self.of(msg.topic)
-            if topic[2]=='Modbus':
+            if 'Modbus' in topic:
                 mbCommand = msg.payload.decode()
                 opCode = '07'
                 pLen = bytearray(3)
@@ -565,7 +567,7 @@ class RGPTCPAdapterLauncher:
                 size = len(pL)
                 data=bytes.fromhex(pL)
                 self.sock.send_message(data, size)
-            elif ('Tros3' in  topic) and ('Command' in topic):
+            elif ('Tros3' in topic)and('Command' in topic):
 
                 for prov in self.daliProviders:
                     if prov.dev['id'] == int(topic[3]):
@@ -605,13 +607,7 @@ class RGPTCPAdapterLauncher:
                                     while (prov.getCallTime != 0) and (current_milli_time()-prov.getCallTime < 100):
                                         if prov.answerIs:
                                             break
-                                    # if prov.answerIs:
-                                    #     prov.dumpMqtt(data=int(prov.state.uint / 254 * 100), comm=4)
-                                    #     # success
-                                    #
-                                    # else:
-                                    #     # no answer
-                                    #     pass
+
                                 n=n+1
 
                             qList = []
@@ -628,45 +624,58 @@ class RGPTCPAdapterLauncher:
 
                                 self.queryDali(daliDevice.getCallTime, daliDevice)
 
+                        elif prov.dev['type'] == 'SwitchingLight':
+                            grList = []  #список групп
+                            clf=0
 
-                            else:             # not 7, 6, 5
-                                pass
-
-
-
-                        elif prov.dev['type'] == 'SwitchingLigh':
-                            dd = VariableTRS3(VariableReader(msg.payload)).value
                             if int(topic[4]) == 3:
                                 # set isOn command
+                                dd_ = VariableTRS3(VariableReader(msg.payload)).value
+                                if dd_ is True:
+                                    dd = 254
 
-                                if dd == True:
-                                    dd='FE'
+
                             elif int(topic[4]) == 4:
-                                if dd == True:
-                                    dd='00'
-                            devaddr = bitstring.BitArray(hex(prov.dadr))
-                            daddr = bitstring.BitArray(6 - devaddr.length)
-                            daddr.append(devaddr)
-                            addrbyte = bitstring.BitArray(bin(0))
-                            addrbyte.append(daddr)
-                            addrbyte.append(bitstring.BitArray(bin(0)))
-                            dd = addrbyte.hex + dd
-                            prov.answerIs = False
-                            prov.typeOfQuery = 0  # 8 bit answer is needed
-                            prov.twoByteAnswer = None
-                            prov.oneByteAnswer = None
-                            self.isDaliQueried = True
-                            self.callDaliTime = prov.callDali(dd)
-                            self.callDaliProvider = prov
-                            while (prov.getCallTime != 0) and (current_milli_time()-prov.getCallTime < 100):
-                                if prov.answerIs:
-                                    break
-                            if prov.answerIs:
-                                # success
-                                pass
-                            else:
-                                # no answer
-                                pass
+                                # isOff
+
+                                dd_ = VariableTRS3(VariableReader(msg.payload)).value
+                                if dd_ is True:
+                                    dd = 0
+                                    clf =1
+
+                            n=0
+                            for gr in prov.groupList:
+                                if gr:
+                                    grComm = GroupDaliAddtessComm(n, dd, clf)
+                                    grList.append(n)
+
+                                    prov.answerIs = False
+                                    prov.typeOfQuery = 0  # no answer
+                                    prov.twoByteAnswer = None
+                                    prov.oneByteAnswer = None
+                                    self.isDaliQueried = True
+                                    self.callDaliTime = prov.callDali(grComm)
+                                    self.callDaliProvider = prov
+                                    while (prov.getCallTime != 0) and (current_milli_time()-prov.getCallTime < 100):
+                                        if prov.answerIs:
+                                            break
+
+                                n=n+1
+
+                            qList = []
+                            for gr in grList:
+                                qList = qList+self.daliGroup[gr]
+                            qList = list(set(qList))    # формирование списка DALI устройств для опроса
+                            threads=[]                  # список потоков опроса dali
+
+                            for daliDevice in qList:
+                                # t=threading.Thread(target=self.queryDali, args=(daliDevice.getCallTime, daliDevice))
+                                # threads.append(t)
+                                # t.start()
+                                # t.join()
+
+                                self.queryDali(daliDevice.getCallTime, daliDevice)
+
 
         except BaseException as ex:
             logging.exception(ex)
@@ -686,7 +695,7 @@ class RGPTCPAdapterLauncher:
 
         self.isDaliQueried = True
         self.callDaliProvider = daliDev
-        self.callDaliTime = daliDev.callDali(data=dd, resp=True)
+        self.callDaliTime = daliDev.callDali(data=dd)
 
         while (daliDev.getCallTime != 0) and \
                 ((current_milli_time() - daliDev.getCallTime) < (DALI_GAP + 50)) and \
@@ -716,7 +725,7 @@ class RGPTCPAdapterLauncher:
 
             self.isDaliQueried = True
             self.callDaliProvider = daliDev
-            self.callDaliTime = daliDev.callDali(data=dd, resp=True)
+            self.callDaliTime = daliDev.callDali(data=dd)
 
             while (daliDev.getCallTime != 0) and \
                     ((current_milli_time() - daliDev.getCallTime) < (DALI_GAP + 50)) and \
