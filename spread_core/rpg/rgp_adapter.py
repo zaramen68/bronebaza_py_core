@@ -1,6 +1,7 @@
 import socket
 import threading
 import time
+import math
 import paho.mqtt.client
 from threading import Timer
 import bitstring
@@ -35,11 +36,13 @@ OPCODEPINGREG = '0x3'
 OPCODEPINGREQ = '0x4'
 OPCODECANDATA = '0x7'
 
+
 QUERY_ACTUAL_LEVEL='A0'
 QUERY_GROU_07 = 'C0'
 QUERY_GROU_811 = 'C1'
 QUERY_IS_ON = '93'
 QUERY_STATE ='90'
+QUERY_FADE_TIME='A5'
 DALI_GAP = 100
 
 MODBUS_DEV = config['MODBUS_DEV']
@@ -160,6 +163,17 @@ def Byte0(clss, cmd=False):
 
     return byte0
 
+def Byte1(waitAns=False, st=False):
+    byte1_=bitstring.BitArray(8)
+    if waitAns:
+        byte1_[7]=waitAns
+    if st:
+        byte1_[5]=st
+    byte1 = byte1_.hex
+
+    return byte1
+
+
 class ModBusProvider:
     def __init__(self, rpgClient, mqtt, *args):
         self._socket = rpgClient
@@ -269,6 +283,9 @@ class DaliProvider:
         self._mqtt = mqtt
         self._callDTime = 0
         self.state = None
+        self.lastLevel = 0
+        self.fadeTime = 0.
+        self.timeOfChange = time.time()
         self.isValid = None
         self.oneByteAnswer = None
         self.twoByteAnswer = None
@@ -285,6 +302,7 @@ class DaliProvider:
 
 
     def setValue(self, val):
+
         self.state = val
 
     @property
@@ -483,6 +501,7 @@ class RGPTCPAdapterLauncher:
         self.isDaliQueried = False
         self.modbusAnswer = False
         self.callDaliProvider = None
+        self.beginTime = None
 
 
 
@@ -552,6 +571,7 @@ class RGPTCPAdapterLauncher:
                     if prov.dev['id'] == int(topic[3]):
                         if prov.dev['type'] == 'DimmingLight':
                             grList = []  #список групп
+                            clf=0
                             if int(topic[4]) == 7:
                                 # set group level command
 
@@ -562,15 +582,17 @@ class RGPTCPAdapterLauncher:
                                 dd_ = VariableTRS3(VariableReader(msg.payload)).value
                                 if dd_ is True:
                                     dd = 254
+
                             elif int(topic[4]) == 6:  # isOff
 
                                 dd_ = VariableTRS3(VariableReader(msg.payload)).value
                                 if dd_ is True:
                                     dd = 0
+                                    clf =1
                             n=0
                             for gr in prov.groupList:
                                 if gr:
-                                    grComm = GroupDaliAddtessComm(n, dd)
+                                    grComm = GroupDaliAddtessComm(n, dd, clf)
                                     grList.append(n)
 
                                     prov.answerIs = False
@@ -596,8 +618,15 @@ class RGPTCPAdapterLauncher:
                             for gr in grList:
                                 qList = qList+self.daliGroup[gr]
                             qList = list(set(qList))    # формирование списка DALI устройств для опроса
+                            threads=[]                  # список потоков опроса dali
+
                             for daliDevice in qList:
-                                self.queryOfDaliDevice(daliDevice)
+                                # t=threading.Thread(target=self.queryDali, args=(daliDevice.getCallTime, daliDevice))
+                                # threads.append(t)
+                                # t.start()
+                                # t.join()
+
+                                self.queryDali(daliDevice.getCallTime, daliDevice)
 
 
                             else:             # not 7, 6, 5
@@ -657,7 +686,7 @@ class RGPTCPAdapterLauncher:
 
         self.isDaliQueried = True
         self.callDaliProvider = daliDev
-        self.callDaliTime = daliDev.callDali(dd)
+        self.callDaliTime = daliDev.callDali(data=dd, resp=True)
 
         while (daliDev.getCallTime != 0) and \
                 ((current_milli_time() - daliDev.getCallTime) < (DALI_GAP + 50)) and \
@@ -687,7 +716,7 @@ class RGPTCPAdapterLauncher:
 
             self.isDaliQueried = True
             self.callDaliProvider = daliDev
-            self.callDaliTime = daliDev.callDali(dd)
+            self.callDaliTime = daliDev.callDali(data=dd, resp=True)
 
             while (daliDev.getCallTime != 0) and \
                     ((current_milli_time() - daliDev.getCallTime) < (DALI_GAP + 50)) and \
@@ -703,6 +732,12 @@ class RGPTCPAdapterLauncher:
             else:  # no answer
                 daliDev.state = None
                 daliDev.isValid = False
+
+    def queryDali(self, starTime, dev):
+        while True:
+            self.queryOfDaliDevice(dev)
+            if (current_milli_time() - starTime) > dev.fadeTime*1000:
+                break
 
     def start_dali(self):
 
@@ -783,6 +818,36 @@ class RGPTCPAdapterLauncher:
             #  query groups
             # query groups
             if prov.isValid:
+                if prov.dev['type'] == 'DimmingLight':
+                    dd= ShortDaliAddtessComm(prov.dadr, QUERY_FADE_TIME, 1)
+
+                    prov.answerIs = False
+                    prov.typeOfQuery = 1  # 8 bit answer is needed
+                    prov.twoByteAnswer = None
+                    prov.oneByteAnswer = None
+
+                    self.callDaliTime = prov.callDali(data=dd, resp=True)
+                    self.isDaliQueried = True
+
+                    self.callDaliProvider = prov
+                    while (prov.getCallTime != 0) and \
+                            ((current_milli_time() - prov.getCallTime) < (DALI_GAP + 50)) and \
+                            self.daliAnswer != 0:
+
+                        if prov.answerIs:
+                            print('answerIs = True')
+                            break
+                    if prov.answerIs and self.daliAnswer != 0:
+                        fTime = prov.state[:4].uint
+                        prov.fadeTime = math.sqrt(2**fTime)/2.
+
+
+                        # success
+                    else:
+                        prov.isValid = False
+                        # no answer
+                        pass
+
                 dd= ShortDaliAddtessComm(prov.dadr, QUERY_GROU_811, 1)
 
                 prov.answerIs = False
@@ -790,7 +855,7 @@ class RGPTCPAdapterLauncher:
                 prov.twoByteAnswer = None
                 prov.oneByteAnswer = None
 
-                self.callDaliTime = prov.callDali(dd)
+                self.callDaliTime = prov.callDali(data=dd, resp=True)
                 self.isDaliQueried = True
 
                 self.callDaliProvider = prov
@@ -813,20 +878,13 @@ class RGPTCPAdapterLauncher:
                     pass
                 #######################################
                 dd = ShortDaliAddtessComm(prov.dadr, QUERY_GROU_07, 1)
-                # dd = QUERY_GROU_811
-                # devaddr = bitstring.BitArray(hex(prov.dadr))
-                # daddr = bitstring.BitArray(6 - devaddr.length)
-                # daddr.append(devaddr)
-                # addrbyte = bitstring.BitArray(bin(0))
-                # addrbyte.append(daddr)
-                # addrbyte.append(bitstring.BitArray(bin(1)))
-                # dd = addrbyte.hex + dd
+
                 prov.answerIs = False
                 prov.typeOfQuery = 1  # 8 bit answer is needed
                 prov.twoByteAnswer = None
                 prov.oneByteAnswer = None
 
-                self.callDaliTime = prov.callDali(dd)
+                self.callDaliTime = prov.callDali(data=dd, resp=True)
                 self.isDaliQueried = True
 
                 self.callDaliProvider = prov
