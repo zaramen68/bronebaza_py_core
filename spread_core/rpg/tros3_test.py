@@ -1,35 +1,32 @@
 from spread_core.mqtt.variables import VariableTRS3, VariableReader
 import paho.mqtt.client
 
-topId = 455
-num =2
-value =False
-topic = 'Tros3/State/2434/Equipment/DimmingLight/635561/0'
-topic1 = 'Tros3/State/2434/Equipment/#'
-
-def on_message(mqttc, userdata, msg):
-    inpack = VariableTRS3(VariableReader(msg.payload))
-    out=inpack
+topId = 44
+num =55
+value =245
 
 mqttc = paho.mqtt.client.Client()
 
-
 mqttc.username_pw_set('admin', 'broker')
-mqttc.on_message = on_message
+# mqttc.connect('127.0.0.1', 1883)
 
-mqttc.connect('10.10.1.211', 1883)
-mqttc.subscribe(topic1, qos=1)
-
-out = VariableTRS3(None, topId, num, value)
+out = VariableTRS3(None, topId, num, value, invalid=True)
 pack = out.pack()
-out1 = VariableTRS3(None, topId, num, val=value, invalid=True)
+inpack = VariableTRS3(VariableReader(pack))
+outList = list(pack)
+out1 = VariableTRS3(None, topId, num, value, invalid=False)
 pack1 = out1.pack()
-
-out2 = VariableTRS3(None, topId, num, val=None)
+inpack1 = VariableTRS3(VariableReader(pack1))
+outList1 = list(pack1)
+out2 = VariableTRS3(None, topId, num, val=None, invalid=True)
 pack2 = out2.pack()
-out3 = VariableTRS3(None, topId, num, val=None, invalid = True)
+inpack2 = VariableTRS3(VariableReader(pack2))
+outList2 = list(pack2)
+out3 = VariableTRS3(None, topId, num, val=None, invalid=False)
 pack3 = out3.pack()
+inpack3 = VariableTRS3(VariableReader(pack3))
+outList3 = list(pack3)
+print('')
 
-mqttc.loop_forever()
 # mqttc.publish(topic='vtrs3', payload=pack, qos=1, retain=True)
 
