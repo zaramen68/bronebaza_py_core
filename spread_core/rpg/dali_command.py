@@ -124,7 +124,7 @@ class RGPTCPAdapterLauncher:
         self.daliSendCommand()
 
     def daliSendCommand(self):
-        i=1
+        i=2
         ii = hex(int((bin(i) + '1'), 2))
         ii = ii[2:]
         if len(ii) == 1:

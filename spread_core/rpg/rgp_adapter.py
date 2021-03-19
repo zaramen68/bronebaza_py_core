@@ -697,17 +697,20 @@ class RGPTCPAdapterLauncher:
 
         self.isDaliQueried = True
         self.callDaliProvider = daliDev
+        self.daliAnswer = None
         self.callDaliTime = daliDev.callDali(data=dd, resp=True)
-        self.reciveData()
+
 
         while (daliDev.getCallTime != 0) and \
                 ((current_milli_time() - daliDev.getCallTime) < (DALI_GAP + 50)) and \
-                self.daliAnswer != 0:
+                self.daliAnswer == None:
 
+            self.reciveData()
             if daliDev.answerIs:
                 print('answerIs = True')
                 break
-        if daliDev.answerIs and self.daliAnswer != 0:  # success
+
+        if daliDev.answerIs and self.daliAnswer == 1:  # success
             # state = bitstring.BitArray(hex(int(prov.state, 16)))
             state = copy.deepcopy(daliDev.state)
             daliDev.dumpMqtt(data=state[5], fl=1, comm=2)
@@ -728,17 +731,20 @@ class RGPTCPAdapterLauncher:
 
             self.isDaliQueried = True
             self.callDaliProvider = daliDev
+            self.daliAnswer = None
             self.callDaliTime = daliDev.callDali(data=dd)
-            self.reciveData()
+
 
             while (daliDev.getCallTime != 0) and \
                     ((current_milli_time() - daliDev.getCallTime) < (DALI_GAP + 50)) and \
-                    self.daliAnswer != 0:
+                    self.daliAnswer == None:
 
+                self.reciveData()
                 if daliDev.answerIs:
                     print('answerIs = True')
                     break
-            if daliDev.answerIs and self.daliAnswer != 0:
+
+            if daliDev.answerIs and self.daliAnswer == 1:
                 # success
                 # prov.dumpMqtt(data=prov.state)
                 daliDev.dumpMqtt(data=int(daliDev.state.uint / 254 * 100), comm=4)
@@ -752,7 +758,10 @@ class RGPTCPAdapterLauncher:
         else:
             delta = dev.fadeTime
         while True:
-            self.queryOfDaliDevice(dev)
+            # self.queryOfDaliDevice(dev)
+            t=threading.Thread(target=self.queryOfDaliDevice, args=(dev,))
+            t.start()
+            t.join()
             if (current_milli_time() - starTime) > delta*1000:
                 break
 
@@ -760,7 +769,7 @@ class RGPTCPAdapterLauncher:
 
         for prov  in self.daliProviders:
             # query state
-            t=threading.Thread(target=self.queryOfDaliDevice, args=(prov))
+            t=threading.Thread(target=self.queryOfDaliDevice, args=(prov,))
             t.start()
             t.join()
             # self.queryOfDaliDevice(prov)
