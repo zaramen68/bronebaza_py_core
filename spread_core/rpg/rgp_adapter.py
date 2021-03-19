@@ -45,7 +45,7 @@ QUERY_STATE ='90'
 QUERY_FADE_TIME='A5'
 DALI_GAP = 100
 
-MIN_FADE_TIME = 0.5
+MIN_FADE_TIME = 0.3
 
 MODBUS_DEV = config['MODBUS_DEV']
 DALI_DEV = config['DALI_DEV']
@@ -841,7 +841,7 @@ class RGPTCPAdapterLauncher:
                     prov.twoByteAnswer = None
                     prov.oneByteAnswer = None
 
-                    self.callDaliTime = prov.callDali(data=dd, resp=True)
+                    self.callDaliTime = prov.callDali(data=dd)
                     self.isDaliQueried = True
 
                     self.callDaliProvider = prov
@@ -870,7 +870,7 @@ class RGPTCPAdapterLauncher:
                 prov.twoByteAnswer = None
                 prov.oneByteAnswer = None
 
-                self.callDaliTime = prov.callDali(data=dd, resp=True)
+                self.callDaliTime = prov.callDali(data=dd)
                 self.isDaliQueried = True
 
                 self.callDaliProvider = prov
@@ -899,7 +899,7 @@ class RGPTCPAdapterLauncher:
                 prov.twoByteAnswer = None
                 prov.oneByteAnswer = None
 
-                self.callDaliTime = prov.callDali(data=dd, resp=True)
+                self.callDaliTime = prov.callDali(data=dd)
                 self.isDaliQueried = True
 
                 self.callDaliProvider = prov

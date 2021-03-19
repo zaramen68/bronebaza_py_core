@@ -124,7 +124,7 @@ class RGPTCPAdapterLauncher:
         self.daliSendCommand()
 
     def daliSendCommand(self):
-        i=2
+        i=1
         ii = hex(int((bin(i) + '1'), 2))
         ii = ii[2:]
         if len(ii) == 1:
@@ -193,10 +193,7 @@ class RGPTCPAdapterLauncher:
                 device = self.sock
                 try:
                     out = device.recive_data()
-                        # if out:
-                        #     break
-                        #
-                        # logging.debug('[  <-]: {}'.format(out))
+
                 except BaseException as ex:
                     logging.exception(ex)
 
