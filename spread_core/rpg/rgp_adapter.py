@@ -1,5 +1,6 @@
 import socket
-import threading
+import multiprocessing
+# import threading
 import time
 import math
 import paho.mqtt.client
@@ -475,7 +476,7 @@ class RGPTcpSocket:
 
 class RGPTCPAdapterLauncher:
     _dumped = False
-    _command_event = threading.Event()
+    _command_event = multiprocessing.Event()
 
     def __init__(self):
         self._time = current_milli_time()
@@ -491,9 +492,9 @@ class RGPTCPAdapterLauncher:
         self._start_time = time.time()
         self.callDaliTime = current_milli_time()
         self.callModBusTime = current_milli_time()
-        self.daliProviders = []
-        self.modbusProviders = []
-        self.daliGroup = [[] for i in range(0, 16)]
+        self.daliProviders = multiprocessing.Manager().list()
+        self.modbusProviders = multiprocessing.Manager().list()
+        self.daliGroup = multiprocessing.Manager().list(multiprocessing.Manager().list() for i in range(0, 16))
         self.daliAnswer=None   # 0 - no answer,
                                 # 1 - ok,
         #                        -1 - 8 bit answer - no needed answer,
@@ -504,8 +505,8 @@ class RGPTCPAdapterLauncher:
         self.modbusAnswer = False
         self.callDaliProvider = None
         self.beginTime = None
-        self.startEvent = threading.Event()
-        self.startListenEvent = threading.Event()
+        self.startEvent = multiprocessing.Event()
+        self.startListenEvent = multiprocessing.Event()
 
 
         for prov in DALI_DEV:
@@ -527,13 +528,13 @@ class RGPTCPAdapterLauncher:
 
 
     def start(self):
-        self._command_event.set()
+        # self._command_event.set()
         self.connect_rpg()
         # self.rpg_listen_fun()
 
-        listen = threading.Thread(target=self.listen_rpg, args=(self.startEvent,))
-        listen1 = threading.Thread(target=self.listen_rpg1, args=(self.startListenEvent,))
-        listen2 = threading.Thread(target=self.modbusQuery, args=(self.startEvent,))
+        listen = multiprocessing.Process(target=self.listen_rpg, args=(self.startEvent,))
+        listen1 = multiprocessing.Process(target=self.listen_rpg1, args=(self.startListenEvent,))
+        listen2 = multiprocessing.Process(target=self.modbusQuery, args=(self.startEvent,))
 
 
 
@@ -768,7 +769,7 @@ class RGPTCPAdapterLauncher:
             delta = dev.fadeTime
         while True:
             # self.queryOfDaliDevice(dev)
-            t=threading.Thread(target=self.queryOfDaliDevice, args=(dev,))
+            t=multiprocessing.Process(target=self.queryOfDaliDevice, args=(dev,))
             t.start()
             t.join()
             if (current_milli_time() - starTime) > delta*1000:
@@ -778,7 +779,7 @@ class RGPTCPAdapterLauncher:
 
         for prov  in self.daliProviders:
             # query state
-            t=threading.Thread(target=self.queryOfDaliDevice, args=(prov,))
+            t=multiprocessing.Process(target=self.queryOfDaliDevice, args=(prov,))
             t.start()
             t.join()
             # self.queryOfDaliDevice(prov)
