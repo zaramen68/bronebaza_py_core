@@ -727,7 +727,7 @@ class RGPTCPAdapterLauncher:
         else:  # no answer
             daliDev.state = None
             daliDev.isValid = False
-            daliDev.dumpMqtt(data=None, fl=1, comm=2, flInvalid=True)
+            self.writeMqtt(dev=daliDev, data=None, fl=1, comm=2)
 
         if daliDev.isValid == True and daliDev.dev['type'] == 'DimmingLight':
             # query level
