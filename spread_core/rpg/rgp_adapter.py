@@ -532,7 +532,7 @@ class RGPTCPAdapterLauncher:
         self.connect_rpg()
         # self.rpg_listen_fun()
 
-        listen = threading.Thread(target=self.listen_rpg)
+        listen = threading.Thread(target=self.listen_rpg, args=(self.startEvent,))
         listen1 = threading.Thread(target=self.listen_rpg1, args=(self.startEvent,))
         listen2 = threading.Thread(target=self.modbusQuery, args=(self.modBusEv,))
 
@@ -911,11 +911,11 @@ class RGPTCPAdapterLauncher:
 
 
 
-    def listen_rpg1(self):
+    def listen_rpg1(self, startEv):
 
-
+        device = self.sock
         while True:
-            device = self.sock
+            # startEv.wait()
             try:
                 out = device.recive_data()
                     # if out:
