@@ -282,7 +282,7 @@ class DaliProvider:
     def __init__(self, rpgClient, mqtt, *args):
         self._socket = rpgClient
         self.dev = args[0]
-        self._mqtt = mqtt
+        self.mqtt = mqtt
         self._callDTime = 0
         self.state = None
         self.lastLevel = 0
@@ -388,15 +388,12 @@ class DaliProvider:
             data_ = self.state
             data = data_.uint
 
-        # out = VariableTRS3(None, self.dev['id'], 0, data, invalid=(not self.isValid))
-        # if self.isValid == False:
-        #     data = None
         out = VariableTRS3(None, self.dev['id'], comm, data)
         if fl == None:
             clientTopic = self._stateTopicLevel
         elif fl == 1:
             clientTopic = self._stateTopicIsOn
-        self._mqtt.publish(topic=clientTopic, payload=out.pack(), qos=0, retain=True)
+        self.mqtt.publish(topic=clientTopic, payload=out.pack(), qos=0, retain=True)
 
 class RGPTcpSocket:
 
@@ -612,7 +609,7 @@ class RGPTCPAdapterLauncher:
                                     self.isDaliQueried = True
                                     self.callDaliTime = prov.callDali(grComm)
                                     self.callDaliProvider = prov
-                                    while (prov.getCallTime != 0) and (current_milli_time()-prov.getCallTime < 100):
+                                    while (prov.getCallTime != 0) and (current_milli_time()-prov.getCallTime < DALI_GAP):
                                         if prov.answerIs:
                                             break
 
@@ -665,7 +662,7 @@ class RGPTCPAdapterLauncher:
                                     self.isDaliQueried = True
                                     self.callDaliTime = prov.callDali(grComm)
                                     self.callDaliProvider = prov
-                                    while (prov.getCallTime != 0) and (current_milli_time()-prov.getCallTime < 100):
+                                    while (prov.getCallTime != 0) and (current_milli_time()-prov.getCallTime < DALI_GAP):
                                         if prov.answerIs:
                                             break
 
@@ -696,10 +693,10 @@ class RGPTCPAdapterLauncher:
         arr = topic.split('/')
         return arr
 
-    def queryOfDaliDevice(self, daliDev, fl=None):
-        if fl is not None:
-            fl.wait()
-            fl.clear()
+    def queryOfDaliDevice(self, daliDev, ev=None):
+        if ev is not None:
+            ev.wait()
+            ev.clear()
         dd = ShortDaliAddtessComm(daliDev.dadr, QUERY_STATE, 1)
 
         daliDev.answerIs = False
@@ -725,7 +722,7 @@ class RGPTCPAdapterLauncher:
         if daliDev.answerIs and self.daliAnswer == 1:  # success
             # state = bitstring.BitArray(hex(int(prov.state, 16)))
             state = copy.deepcopy(daliDev.state)
-            daliDev.dumpMqtt(data=state[5], fl=1, comm=2)
+            self.writeMqtt(dev=daliDev, data=state[5], fl=1, comm=2)
 
         else:  # no answer
             daliDev.state = None
@@ -758,13 +755,12 @@ class RGPTCPAdapterLauncher:
 
             if daliDev.answerIs and self.daliAnswer == 1:
                 # success
-                # prov.dumpMqtt(data=prov.state)
-                daliDev.dumpMqtt(data=int(daliDev.state.uint / 254 * 100), comm=4)
+                self.writeMqtt(dev=daliDev, data=int(daliDev.state.uint / 254 * 100), comm=4)
             else:  # no answer
                 daliDev.state = None
                 daliDev.isValid = False
-        if fl is not None:
-            fl.set()
+        if ev is not None:
+            ev.set()
 
 
     def queryDali(self, starTime, dev):
@@ -780,10 +776,21 @@ class RGPTCPAdapterLauncher:
             if (current_milli_time() - starTime) > delta*1000:
                 break
 
-    def start_dali(self):
 
-        self.startEvent.clear()
-        self.startListenEvent.clear()
+    def writeMqtt(self, dev, data=None, fl=None, comm=0):
+
+        if data == None and dev.state is not None:
+            data_ = dev.state
+            data = data_.uint
+
+        out = VariableTRS3(None, dev.dev['id'], comm, data)
+        if fl == None:
+            clientTopic = dev._stateTopicLevel
+        elif fl == 1:
+            clientTopic = dev._stateTopicIsOn
+        self.mqttc.publish(topic=clientTopic, payload=out.pack(), qos=0, retain=True)
+
+    def start_dali(self):
 
         for prov  in self.daliProviders:
             # query state
@@ -884,8 +891,7 @@ class RGPTCPAdapterLauncher:
                         if grp:
                             self.daliGroup[n].append(prov)
                         n=n+1
-        self.startEvent.set()
-        self.startListenEvent.set()
+
 
     def rpg_listen_fun(self):
 
