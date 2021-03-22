@@ -622,10 +622,13 @@ class RGPTCPAdapterLauncher:
 
                             self.startEvent.clear()
                             self.startListenEvent.clear()
+                            self.qFl.set()
                             for daliDevice in qList:
-                                t=threading.Thread(target=self.queryDali, args= (daliDevice.getCallTime, daliDevice))
+                                t=threading.Thread(target=self.queryDali, args= (daliDevice.getCallTime, daliDevice, self.qFl))
                                 t.start()
-                                t.join()
+                                # t.join()
+
+                            self.qFl.clear()
                             self.startEvent.set()
                             self.startListenEvent.set()
                                 # self.queryDali(daliDevice.getCallTime, daliDevice)
@@ -674,14 +677,17 @@ class RGPTCPAdapterLauncher:
                             qList = list(set(qList))    # формирование списка DALI устройств для опроса
                             self.startEvent.clear()
                             self.startListenEvent.clear()
+                            self.qFl.set()
 
                             for daliDevice in qList:
-                                t=threading.Thread(target=self.queryDali, args=(daliDevice.getCallTime, daliDevice))
+                                t=threading.Thread(target=self.queryDali, args=(daliDevice.getCallTime, daliDevice, self.qFl))
                                 t.start()
-                                t.join()
+                                # t.join()
 
+                            self.qFl.clear()
                             self.startEvent.set()
                             self.startListenEvent.set()
+
 
                                 # self.queryDali(daliDevice.getCallTime, daliDevice)
 
@@ -693,10 +699,8 @@ class RGPTCPAdapterLauncher:
         arr = topic.split('/')
         return arr
 
-    def queryOfDaliDevice(self, daliDev, ev=None):
-        if ev is not None:
-            ev.wait()
-            ev.clear()
+    def queryOfDaliDevice(self, daliDev):
+
         dd = ShortDaliAddtessComm(daliDev.dadr, QUERY_STATE, 1)
 
         daliDev.answerIs = False
@@ -759,20 +763,20 @@ class RGPTCPAdapterLauncher:
             else:  # no answer
                 daliDev.state = None
                 daliDev.isValid = False
-        if ev is not None:
-            ev.set()
 
 
-    def queryDali(self, starTime, dev):
+    def queryDali(self, starTime, dev, ev):
+
         if dev.fadeTime == 0:
             delta = MIN_FADE_TIME
         else:
             delta = dev.fadeTime
 
         while True:
-            t=threading.Thread(target=self.queryOfDaliDevice, args=(dev, self.qFl))
-            t.start()
-            t.join()
+            ev.wait()
+            ev.clear()
+            self.queryOfDaliDevice(dev)
+            ev.set()
             if (current_milli_time() - starTime) > delta*1000:
                 break
 
@@ -795,7 +799,6 @@ class RGPTCPAdapterLauncher:
         for prov  in self.daliProviders:
             # query state
             self.queryOfDaliDevice(prov)
-
 
             # query groups
             if prov.isValid:
