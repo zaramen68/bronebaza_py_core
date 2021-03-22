@@ -504,6 +504,8 @@ class RGPTCPAdapterLauncher:
         self.modbusAnswer = False
         self.callDaliProvider = None
         self.beginTime = None
+        self.modBusEv = threading.Event()
+        self.startEvent = threading.Event()
 
 
 
@@ -530,8 +532,8 @@ class RGPTCPAdapterLauncher:
         self.connect_rpg()
         # self.rpg_listen_fun()
         listen = threading.Thread(target=self.listen_rpg)
-        listen1 = threading.Thread(target=self.listen_rpg1)
-        listen2 = threading.Thread(target=self.modbusQuery)
+        listen1 = threading.Thread(target=self.listen_rpg1, args=(self.startEvent,))
+        listen2 = threading.Thread(target=self.modbusQuery, args=(self.modBusEv,))
 
 
 
@@ -541,6 +543,8 @@ class RGPTCPAdapterLauncher:
         self.start_dali()
 
         listen2.start()
+        self.modBusEv.set()
+        self.startEvent.set()
         self.mqttc.loop_forever()
 
         # self.test_dali_num()
@@ -555,7 +559,8 @@ class RGPTCPAdapterLauncher:
         print("Subscribed: " + str(mid) + " " + str(granted_qos))
 
     def on_message(self, mqttc, userdata, msg):
-
+        self.startEvent.clear()
+        self.modBusEv.clear()
         try:
             topic = self.of(msg.topic)
             if 'Modbus' in topic:
@@ -616,14 +621,9 @@ class RGPTCPAdapterLauncher:
                             for gr in grList:
                                 qList = qList+self.daliGroup[gr]
                             qList = list(set(qList))    # формирование списка DALI устройств для опроса
-                            threads=[]                  # список потоков опроса dali
+
 
                             for daliDevice in qList:
-                                # t=threading.Thread(target=self.queryDali, args=(daliDevice.getCallTime, daliDevice))
-                                # threads.append(t)
-                                # t.start()
-                                # t.join()
-
                                 self.queryDali(daliDevice.getCallTime, daliDevice)
 
                         elif prov.dev['type'] == 'SwitchingLight':
@@ -668,19 +668,14 @@ class RGPTCPAdapterLauncher:
                             for gr in grList:
                                 qList = qList+self.daliGroup[gr]
                             qList = list(set(qList))    # формирование списка DALI устройств для опроса
-                            threads=[]                  # список потоков опроса dali
+
 
                             for daliDevice in qList:
-                                # t=threading.Thread(target=self.queryDali, args=(daliDevice.getCallTime, daliDevice))
-                                # threads.append(t)
-                                # t.start()
-                                # t.join()
-
                                 self.queryDali(daliDevice.getCallTime, daliDevice)
-
-
         except BaseException as ex:
             logging.exception(ex)
+        self.startEvent.set()
+        self.modBusEv.set()
 
     def of(self, topic):
         arr = topic.split('/')
@@ -697,9 +692,8 @@ class RGPTCPAdapterLauncher:
 
         self.isDaliQueried = True
         self.callDaliProvider = daliDev
-        self.daliAnswer = None
-        self.callDaliTime = daliDev.callDali(data=dd, resp=True)
-
+        self.daliAnswer=None
+        self.callDaliTime = daliDev.callDali(data=dd)
 
         while (daliDev.getCallTime != 0) and \
                 ((current_milli_time() - daliDev.getCallTime) < (DALI_GAP + 50)) and \
