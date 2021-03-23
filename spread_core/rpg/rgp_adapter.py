@@ -1,5 +1,6 @@
 import socket
 import multiprocessing
+import ctypes
 # import threading
 import time
 import math
@@ -57,6 +58,8 @@ topic_send =config['TOPIC_SEND']
 topic_dump = config['TOPIC_DUMP']
 
 is_lock=False
+dalId = multiprocessing.Value('i', 0)
+isQuery = multiprocessing.Value(ctypes.c_bool, False)
 
 current_milli_time = lambda: int(round(time.time() * 1000))
 
@@ -302,6 +305,7 @@ class DaliProvider:
         self._stateTopicLevel = 'Tros3/State/{}/Equipment/{}/{}/4'.format(PROJECT, args[0]['type'], args[0]['id'])
         self._stateTopicIsOn = 'Tros3/State/{}/Equipment/{}/{}/{}'.format(PROJECT, args[0]['type'], args[0]['id'], isONID(args[0]['type']))
         self.answer = None
+        self.shDev = args[1]
 
 
     def setValue(self, val):
@@ -492,8 +496,10 @@ class RGPTCPAdapterLauncher:
         self._start_time = time.time()
         self.callDaliTime = current_milli_time()
         self.callModBusTime = current_milli_time()
-        self.daliProviders = multiprocessing.Manager().list()
-        self.modbusProviders = multiprocessing.Manager().list()
+        self.daliProviders = []
+        self.modbusProviders = []
+        self.shDaliDev = multiprocessing.Manager().list()
+
         self.daliGroup = multiprocessing.Manager().list(multiprocessing.Manager().list() for i in range(0, 16))
         self.daliAnswer=None   # 0 - no answer,
                                 # 1 - ok,
@@ -510,18 +516,22 @@ class RGPTCPAdapterLauncher:
 
 
         for prov in DALI_DEV:
-            daliDev = DaliProvider(self.sock, self.mqttc, prov)
+            sharedDev = multiprocessing.Manager().dict(answerIs = False,
+                                                       timeOfQueri = time.time(),
+                                                       noAnswer = True,
+                                                       isValid = False,
+                                                       id = prov['id'],
+                                                       channel = prov['channel'],
+                                                       value = None
+                                                       )
+            daliDev = DaliProvider(self.sock, self.mqttc, (prov, sharedDev))
             self.daliProviders.append(daliDev)
+            self.shDaliDev.append((sharedDev))
 
         for prov in MODBUS_DEV:
             modbusDev = ModBusProvider(self.sock, self.mqttc, prov)
             self.modbusProviders.append(modbusDev)
 
-        # for prov in self.daliProviders:
-        #     for index, val in prov.dev['FunctionUnitIndex'].items():
-        #         topic = 'Jocket/Command/{}/#'.format(PROJECT)
-        #         self.mqttc.subscribe(topic)
-        #         logging.debug('Subscribed to {}'.format(topic))
         topic = 'Tros3/Command/{}/#'.format(PROJECT)
         self.mqttc.subscribe(topic)
         logging.debug('Subscribed to {}'.format(topic))
@@ -533,7 +543,7 @@ class RGPTCPAdapterLauncher:
         # self.rpg_listen_fun()
 
         listen = multiprocessing.Process(target=self.listen_rpg, args=(self.startEvent,))
-        listen1 = multiprocessing.Process(target=self.listen_rpg1, args=(self.startListenEvent,))
+        listen1 = multiprocessing.Process(target=self.listen_rpg1, args=(dalId, isQuery, self.startListenEvent, self.shDaliDev))
         listen2 = multiprocessing.Process(target=self.modbusQuery, args=(self.startEvent,))
 
 
@@ -960,7 +970,7 @@ class RGPTCPAdapterLauncher:
                     out = out[(len(out) - len(rest)):]
 
 
-    def listen_rpg1(self, startEvent):
+    def listen_rpg1(self, diD, qFlag, startEvent, listOfDev):
 
         device = self.sock
 
