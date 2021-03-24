@@ -288,7 +288,7 @@ class ModBusProvider:
 class DaliProvider:
     def __init__(self, rpgClient, mqtt, *args):
         self._socket = rpgClient
-        self.dev = args[0]
+        self.dev = args[0][0]
         self._mqtt = mqtt
         self._callDTime = 0
         self.state = None
@@ -304,11 +304,11 @@ class DaliProvider:
         self.groupList=list()
         self._call = None
         self.answerIs = False
-        self.dadr = args[0]['dadr']
-        self._stateTopicLevel = 'Tros3/State/{}/Equipment/{}/{}/4'.format(PROJECT, args[0]['type'], args[0]['id'])
-        self._stateTopicIsOn = 'Tros3/State/{}/Equipment/{}/{}/{}'.format(PROJECT, args[0]['type'], args[0]['id'], isONID(args[0]['type']))
+        self.dadr = args[0][0]['dadr']
+        self._stateTopicLevel = 'Tros3/State/{}/Equipment/{}/{}/4'.format(PROJECT, args[0][0]['type'], args[0][0]['id'])
+        self._stateTopicIsOn = 'Tros3/State/{}/Equipment/{}/{}/{}'.format(PROJECT, args[0][0]['type'], args[0][0]['id'], isONID(args[0][0]['type']))
         self.answer = None
-        self.shDev = args[1]
+        self.shDev = args[0][1]
 
 
     def setValue(self, val):
@@ -503,7 +503,7 @@ class RGPTCPAdapterLauncher:
         self.modbusProviders = []
         self.shDaliDev = multiprocessing.Manager().list()
 
-        self.daliGroup = multiprocessing.Manager().list(multiprocessing.Manager().list() for i in range(0, 16))
+
         self.daliAnswer=None   # 0 - no answer,
                                 # 1 - ok,
         #                        -1 - 8 bit answer - no needed answer,
