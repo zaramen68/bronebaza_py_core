@@ -742,6 +742,7 @@ class RGPTCPAdapterLauncher:
             # state = bitstring.BitArray(hex(int(prov.state, 16)))
             state = copy.deepcopy(daliDev['shDev']['value'])
             daliDev.dumpMqtt(data=state[5], fl=1, comm=2)
+            daliDev.isValid=state[5]
 
         else:  # no answer
             daliDev.shDev['value'] = None
@@ -813,31 +814,32 @@ class RGPTCPAdapterLauncher:
                 if prov.dev['type'] == 'DimmingLight':
                     dd= ShortDaliAddtessComm(prov.dadr, QUERY_FADE_TIME, 1)
 
-                    prov['shDev']['answerIs'] = False
+                    prov.shDev['answerIs'] = False
                     daliQueryType.value = 1  # 8 bit answer is needed
-                    prov['shDev']['twoByteAnswer'] = None
-                    prov['shDev']['oneByteAnswer'] = None
+                    prov.shDev['twoByteAnswer'] = None
+                    prov.shDev['oneByteAnswer'] = None
 
                     self.callDaliTime = prov.callDali(data=dd)
                     isQuery.value = True
-
+                    daliAnswerType.value = -10
                     dalId[0] = prov['id']
                     dalId[1] = prov['channel']
                     while (prov.getCallTime != 0) and \
                             ((current_milli_time() - prov.getCallTime) < (DALI_GAP + 50)) and \
-                            self.daliAnswer != 0:
+                            daliAnswerType.value == -10:
 
-                        if prov.answerIs:
+                        if prov.shDev['answerIs']:
                             print('answerIs = True')
                             break
-                    if prov.answerIs and self.daliAnswer != 0:
-                        fTime = prov.state[:4].uint
+                    if prov.answerIs and daliAnswerType.value == 1:
+                        fTime = prov.shDev['value'][:4].uint
                         prov.fadeTime = math.sqrt(2**fTime)/2.
 
 
                         # success
                     else:
                         prov.isValid = False
+                        prov.shDev['isValid']=True
                         # no answer
                         pass
 
