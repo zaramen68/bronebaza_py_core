@@ -724,7 +724,8 @@ class RGPTCPAdapterLauncher:
         daliDev.shDev['oneByteAnswer'] = None
 
         isQuery.value = True
-        dalId.value = daliDev.shDev['id']
+        dalId[0] = daliDev.shDev['id']
+        dalId[1] = daliDev.shDev['channel']
         daliAnswerType.value = -10
         self.callDaliTime = daliDev.callDali(data=dd, resp=True)
 
@@ -760,7 +761,8 @@ class RGPTCPAdapterLauncher:
 
             isQuery.value = True
             self.callDaliProvider = daliDev
-            dalId.value = daliDev['shDev']['id']
+            dalId[0] = daliDev.shDev['id']
+            dalId[1] = daliDev.shDev['channel']
             daliAnswerType.value = -10
             self.callDaliTime = daliDev.callDali(data=dd)
             daliDev.shDev['timeOfQuery']=self.callDaliTime
@@ -1101,6 +1103,7 @@ class RGPTCPAdapterLauncher:
                                 # self.callDaliProvider.dumpMqtt(dataDali)
                                 answerType.value = 1
                                 qDev['isValid'] = True
+                                qDev['answerIs'] = True
                             elif (qType.value != 1):
                                 print('no answer needed')
                                 answerType.value = -1
@@ -1139,7 +1142,7 @@ class RGPTCPAdapterLauncher:
                             qDev['twoByteAnswer'] = daliData
                             if (qType.value == 0):
 
-                                answerType.value = 1
+                                # answerType.value = 1
                                 # qFlag.value = False
                                 qDev['isValid'] = True
                             print('dali 2 byte answer == {}'.format(str(daliData)))
