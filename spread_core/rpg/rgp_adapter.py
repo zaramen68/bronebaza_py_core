@@ -711,7 +711,7 @@ class RGPTCPAdapterLauncher:
 
     def queryOfDaliDevice(self, daliDev, passEvent=None):
         if passEvent is not None:
-            passEvent.waite()
+            passEvent.wait()
             passEvent.clear()
         # self.startEvent.clear()
         # self.startListenEvent.clear()
