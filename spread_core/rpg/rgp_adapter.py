@@ -1124,6 +1124,7 @@ class RGPTCPAdapterLauncher:
                                 qDev['twoByteAnswer'] = None
                                 qDev['isValid'] = False
                                 qDev['noAnswer'] = True
+                                qDev['answerIs'] = True
 
 
                             answerType.value = 0
