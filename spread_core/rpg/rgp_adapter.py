@@ -516,6 +516,7 @@ class RGPTCPAdapterLauncher:
         self.beginTime = None
         self.startEvent = multiprocessing.Event()
         self.startListenEvent = multiprocessing.Event()
+        self.queryPassEvent = multiprocessing.Event()
 
 
         for prov in DALI_DEV:
@@ -708,19 +709,22 @@ class RGPTCPAdapterLauncher:
         arr = topic.split('/')
         return arr
 
-    def queryOfDaliDevice(self, daliDev):
-        self.startEvent.clear()
+    def queryOfDaliDevice(self, daliDev, passEvent=None):
+        if passEvent is not None:
+            passEvent.waite()
+            passEvent.clear()
+        # self.startEvent.clear()
         # self.startListenEvent.clear()
         # query state
         dd = ShortDaliAddtessComm(daliDev.dadr, QUERY_STATE, 1)
 
-        daliDev['shDev']['answerIs'] = False
+        daliDev.shDev['answerIs'] = False
         daliQueryType.value = 1  # 8 bit answer is needed
-        daliDev['shDev']['twoByteAnswer'] = None
-        daliDev['shDev']['oneByteAnswer'] = None
+        daliDev.shDev['twoByteAnswer'] = None
+        daliDev.shDev['oneByteAnswer'] = None
 
         isQuery.value = True
-        dalId.value = daliDev['shDev']['id']
+        dalId.value = daliDev.shDev['id']
         daliAnswerType.value = -10
         self.callDaliTime = daliDev.callDali(data=dd, resp=True)
 
@@ -730,17 +734,17 @@ class RGPTCPAdapterLauncher:
                 daliAnswerType.value == -10:
 
             # self.reciveData()
-            if daliDev['shDev']['answerIs']:
+            if daliDev.shDev['answerIs']:
                 print('answerIs = True')
                 break
 
-        if daliDev.answerIs and self.daliAnswer == 1:  # success
+        if daliDev.shDev['answerIs'] and daliAnswerType.value == 1:  # success
             # state = bitstring.BitArray(hex(int(prov.state, 16)))
-            state = copy.deepcopy(daliDev.state)
+            state = copy.deepcopy(daliDev['shDev']['value'])
             daliDev.dumpMqtt(data=state[5], fl=1, comm=2)
 
         else:  # no answer
-            daliDev.state = None
+            daliDev.shDev['value'] = None
             daliDev.isValid = False
             daliDev.dumpMqtt(data=None, fl=1, comm=2, flInvalid=True)
 
@@ -748,36 +752,41 @@ class RGPTCPAdapterLauncher:
             # query level
             dd = ShortDaliAddtessComm(daliDev.dadr, QUERY_ACTUAL_LEVEL, 1)
 
-            daliDev.answerIs = False
-            daliDev.typeOfQuery = 1  # 8 bit answer is needed
-            daliDev.twoByteAnswer = None
-            daliDev.oneByteAnswer = None
+            daliDev.shDev['answerIs'] = False
+            daliQueryType.value = 1  # 8 bit answer is needed
+            daliDev.shDev['twoByteAnswer'] = None
+            daliDev.shDev['oneByteAnswer'] = None
 
-            self.isDaliQueried = True
+            isQuery.value = True
             self.callDaliProvider = daliDev
-            self.daliAnswer = None
+            dalId.value = daliDev['shDev']['id']
+            daliAnswerType.value = -10
             self.callDaliTime = daliDev.callDali(data=dd)
+            daliDev.shDev['timeOfQuery']=self.callDaliTime
 
 
             while (daliDev.getCallTime != 0) and \
                     ((current_milli_time() - daliDev.getCallTime) < (DALI_GAP + 50)) and \
-                    self.daliAnswer == None:
+                    daliAnswerType.value == -10:
 
-                self.reciveData()
-                if daliDev.answerIs:
+                # self.reciveData()
+                if daliDev.shDev['answerIs']:
                     print('answerIs = True')
                     break
 
-            if daliDev.answerIs and self.daliAnswer == 1:
+            if daliDev.shDev['answerIs'] and daliAnswerType.value == 1:
                 # success
                 # prov.dumpMqtt(data=prov.state)
-                daliDev.dumpMqtt(data=int(daliDev.state.uint / 254 * 100), comm=4)
+                state = copy.deepcopy(daliDev['shDev']['value'])
+                daliDev.dumpMqtt(data=int(state.uint / 254 * 100), comm=4)
             else:  # no answer
-                daliDev.state = None
-                daliDev.isValid = False
+                daliDev.shDev['value'] = None
+                daliDev.shDev['isValid'] = False
 
-        self.startEvent.set()
-        self.startListenEvent.set()
+        # self.startEvent.set()
+        if passEvent is not None:
+            passEvent.set()
+        # self.startListenEvent.set()
 
     def queryDali(self, starTime, dev):
         if dev.fadeTime == 0:
@@ -786,9 +795,9 @@ class RGPTCPAdapterLauncher:
             delta = dev.fadeTime
         while True:
             # self.queryOfDaliDevice(dev)
-            t=multiprocessing.Process(target=self.queryOfDaliDevice, args=(dev,))
+            t=multiprocessing.Process(target=self.queryOfDaliDevice, args=(dev, self.queryPassEvent))
             t.start()
-            t.join()
+
             if (current_milli_time() - starTime) > delta*1000:
                 break
 
@@ -1114,6 +1123,8 @@ class RGPTCPAdapterLauncher:
                                 qDev['oneByteAnswer'] = None
                                 qDev['twoByteAnswer'] = None
                                 qDev['isValid'] = False
+                                qDev['noAnswer'] = True
+
 
                             answerType.value = 0
                             # qFlag.value = False
