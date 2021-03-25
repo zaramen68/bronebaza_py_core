@@ -65,6 +65,11 @@ daliAnswerType = multiprocessing.Value('i', 0)
 isQuery = multiprocessing.Value(ctypes.c_bool, False)
 timeOfRecive=multiprocessing.Value(ctypes.c_double, time.time())
 
+modBusQueue = multiprocessing.Queue()
+daliQueue = multiprocessing.Queue()
+diQueue = multiprocessing.Queue()
+canQueue = multiprocessing.Queue()
+
 current_milli_time = lambda: int(round(time.time() * 1000))
 
 def hex_to_bool(x):
@@ -289,7 +294,7 @@ class ModBusProvider:
 class DaliProvider:
     def __init__(self, rpgClient, mqtt, *args):
         self._socket = rpgClient
-        self.dev = args[0][0]
+        self.dev = args[0]
         self._mqtt = mqtt
         self._callDTime = 0
         self.state = None
@@ -305,11 +310,11 @@ class DaliProvider:
         self.groupList=list()
         self._call = None
         self.answerIs = False
-        self.dadr = args[0][0]['dadr']
-        self._stateTopicLevel = 'Tros3/State/{}/Equipment/{}/{}/4'.format(PROJECT, args[0][0]['type'], args[0][0]['id'])
-        self._stateTopicIsOn = 'Tros3/State/{}/Equipment/{}/{}/{}'.format(PROJECT, args[0][0]['type'], args[0][0]['id'], isONID(args[0][0]['type']))
+        self.dadr = args[0]['dadr']
+        self._stateTopicLevel = 'Tros3/State/{}/Equipment/{}/{}/4'.format(PROJECT, args[0]['type'], args[0]['id'])
+        self._stateTopicIsOn = 'Tros3/State/{}/Equipment/{}/{}/{}'.format(PROJECT, args[0]['type'], args[0]['id'], isONID(args[0]['type']))
         self.answer = None
-        self.shDev = args[0][1]
+
 
 
     def setValue(self, val):
@@ -522,19 +527,10 @@ class RGPTCPAdapterLauncher:
 
 
         for prov in DALI_DEV:
-            sharedDev = multiprocessing.Manager().dict(answerIs = False,
-                                                       timeOfQueri = time.time(),
-                                                       noAnswer = True,
-                                                       isValid = False,
-                                                       id = prov['id'],
-                                                       channel = prov['channel'],
-                                                       value = None,
-                                                       oneByteAnswer = None,
-                                                       twoByteAnswer = None
-                                                       )
-            daliDev = DaliProvider(self.sock, self.mqttc, (prov, sharedDev))
+
+            daliDev = DaliProvider(self.sock, self.mqttc, prov)
             self.daliProviders.append(daliDev)
-            self.shDaliDev.append((sharedDev))
+
 
         for prov in MODBUS_DEV:
             modbusDev = ModBusProvider(self.sock, self.mqttc, prov)
@@ -552,8 +548,8 @@ class RGPTCPAdapterLauncher:
 
         listen = multiprocessing.Process(target=self.listen_rpg, args=(self.startEvent,))
         listen1 = multiprocessing.Process(target=self.listen_rpg1,
-                                          args=(dalId, isQuery, daliQueryType, daliAnswerType,
-                                                                         timeOfRecive, self.shDaliDev, self.startListenEvent ))
+                                          args=(canQueue, daliQueue, modBusQueue,
+                                                                         timeOfRecive, self.startListenEvent ))
         listen2 = multiprocessing.Process(target=self.modbusQuery, args=(self.startEvent,))
 
 
@@ -720,83 +716,87 @@ class RGPTCPAdapterLauncher:
         # query state
         dd = ShortDaliAddtessComm(daliDev.dadr, QUERY_STATE, 1)
 
-        daliDev.shDev['answerIs'] = False
-        daliQueryType.value = 1  # 8 bit answer is needed
-        daliDev.shDev['twoByteAnswer'] = None
-        daliDev.shDev['oneByteAnswer'] = None
+        daliDev.answerIs = False
+        daliDev.typeOfQuery = 1  # 8 bit answer is needed
+        daliDev.twoByteAnswer = None
+        daliDev.oneByteAnswer = None
 
-
-        dalId[0] = daliDev.shDev['id']
-        dalId[1] = daliDev.shDev['channel']
-        daliAnswerType.value = -10
+        self.isDaliQueried = True
+        self.callDaliProvider = daliDev
+        self.daliAnswer = None
         self.callDaliTime = daliDev.callDali(data=dd, resp=True)
-        isQuery.value = True
 
-        while (daliDev.getCallTime != 0) and \
-                (((current_milli_time() - daliDev.getCallTime)) < (DALI_GAP + 50)) and \
-                daliAnswerType.value == -10:
+        while True:
+            if daliQueue.empty() is not True:
+                rsvTime, data = daliQueue.get_nowait()
+                if (rsvTime-daliDev.getCallTime) <= (DALI_GAP+50) and self.callDaliProvider is not None:
+                    res, resFl, resData = self.workWithDaliData(daliDev, data)
+                    if res == 0:
+                        break
+                    elif res == 1:
+                        continue
+                    elif res == 2:
+                        break
 
-            # self.reciveData()
-            if daliDev.shDev['answerIs']:
-                print('answerIs = True')
-                break
-        isQuery.value = False
-
-        if daliDev.shDev['answerIs'] and daliAnswerType.value == 1:  # success
+        if daliDev.answerIs and self.daliAnswer == 1:  # success
             # state = bitstring.BitArray(hex(int(prov.state, 16)))
-            state = copy.deepcopy(daliDev.shDev['value'])
-            daliDev.dumpMqtt(data=state[5], fl=1, comm=2)
-            print('state={}'.format(state.bin))
-            daliDev.isValid=state[5]
+            state = copy.deepcopy(daliDev.state)
+            self.writeMqtt(dev=daliDev, data=state[5], fl=1, comm=2)
 
         else:  # no answer
-            daliDev.shDev['value'] = None
+            daliDev.state = None
             daliDev.isValid = False
-            daliDev.dumpMqtt(data=None, fl=1, comm=2, flInvalid=True)
+            self.writeMqtt(dev=daliDev, data=None, fl=1, comm=2)
 
         if daliDev.isValid == True and daliDev.dev['type'] == 'DimmingLight':
             # query level
             dd = ShortDaliAddtessComm(daliDev.dadr, QUERY_ACTUAL_LEVEL, 1)
 
-            daliDev.shDev['answerIs'] = False
-            daliQueryType.value = 1  # 8 bit answer is needed
-            daliDev.shDev['twoByteAnswer'] = None
-            daliDev.shDev['oneByteAnswer'] = None
+            daliDev.answerIs = False
+            daliDev.typeOfQuery = 1  # 8 bit answer is needed
+            daliDev.twoByteAnswer = None
+            daliDev.oneByteAnswer = None
 
-
+            self.isDaliQueried = True
             self.callDaliProvider = daliDev
-            dalId[0] = daliDev.shDev['id']
-            dalId[1] = daliDev.shDev['channel']
-            daliAnswerType.value = -10
-            isQuery.value = True
+            self.daliAnswer = None
             self.callDaliTime = daliDev.callDali(data=dd)
-            
-            daliDev.shDev['timeOfQuery']=self.callDaliTime
-
 
             while (daliDev.getCallTime != 0) and \
                     ((current_milli_time() - daliDev.getCallTime) < (DALI_GAP + 50)) and \
-                    daliAnswerType.value == -10:
+                    self.daliAnswer == None:
 
-                # self.reciveData()
-                if daliDev.shDev['answerIs']:
+                self.reciveData()
+                if daliDev.answerIs:
                     print('answerIs = True')
                     break
-            isQuery.value = False
 
-            if daliDev.shDev['answerIs'] and daliAnswerType.value == 1:
+            if daliDev.answerIs and self.daliAnswer == 1:
                 # success
-                # prov.dumpMqtt(data=prov.state)
-                state = copy.deepcopy(daliDev.shDev['value'])
-                daliDev.dumpMqtt(data=int(state.uint / 254 * 100), comm=4)
+                self.writeMqtt(dev=daliDev, data=int(daliDev.state.uint / 254 * 100), comm=4)
             else:  # no answer
-                daliDev.shDev['value'] = None
-                daliDev.shDev['isValid'] = False
+                daliDev.state = None
+                daliDev.isValid = False
 
         # self.startEvent.set()
         if passEvent is not None:
             passEvent.set()
         # self.startListenEvent.set()
+
+
+    def writeMqtt(self, dev, data=None, fl=None, comm=0):
+
+        if data == None and dev.state is not None:
+            data_ = dev.state
+            data = data_.uint
+
+        out = VariableTRS3(None, dev.dev['id'], comm, data)
+        if fl == None:
+            clientTopic = dev._stateTopicLevel
+        elif fl == 1:
+            clientTopic = dev._stateTopicIsOn
+        self.mqttc.publish(topic=clientTopic, payload=out.pack(), qos=0, retain=True)
+
 
     def queryDali(self, starTime, dev):
         if dev.fadeTime == 0:
@@ -1031,7 +1031,7 @@ class RGPTCPAdapterLauncher:
                     out = out[(len(out) - len(rest)):]
 
 
-    def listen_rpg1(self,  diD, qFlag, qType, answerType, timeOfRecive, listOfDev, startEvent):
+    def listen_rpg1(self, canQue, daliQue, modBusQue, timeOfRecive, startEvent):
 
         device = self.sock
 
@@ -1046,21 +1046,21 @@ class RGPTCPAdapterLauncher:
             else:
                 if out is not None:
                     timeOfRecive.value = time.time()
+                    rsvTime = time.time()
                     while len(out) > 0:
                         rpgData, rest = self.parceData(out)
                         if hex(rpgData['opCode']) == OPCODECANDATA:
-                            if qFlag.value:
-                                for dev in listOfDev:
-                                    if diD[0] == dev['id'] and diD[1]==dev['channel']:
-                                        self.parceCAN(qFlag, qType, answerType, dev, rpgData['payloadCAN'])
-                                        break
-                            else:
-                                self.parceCAN(qFlag, qType, answerType, qDev=None, data=rpgData['payloadCAN'])
+
+                            self.parceCAN(rsvTime, daliQue, modBusQue, rpgData['payloadCAN'])
+
+
                             # print('===={0}========={1}========'.format(hex(rpgData['payloadCAN']['canId'][0]), hex(rpgData['payloadCAN']['canId'][1])))
                         elif hex(rpgData['opCode']) == OPCODEPINGREQ:
                             print("04 00 00 00")
+                            canQue.put(rpgData['payloadCAN']['data'])
                         elif hex(rpgData['opCode']) == OPCODECONNECT:
                             print("RPG GATEWAY IS CONNECTED")
+                            canQue.put(rpgData['payloadCAN']['data'])
                         if len(rest) == 0:
                             break
                         out = out[(len(out)-len(rest)):]
@@ -1069,7 +1069,7 @@ class RGPTCPAdapterLauncher:
                     # self.mqttc.publish(topic=topic_send[1] + '/lamp', payload=str(out))
                     # logging.debug('[recive from server  <-]: {}'.format(out))
 
-    def parceCAN(self, qFlag, qType, answerType, qDev, data):
+    def parceCAN(self, rsvTime, daliQue, modBusQue, data):
         canId=bytearray(2)
         canId[0]=data['canId'][1]
         canId[1]=data['canId'][0]
@@ -1090,119 +1090,123 @@ class RGPTCPAdapterLauncher:
             if n == 2:
                 #  ModBus
                 modBus = data['data']
-                bbyte1 = bitstring.BitArray(hex(data['data'][0]))
-                byte1 = bitstring.BitArray(8 - bbyte1.len)
-                byte1.append(bbyte1)
-                if byte1[4] is not True:   #   CMD or not CMD
-                    if byte1[5] is not True:  #   PART or not PART
-                        mbchann_ = byte1[-2:]
-                        mbchann = mbchann_.uint
-                        maddr = modBus[1]
-                        fcode = hex(modBus[2])
-                        nbite = modBus[3]
-                        modBusData = modBus[4:(4+nbite)]
-                        print(':::modbus byte1 = {0} chann={1} id={2} fcode={3} nbite={4} data = {5}'.format(byte1.bin, mbchann_.bin, maddr, \
-                                                                                       str(fcode), nbite, str(modBusData)))
-                        for dev in self.modbusProviders:
-                            if dev.channel == mbchann and dev.maddr == maddr:
-                                dev.setValue(modBusData)
-                                dev.getAnswer(modBusData)
-                                dev.work()
-
-                                pass
+                modBusQue.put_nowait((rsvTime, modBus))
+                # bbyte1 = bitstring.BitArray(hex(data['data'][0]))
+                # byte1 = bitstring.BitArray(8 - bbyte1.len)
+                # byte1.append(bbyte1)
+                # if byte1[4] is not True:   #   CMD or not CMD
+                #     if byte1[5] is not True:  #   PART or not PART
+                #         mbchann_ = byte1[-2:]
+                #         mbchann = mbchann_.uint
+                #         maddr = modBus[1]
+                #         fcode = hex(modBus[2])
+                #         nbite = modBus[3]
+                #         modBusData = modBus[4:(4+nbite)]
+                #         print(':::modbus byte1 = {0} chann={1} id={2} fcode={3} nbite={4} data = {5}'.format(byte1.bin, mbchann_.bin, maddr, \
+                #                                                                        str(fcode), nbite, str(modBusData)))
+                #
+                #
+                #         for dev in self.modbusProviders:
+                #             if dev.channel == mbchann and dev.maddr == maddr:
+                #                 dev.setValue(modBusData)
+                #                 dev.getAnswer(modBusData)
+                #                 dev.work()
+                #
+                #                 pass
                 # self.mqttc.publish(topic= topic_dump[2], payload=str(modBus), qos=1, retain=True)
                 print('===========mbus======={}'.format(str(modBus)))
 
-            elif n==1 and qDev is not None:
+            elif n==1:
                 #  Dali
                 # if (current_milli_time()-self.callDaliTime)<= DALI_GAP:
-                    bbyte1 = bitstring.BitArray(hex(data['data'][0]))
-                    byte1=bitstring.BitArray(8-bbyte1.len)
-                    byte1.append(bbyte1)
-
-                    if byte1[2] is not True:
-                        bfl = bitstring.BitArray(6)
-                        bfl.append(byte1[3:5])
-                        fl=bfl.int
-                        b_chann = bitstring.BitArray(5)
-                        b_chann.append(byte1[5:])
-                        i_chann=b_chann.int
-
-                        if fl == 0:
-                            # 8 bit anser
-                            daliData =bitstring.BitArray(hex(data['data'][1]))
-
-                            print('dali 1 byte answer {}'.format(daliData.bin))
-
-                            if (qType.value == 1) and \
-                                    (qDev['oneByteAnswer'] is None) and \
-                                    (qDev['twoByteAnswer'] is not None):
-                                qDev['oneByteAnswer'] = daliData
-
-                                dataDali = bitstring.BitArray(8-daliData.length)
-                                dataDali.append(daliData)
-                                qDev['value']= dataDali
-                                # self.callDaliProvider.dumpMqtt(dataDali)
-
-                                qDev['isValid'] = True
-                                qDev['answerIs'] = True
-                                answerType.value = 1
-                            elif (qType.value != 1):
-                                print('no answer needed')
-                                answerType.value = -1
-
-                            elif (qDev['twoByteAnswer'] is None):
-                                print ('no echo from dali - only 8 bit')
-                                answerType.value = -2
-
-                            elif (qDev['oneByteAnswer'] is not None):
-                                print ('8 bit answer is already on')
-
-                            # qFlag.value = False
-                            # jocket = VariableJocket.create_data(3171, 31090132,
-                            #                                     'set', int(dataDali, 16), "{00000000-0000-0000-0000-000000000000}")
-                            # self.mqttc.publish(topic=topic_dump[3], payload=jocket.pack(), qos=1, retain=True)
-
-                        elif fl == 2: # no anser
-                            #daliData = data['data'][1]
-                            if (qFlag.value):
-
-                                qDev['Value'] = None
-                                qDev['oneByteAnswer'] = None
-                                qDev['twoByteAnswer'] = None
-                                qDev['isValid'] = False
-                                qDev['noAnswer'] = True
-                                qDev['answerIs'] = True
-
-
-                            answerType.value = 0
-                            # qFlag.value = False
-
-                            print('нет ответа от Dali')
-                        elif fl == 1:
-                            # 2 byte
-                            daliData = data['data'][1:]
-
-                            qDev['twoByteAnswer'] = daliData
-                            if (qType.value == 0):
-
-                                # answerType.value = 1
-                                # qFlag.value = False
-                                qDev['isValid'] = True
-                            print('dali 2 byte answer == {}'.format(str(daliData)))
-                            # self.mqttc.publish(topic=topic_dump[3], payload=str(daliData)[:2], qos=1, retain=True)
-                    else:
-                        #  error on dali
-                        answerType.value = -3
-                        # qFlag.value = False
-                        print('!!!!!!!!!!!   Dali error      !!!!!!!!!')
-
-                        if (qDev is not None):
-
-                            qDev['Value'] = None
-                            qDev['oneByteAnswer'] = None
-                            qDev['twoByteAnswer'] = None
-                            qDev['isValid'] = False
+                daliQue.put_nowait((rsvTime, data['data']))
+                    # bbyte1 = bitstring.BitArray(hex(data['data'][0]))
+                    # byte1=bitstring.BitArray(8-bbyte1.len)
+                    # byte1.append(bbyte1)
+                    #
+                    # if byte1[2] is not True:
+                    #     bfl = bitstring.BitArray(6)
+                    #     bfl.append(byte1[3:5])
+                    #     fl=bfl.int
+                    #     b_chann = bitstring.BitArray(5)
+                    #     b_chann.append(byte1[5:])
+                    #     i_chann=b_chann.int
+                    #
+                    #     if fl == 0:
+                    #         # 8 bit anser
+                    #         daliData =bitstring.BitArray(hex(data['data'][1]))
+                    #
+                    #         print('dali 1 byte answer {}'.format(daliData.bin))
+                    #
+                    #         if (qType.value == 1) and \
+                    #                 (qDev['oneByteAnswer'] is None) and \
+                    #                 (qDev['twoByteAnswer'] is not None):
+                    #             qDev['oneByteAnswer'] = daliData
+                    #
+                    #             dataDali = bitstring.BitArray(8-daliData.length)
+                    #             dataDali.append(daliData)
+                    #             qDev['value']= dataDali
+                    #             # self.callDaliProvider.dumpMqtt(dataDali)
+                    #
+                    #             qDev['isValid'] = True
+                    #             qDev['answerIs'] = True
+                    #             answerType.value = 1
+                    #         elif (qType.value != 1):
+                    #             print('no answer needed')
+                    #             answerType.value = -1
+                    #
+                    #         elif (qDev['twoByteAnswer'] is None):
+                    #             print ('no echo from dali - only 8 bit')
+                    #             answerType.value = -2
+                    #
+                    #         elif (qDev['oneByteAnswer'] is not None):
+                    #             print ('8 bit answer is already on')
+                    #
+                    #         # qFlag.value = False
+                    #         # jocket = VariableJocket.create_data(3171, 31090132,
+                    #         #                                     'set', int(dataDali, 16), "{00000000-0000-0000-0000-000000000000}")
+                    #         # self.mqttc.publish(topic=topic_dump[3], payload=jocket.pack(), qos=1, retain=True)
+                    #
+                    #     elif fl == 2: # no anser
+                    #         #daliData = data['data'][1]
+                    #         if (qFlag.value):
+                    #
+                    #             qDev['Value'] = None
+                    #             qDev['oneByteAnswer'] = None
+                    #             qDev['twoByteAnswer'] = None
+                    #             qDev['isValid'] = False
+                    #             qDev['noAnswer'] = True
+                    #             qDev['answerIs'] = True
+                    #
+                    #
+                    #         answerType.value = 0
+                    #         # qFlag.value = False
+                    #
+                    #         print('нет ответа от Dali')
+                    #     elif fl == 1:
+                    #         # 2 byte
+                    #         daliData = data['data'][1:]
+                    #
+                    #         qDev['twoByteAnswer'] = daliData
+                    #         if (qType.value == 0):
+                    #
+                    #             # answerType.value = 1
+                    #             # qFlag.value = False
+                    #             qDev['isValid'] = True
+                    #         print('dali 2 byte answer == {}'.format(str(daliData)))
+                    #         # self.mqttc.publish(topic=topic_dump[3], payload=str(daliData)[:2], qos=1, retain=True)
+                    # else:
+                    #     #  error on dali
+                    #     answerType.value = -3
+                    #     # qFlag.value = False
+                    #     print('!!!!!!!!!!!   Dali error      !!!!!!!!!')
+                    #
+                    #     if (qDev is not None):
+                    #
+                    #         qDev['Value'] = None
+                    #         qDev['oneByteAnswer'] = None
+                    #         qDev['twoByteAnswer'] = None
+                    #         qDev['isValid'] = False
                 # else:
                 #     self.daliAnswer = -4
 
@@ -1281,6 +1285,94 @@ class RGPTCPAdapterLauncher:
             error['error'] = dataAr.pop(0)
             return error, dataAr
 
+    def workWithDaliData(self, dev, data):
+
+        bbyte1 = bitstring.BitArray(hex(data['data'][0]))
+        byte1=bitstring.BitArray(8-bbyte1.len)
+        byte1.append(bbyte1)
+        outData = bitstring.BitArray(hex(data['data']))
+        if byte1[2] is not True:
+            bfl = bitstring.BitArray(6)
+            bfl.append(byte1[3:5])
+            fl=bfl.int
+            b_chann = bitstring.BitArray(5)
+            b_chann.append(byte1[5:])
+            i_chann=b_chann.int
+
+            if fl == 0:
+                # 8 bit anser
+                daliData = bitstring.BitArray(hex(data['data'][1]))
+
+                print('dali 1 byte answer {}'.format(daliData.bin))
+
+                if (dev.typeOfQuery == 1) and \
+                        (dev.oneByteAnswer is None) and \
+                        (dev.twoByteAnswer is not None):
+                    dev.oneByteAnswer = daliData
+                    dev.getAnswer(daliData)
+                    dataDali = bitstring.BitArray(8 - daliData.length)
+                    dataDali.append(daliData)
+                    dev.setValue(dataDali)
+                    outData=dataDali
+                    # self.callDaliProvider.dumpMqtt(dataDali)
+                    self.daliAnswer = 1
+                    dev.isValid = True
+                elif (dev.typeOfQuery != 1):
+                    print('no answer needed')
+                    self.daliAnswer = -1
+
+                elif (dev.twoByteAnswer is None):
+                    print('no echo from dali - only 8 bit')
+                    self.daliAnswer = -2
+
+                elif (dev.oneByteAnswer is not None):
+                    print('8 bit answer is already on')
+
+                self.isDaliQueried = False
+                # jocket = VariableJocket.create_data(3171, 31090132,
+                #                                     'set', int(dataDali, 16), "{00000000-0000-0000-0000-000000000000}")
+                # self.mqttc.publish(topic=topic_dump[3], payload=jocket.pack(), qos=1, retain=True)
+
+            elif fl == 2:  # no anser
+                # daliData = data['data'][1]
+                if (dev is not None):
+                    dev.getAnswer('no answer from dali')
+                    dev.Value = None
+                    dev.oneByteAnswer = None
+                    dev.twoByteAnswer = None
+                    dev.isValid = False
+
+                self.daliAnswer = 0
+                self.isDaliQueried = False
+
+                print('нет ответа от Dali')
+            elif fl == 1:
+                # 2 byte
+                daliData = data['data'][1:]
+                dev.twoByteAnswer = daliData
+                if (dev.typeOfQuery == 0):
+                    dev.getAnswer(daliData)
+                    outData = daliData
+                    self.daliAnswer = 1
+                    self.isDaliQueried = False
+                    dev.isValid = True
+                print('dali 2 byte answer == {}'.format(str(daliData)))
+                # self.mqttc.publish(topic=topic_dump[3], payload=str(daliData)[:2], qos=1, retain=True)
+        else:
+            #  error on dali
+            self.daliAnswer = -3
+            self.isDaliQueried = False
+            print('!!!!!!!!!!!   Dali error      !!!!!!!!!')
+            fl = -3
+            outData = None
+
+            if (dev is not None):
+                dev.getAnswer('!!!!!!!!!!!   Dali error      !!!!!!!!!')
+                dev.Value = None
+                dev.oneByteAnswer = None
+                dev.twoByteAnswer = None
+                dev.isValid = False
+        return fl, self.daliAnswer, outData
 
 
     def write_to_bro(self, topId, num, value):
