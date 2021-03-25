@@ -502,6 +502,7 @@ class RGPTCPAdapterLauncher:
         self.daliProviders = []
         self.modbusProviders = []
         self.shDaliDev = multiprocessing.Manager().list()
+        self.daliGroup = [[] for i in range(0, 16)]
 
 
         self.daliAnswer=None   # 0 - no answer,
@@ -882,7 +883,7 @@ class RGPTCPAdapterLauncher:
                 isQuery.value = False
 
                 if prov.shDev['answerIs'] and daliAnswerType.value != 0:
-                    prov.group2 = copy.deepcopy(prov.state)
+                    prov.group2 = copy.deepcopy(prov.shDev['value'])
                     prov.groupList = list(prov.group2)
 
 
@@ -933,7 +934,7 @@ class RGPTCPAdapterLauncher:
                 isQuery.value = False
 
                 if prov.shDev['answerIs'] and daliAnswerType.value != 0:
-                    prov.group1 = copy.deepcopy(prov.state)
+                    prov.group1 = copy.deepcopy(prov.shDev['value'])
                     prov.groupList.extend(list(prov.group1))
                     prov.groupList.reverse()
                     # success
