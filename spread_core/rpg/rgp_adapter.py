@@ -555,7 +555,7 @@ class RGPTCPAdapterLauncher:
         listen2 = multiprocessing.Process(target=self.modbusQuery, args=(self.startEvent,))
 
 
-
+        listen1.daemon = False
         listen.start()
         listen1.start()
         self.startListenEvent.set()
@@ -825,8 +825,8 @@ class RGPTCPAdapterLauncher:
                     daliQueryType.value = 1  # 8 bit answer is needed
                     prov.shDev['twoByteAnswer'] = None
                     prov.shDev['oneByteAnswer'] = None
-                    dalId[0] = prov['id']
-                    dalId[1] = prov['channel']
+                    dalId[0] = prov.shDev['id']
+                    dalId[1] = prov.shDev['channel']
                     daliAnswerType.value = -10
                     self.callDaliTime = prov.callDali(data=dd)
                     isQuery.value = True
@@ -1111,7 +1111,7 @@ class RGPTCPAdapterLauncher:
                 # self.mqttc.publish(topic= topic_dump[2], payload=str(modBus), qos=1, retain=True)
                 print('===========mbus======={}'.format(str(modBus)))
 
-            elif n==1:
+            elif n==1 and qDev is not None:
                 #  Dali
                 # if (current_milli_time()-self.callDaliTime)<= DALI_GAP:
                     bbyte1 = bitstring.BitArray(hex(data['data'][0]))
@@ -1180,6 +1180,7 @@ class RGPTCPAdapterLauncher:
                         elif fl == 1:
                             # 2 byte
                             daliData = data['data'][1:]
+
                             qDev['twoByteAnswer'] = daliData
                             if (qType.value == 0):
 
