@@ -57,7 +57,7 @@ DALI_DEV: [
       {
       "channel": 0,
       "bus": 2,
-      "dadr": 4,
+      "dadr": 3,
       "attributes": {
           "positionCount": 101,
           "lowerLimit": 0,
@@ -72,7 +72,7 @@ DALI_DEV: [
       {
       "channel": 0,
       "bus": 2,
-      "dadr": 2,
+      "dadr": 4,
       "attributes": {
           "positionCount": 101,
           "lowerLimit": 0,
@@ -87,7 +87,7 @@ DALI_DEV: [
       {
       "channel": 0,
       "bus": 2,
-      "dadr": 5,
+      "dadr": 1,
       "attributes": {
           "positionCount": 101,
           "lowerLimit": 0,
@@ -102,7 +102,7 @@ DALI_DEV: [
       {
       "channel": 0,
       "bus": 2,
-      "dadr": 1,
+      "dadr": 2,
       "attributes": {
           "positionCount": 101,
           "lowerLimit": 0,
@@ -112,6 +112,21 @@ DALI_DEV: [
       "type": "DimmingLight",
       "FunctionUnitIndex": {"onId": 0, "offId": 1, "setLevelId": 3},
       "id": 635564
+      },
+
+      {
+      "channel": 0,
+      "bus": 2,
+      "dadr": 0,
+      "attributes": {
+          "positionCount": 101,
+          "lowerLimit": 0,
+          "power": 0,
+          "upperLimit": 100
+      },
+      "type": "DimmingLight",
+      "FunctionUnitIndex": {"onId": 0, "offId": 1, "setLevelId": 3},
+      "id": 659939
       },
 
       {
@@ -129,7 +144,7 @@ DALI_DEV: [
       {
       "channel": 0,
       "bus": 2,
-      "dadr": 8,
+      "dadr": 9,
       "attributes": {
           "power": 0
       },
@@ -141,7 +156,7 @@ DALI_DEV: [
       {
       "channel": 0,
       "bus": 2,
-      "dadr": 9,
+      "dadr": 8,
       "attributes": {
           "power": 0
       },
@@ -153,7 +168,7 @@ DALI_DEV: [
       {
       "channel": 0,
       "bus": 2,
-      "dadr": 6,
+      "dadr": 3,
       "attributes": {
           "power": 0
       },
@@ -162,20 +177,7 @@ DALI_DEV: [
       "id": 659856
       },
 
-      {
-      "channel": 0,
-      "bus": 2,
-      "dadr": 3,
-      "attributes": {
-          "positionCount": 101,
-          "lowerLimit": 0,
-          "power": 0,
-          "upperLimit": 100
-      },
-      "type": "DimmingLight",
-      "FunctionUnitIndex": {"onId": 0, "offId": 1, "setLevelId": 3},
-      "id": 659939
-      },
+
 ]
 
 BUS_TIMEOUT: 1
