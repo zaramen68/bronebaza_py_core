@@ -71,7 +71,8 @@ daliQueue = queue.Queue()
 diQueue = queue.Queue()
 canQueue = queue.Queue()
 
-current_milli_time = lambda: int(round(time.time() * 1000))
+# current_milli_time = lambda: int(round(time.time() * 1000))
+current_milli_time = lambda: time.time() * 1000
 
 def hex_to_bool(x):
     if x=='FE'or x=='fe' or x=='FF' or 'ff':
@@ -718,9 +719,7 @@ class RGPTCPAdapterLauncher:
         if passEvent is not None:
             passEvent.wait()
             passEvent.clear()
-        # self.startEvent.clear()
-        # self.startListenEvent.clear()
-        # query state
+
         dd = ShortDaliAddtessComm(daliDev.dadr, QUERY_STATE, 1)
 
         daliDev.answerIs = False
@@ -736,7 +735,7 @@ class RGPTCPAdapterLauncher:
         while True:
             if daliQueue.empty() is not True:
                 rsvTime, data = daliQueue.get_nowait()
-                if (rsvTime-daliDev.getCallTime) <= (DALI_GAP+50) and self.callDaliProvider is not None:
+                if (rsvTime-self.callDaliTime) <= (DALI_GAP+50) and (rsvTime - self.callDaliTime)>0. and self.callDaliProvider is not None:
                     res, resFl, resData = self.workWithDaliData(daliDev, data)
                     if res == 0:
                         break
@@ -744,6 +743,8 @@ class RGPTCPAdapterLauncher:
                         continue
                     elif res == 2:
                         break
+                # else:
+                #     break
 
         if daliDev.answerIs and self.daliAnswer == 1:  # success
             # state = bitstring.BitArray(hex(int(prov.state, 16)))
@@ -772,7 +773,7 @@ class RGPTCPAdapterLauncher:
             while True:
                 if daliQueue.empty() is not True:
                     rsvTime, data = daliQueue.get_nowait()
-                    if (rsvTime - daliDev.getCallTime) <= (DALI_GAP + 50) and self.callDaliProvider is not None:
+                    if (rsvTime - self.callDaliTime) <= (DALI_GAP + 50) and (rsvTime - self.callDaliTime)>0. and self.callDaliProvider is not None:
                         res, resFl, resData = self.workWithDaliData(daliDev, data)
                         if res == 0:
                             break
@@ -780,6 +781,8 @@ class RGPTCPAdapterLauncher:
                             continue
                         elif res == 2:
                             break
+                    # else:
+                    #     break
 
             if daliDev.answerIs and self.daliAnswer == 1:
                 # success
@@ -858,7 +861,7 @@ class RGPTCPAdapterLauncher:
                     while True:
                         if daliQueue.empty() is not True:
                             rsvTime, data = daliQueue.get_nowait()
-                            if (rsvTime - prov.getCallTime) <= (DALI_GAP + 50) and self.callDaliProvider is not None:
+                            if (rsvTime - self.callDaliTime) <= (DALI_GAP + 50)and (rsvTime - self.callDaliTime)>0. and self.callDaliProvider is not None:
                                 res, resFl, resData = self.workWithDaliData(prov, data)
                                 if res == 0:
                                     break
@@ -894,7 +897,7 @@ class RGPTCPAdapterLauncher:
                 while True:
                     if daliQueue.empty() is not True:
                         rsvTime, data = daliQueue.get_nowait()
-                        if (rsvTime - prov.getCallTime) <= (DALI_GAP + 50) and self.callDaliProvider is not None:
+                        if (rsvTime - self.callDaliTime) <= (DALI_GAP + 50)and (rsvTime - self.callDaliTime)>0. and self.callDaliProvider is not None:
                             res, resFl, resData = self.workWithDaliData(prov, data)
                             if res == 0:
                                 break
@@ -928,8 +931,8 @@ class RGPTCPAdapterLauncher:
 
                 while True:
                     if daliQueue.empty() is not True:
-                        rsvTime, data = daliQueue.get_nowait()
-                        if (rsvTime - prov.getCallTime) <= (DALI_GAP + 50) and self.callDaliProvider is not None:
+                        rsvTime, data = daliQueue.get()
+                        if (rsvTime - self.callDaliTime) <= (DALI_GAP + 50)and (rsvTime - self.callDaliTime)>0. and self.callDaliProvider is not None:
                             res, resFl, resData = self.workWithDaliData(prov, data)
                             if res == 0:
                                 break
@@ -1142,7 +1145,8 @@ class RGPTCPAdapterLauncher:
             else:
                 if out is not None:
 
-                    rsvTime = time.time()
+                    # rsvTime = time.time()
+                    rsvTime = current_milli_time()
                     while len(out) > 0:
                         rpgData, rest = self.parceData(out)
                         if hex(rpgData['opCode']) == OPCODECANDATA:
@@ -1153,7 +1157,7 @@ class RGPTCPAdapterLauncher:
                             # print('===={0}========={1}========'.format(hex(rpgData['payloadCAN']['canId'][0]), hex(rpgData['payloadCAN']['canId'][1])))
                         elif hex(rpgData['opCode']) == OPCODEPINGREQ:
                             print("04 00 00 00")
-                            canQue.put(rpgData['payloadLen'])
+                            canQue.put_nowait(rpgData['payloadLen'])
                         elif hex(rpgData['opCode']) == OPCODECONNECT:
                             print("RPG GATEWAY IS CONNECTED")
                             canQue.put(rpgData['payload'])
@@ -1215,7 +1219,7 @@ class RGPTCPAdapterLauncher:
             elif n==1:
                 #  Dali
                 # if (current_milli_time()-self.callDaliTime)<= DALI_GAP:
-                daliQue.put_nowait((rsvTime, data['data']))
+                daliQue.put((rsvTime, data['data']))
                     # bbyte1 = bitstring.BitArray(hex(data['data'][0]))
                     # byte1=bitstring.BitArray(8-bbyte1.len)
                     # byte1.append(bbyte1)
