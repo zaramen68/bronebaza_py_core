@@ -553,7 +553,7 @@ class RGPTCPAdapterLauncher:
         listen2 = multiprocessing.Process(target=self.modbusQuery, args=(self.startEvent,))
 
 
-        listen1.daemon = False
+        listen1.daemon = True
         listen.start()
         listen1.start()
         self.startListenEvent.set()
