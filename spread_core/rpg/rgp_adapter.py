@@ -564,7 +564,7 @@ class RGPTCPAdapterLauncher:
 
         listen2.start()
         self.startEvent.set()
-        self.queryPassEvent.set()
+        # self.queryPassEvent.set()
         self.mqttc.loop_forever()
 
         # self.test_dali_num()
@@ -640,16 +640,16 @@ class RGPTCPAdapterLauncher:
                             for gr in grList:
                                 qList = qList+self.daliGroup[gr]
                             qList = list(set(qList))    # формирование списка DALI устройств для опроса
-                            threads=[]                  # список потоков опроса dali
+
+                            self.startEvent.clear()
+                            self.queryPassEvent.set()
 
                             for daliDevice in qList:
-                                # t=threading.Thread(target=self.queryDali, args=(daliDevice.getCallTime, daliDevice))
-                                # threads.append(t)
-                                # t.start()
-                                # t.join()
-
                                 t=threading.Thread(target=self.queryDali, args=(daliDevice.getCallTime, daliDevice, self.queryPassEvent))
                                 t.start()
+
+                            self.queryPassEvent.clear()
+                            self.startEvent.set()
 
                         elif prov.dev['type'] == 'SwitchingLight':
                             grList = []  #список групп
@@ -693,16 +693,16 @@ class RGPTCPAdapterLauncher:
                             for gr in grList:
                                 qList = qList+self.daliGroup[gr]
                             qList = list(set(qList))    # формирование списка DALI устройств для опроса
-                            threads=[]                  # список потоков опроса dali
+
+                            self.startEvent.clear()
+                            self.queryPassEvent.set()
 
                             for daliDevice in qList:
-                                # t=threading.Thread(target=self.queryDali, args=(daliDevice.getCallTime, daliDevice))
-                                # threads.append(t)
-                                # t.start()
-                                # t.join()
                                 t=threading.Thread(target=self.queryDali, args=(daliDevice.getCallTime, daliDevice, self.queryPassEvent))
                                 t.start()
 
+                            self.queryPassEvent.clear()
+                            self.startEvent.set()
 
         except BaseException as ex:
             logging.exception(ex)
