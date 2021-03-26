@@ -762,14 +762,17 @@ class RGPTCPAdapterLauncher:
             self.daliAnswer = None
             self.callDaliTime = daliDev.callDali(data=dd)
 
-            while (daliDev.getCallTime != 0) and \
-                    ((current_milli_time() - daliDev.getCallTime) < (DALI_GAP + 50)) and \
-                    self.daliAnswer == None:
-
-                self.reciveData()
-                if daliDev.answerIs:
-                    print('answerIs = True')
-                    break
+            while True:
+                if daliQueue.empty() is not True:
+                    rsvTime, data = daliQueue.get_nowait()
+                    if (rsvTime - daliDev.getCallTime) <= (DALI_GAP + 50) and self.callDaliProvider is not None:
+                        res, resFl, resData = self.workWithDaliData(daliDev, data)
+                        if res == 0:
+                            break
+                        elif res == 1:
+                            continue
+                        elif res == 2:
+                            break
 
             if daliDev.answerIs and self.daliAnswer == 1:
                 # success
