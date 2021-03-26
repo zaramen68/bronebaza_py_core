@@ -1290,10 +1290,10 @@ class RGPTCPAdapterLauncher:
 
     def workWithDaliData(self, dev, data):
 
-        bbyte1 = bitstring.BitArray(hex(data['data'][0]))
+        bbyte1 = bitstring.BitArray(hex(data[0]))
         byte1=bitstring.BitArray(8-bbyte1.len)
         byte1.append(bbyte1)
-        outData = bitstring.BitArray(hex(data['data']))
+        outData = bitstring.BitArray(data)
         if byte1[2] is not True:
             bfl = bitstring.BitArray(6)
             bfl.append(byte1[3:5])
@@ -1304,7 +1304,7 @@ class RGPTCPAdapterLauncher:
 
             if fl == 0:
                 # 8 bit anser
-                daliData = bitstring.BitArray(hex(data['data'][1]))
+                daliData = bitstring.BitArray(hex(data[1]))
 
                 print('dali 1 byte answer {}'.format(daliData.bin))
 
@@ -1351,7 +1351,7 @@ class RGPTCPAdapterLauncher:
                 print('нет ответа от Dali')
             elif fl == 1:
                 # 2 byte
-                daliData = data['data'][1:]
+                daliData = data[1:]
                 dev.twoByteAnswer = daliData
                 if (dev.typeOfQuery == 0):
                     dev.getAnswer(daliData)
