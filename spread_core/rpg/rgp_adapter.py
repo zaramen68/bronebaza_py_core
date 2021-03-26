@@ -553,6 +553,7 @@ class RGPTCPAdapterLauncher:
                                           args=(canQueue, daliQueue, modBusQueue,
                                                                           self.startListenEvent ))
         listen2 = threading.Thread(target=self.modbusQuery, args=(self.startEvent,))
+        listen3 = threading.Thread(target=self.queryDaliInTime, args=(self.startEvent,))
 
 
         listen1.daemon = True
@@ -563,6 +564,8 @@ class RGPTCPAdapterLauncher:
         self.start_dali()
 
         listen2.start()
+        listen3.start()
+
         self.startEvent.set()
         # self.queryPassEvent.set()
         self.mqttc.loop_forever()
@@ -804,6 +807,12 @@ class RGPTCPAdapterLauncher:
             clientTopic = dev._stateTopicIsOn
         self.mqttc.publish(topic=clientTopic, payload=out.pack(), qos=0, retain=True)
 
+    def queryDaliInTime(self, ev):
+        while True:
+            ev.wait()
+            time.sleep(2)
+            for dev in self.daliProviders:
+                self.queryOfDaliDevice(dev)
 
     def queryDali(self, starTime, dev, passEvent):
         if dev.fadeTime == 0:
