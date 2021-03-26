@@ -557,11 +557,12 @@ class RGPTCPAdapterLauncher:
         listen.start()
         listen1.start()
         self.startListenEvent.set()
+        self.startEvent.set()
 
         self.start_dali()
 
         # listen2.start()
-        self.startEvent.set()
+
         self.mqttc.loop_forever()
 
         # self.test_dali_num()
@@ -826,28 +827,29 @@ class RGPTCPAdapterLauncher:
                 if prov.dev['type'] == 'DimmingLight':
                     dd= ShortDaliAddtessComm(prov.dadr, QUERY_FADE_TIME, 1)
 
-                    prov.shDev['answerIs'] = False
-                    daliQueryType.value = 1  # 8 bit answer is needed
-                    prov.shDev['twoByteAnswer'] = None
-                    prov.shDev['oneByteAnswer'] = None
-                    dalId[0] = prov.shDev['id']
-                    dalId[1] = prov.shDev['channel']
-                    daliAnswerType.value = -10
-                    self.callDaliTime = prov.callDali(data=dd)
-                    isQuery.value = True
-                    
+                    prov.answerIs = False
+                    prov.typeOfQuery = 1  # 8 bit answer is needed
+                    prov.twoByteAnswer = None
+                    prov.oneByteAnswer = None
 
-                    while (prov.getCallTime != 0) and \
-                            ((current_milli_time() - prov.getCallTime) < (DALI_GAP + 50)) and \
-                            daliAnswerType.value == -10:
+                    self.isDaliQueried = True
+                    self.callDaliProvider = prov
+                    self.daliAnswer = None
+                    self.callDaliTime = prov.callDali(data=dd, resp=True)
 
-                        if prov.shDev['answerIs']:
-                            print('answerIs = True')
-                            break
+                    while True:
+                        if daliQueue.empty() is not True:
+                            rsvTime, data = daliQueue.get_nowait()
+                            if (rsvTime - prov.getCallTime) <= (DALI_GAP + 50) and self.callDaliProvider is not None:
+                                res, resFl, resData = self.workWithDaliData(prov, data)
+                                if res == 0:
+                                    break
+                                elif res == 1:
+                                    continue
+                                elif res == 2:
+                                    break
 
-                    isQuery.value = False
-                    
-                    if prov.answerIs and daliAnswerType.value == 1:
+                    if prov.answerIs and self.daliAnswer == 1:  # success
                         fTime = prov.shDev['value'][:4].uint
                         prov.fadeTime = math.sqrt(2**fTime)/2.
 
@@ -861,32 +863,29 @@ class RGPTCPAdapterLauncher:
 #  query Groups
                 dd= ShortDaliAddtessComm(prov.dadr, QUERY_GROU_811, 1)
 
-                # prov.answerIs = False
-                # prov.typeOfQuery = 1  # 8 bit answer is needed
-                # prov.twoByteAnswer = None
-                # prov.oneByteAnswer = None
-                
-                prov.shDev['answerIs'] = False
-                daliQueryType.value = 1  # 8 bit answer is needed
-                prov.shDev['twoByteAnswer'] = None
-                prov.shDev['oneByteAnswer'] = None
-                daliAnswerType.value = -10
+                prov.answerIs = False
+                prov.typeOfQuery = 1  # 8 bit answer is needed
+                prov.twoByteAnswer = None
+                prov.oneByteAnswer = None
 
-                self.callDaliTime = prov.callDali(data=dd)
-                # self.isDaliQueried = True
-                # self.callDaliProvider = prov
-                isQuery.value = True
-                
-                while (prov.getCallTime != 0) and \
-                        ((current_milli_time() - prov.getCallTime) < (DALI_GAP + 50)) and \
-                        daliAnswerType.value == -10:
+                self.isDaliQueried = True
+                self.callDaliProvider = prov
+                self.daliAnswer = None
+                self.callDaliTime = prov.callDali(data=dd, resp=True)
 
-                    if prov.shDev['answerIs']:
-                        print('answerIs = True')
-                        break
-                isQuery.value = False
+                while True:
+                    if daliQueue.empty() is not True:
+                        rsvTime, data = daliQueue.get_nowait()
+                        if (rsvTime - prov.getCallTime) <= (DALI_GAP + 50) and self.callDaliProvider is not None:
+                            res, resFl, resData = self.workWithDaliData(prov, data)
+                            if res == 0:
+                                break
+                            elif res == 1:
+                                continue
+                            elif res == 2:
+                                break
 
-                if prov.shDev['answerIs'] and daliAnswerType.value != 0:
+                if prov.answerIs and self.daliAnswer == 1:  # success
                     prov.group2 = copy.deepcopy(prov.shDev['value'])
                     prov.groupList = list(prov.group2)
 
@@ -899,45 +898,29 @@ class RGPTCPAdapterLauncher:
                 #######################################
                 dd = ShortDaliAddtessComm(prov.dadr, QUERY_GROU_07, 1)
 
-                # prov.answerIs = False
-                # prov.typeOfQuery = 1  # 8 bit answer is needed
-                # prov.twoByteAnswer = None
-                # prov.oneByteAnswer = None
-                #
-                # self.callDaliTime = prov.callDali(data=dd)
-                # self.isDaliQueried = True
-                #
-                # self.callDaliProvider = prov
-                # while (prov.getCallTime != 0) and \
-                #         ((current_milli_time() - prov.getCallTime) < (DALI_GAP + 50)) and \
-                #         self.daliAnswer != 0:
-                #
-                #     if prov.answerIs:
-                #         print('answerIs = True')
-                #         break
-                # if prov.answerIs and self.daliAnswer != 0:
+                prov.answerIs = False
+                prov.typeOfQuery = 1  # 8 bit answer is needed
+                prov.twoByteAnswer = None
+                prov.oneByteAnswer = None
 
-                prov.shDev['answerIs'] = False
-                daliQueryType.value = 1  # 8 bit answer is needed
-                prov.shDev['twoByteAnswer'] = None
-                prov.shDev['oneByteAnswer'] = None
-                daliAnswerType.value = -10
+                self.isDaliQueried = True
+                self.callDaliProvider = prov
+                self.daliAnswer = None
+                self.callDaliTime = prov.callDali(data=dd, resp=True)
 
-                self.callDaliTime = prov.callDali(data=dd)
-                # self.isDaliQueried = True
-                # self.callDaliProvider = prov
-                isQuery.value = True
+                while True:
+                    if daliQueue.empty() is not True:
+                        rsvTime, data = daliQueue.get_nowait()
+                        if (rsvTime - prov.getCallTime) <= (DALI_GAP + 50) and self.callDaliProvider is not None:
+                            res, resFl, resData = self.workWithDaliData(prov, data)
+                            if res == 0:
+                                break
+                            elif res == 1:
+                                continue
+                            elif res == 2:
+                                break
 
-                while (prov.getCallTime != 0) and \
-                        ((current_milli_time() - prov.getCallTime) < (DALI_GAP + 50)) and \
-                        daliAnswerType.value == -10:
-
-                    if prov.shDev['answerIs']:
-                        print('answerIs = True')
-                        break
-                isQuery.value = False
-
-                if prov.shDev['answerIs'] and daliAnswerType.value != 0:
+                if prov.answerIs and self.daliAnswer == 1:  # success
                     prov.group1 = copy.deepcopy(prov.shDev['value'])
                     prov.groupList.extend(list(prov.group1))
                     prov.groupList.reverse()
@@ -1046,6 +1029,7 @@ class RGPTCPAdapterLauncher:
             except BaseException as ex:
                 # logging.exception(ex)
                 self.mqttc.publish(topic=topic_dump[1].format(BUS_ID) + '/error', payload=str(ex))
+                startEvent.clear()
             else:
                 if out is not None:
                     timeOfRecive.value = time.time()
