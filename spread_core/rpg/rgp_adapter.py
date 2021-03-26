@@ -50,10 +50,10 @@ MIN_FADE_TIME = 0.3
 MODBUS_DEV = config['MODBUS_DEV']
 DALI_DEV = config['DALI_DEV']
 
-# topic_dump = 'Tros3/State/{}/{}/{}'
+topic_dump = 'Tros3/{}'
 # topic_send = 'ModBus/from_Client/{}'
-topic_send =config['TOPIC_SEND']
-topic_dump = config['TOPIC_DUMP']
+# topic_send =config['TOPIC_SEND']
+# topic_dump = config['TOPIC_DUMP']
 
 is_lock=False
 
@@ -909,7 +909,7 @@ class RGPTCPAdapterLauncher:
 
         except BaseException as ex:
             logging.exception(ex)
-            self.mqttc.publish(topic=topic_dump.format(BUS_ID) + '/error', payload=str(ex))
+            self.mqttc.publish(topic=topic_dump.format(PROJECT) + '/error', payload=str(ex))
         else:
             try:
                 self._start_time = time.time()
@@ -944,7 +944,7 @@ class RGPTCPAdapterLauncher:
 
             except BaseException as ex:
                 logging.exception(ex)
-                self.mqttc.publish(topic=topic_dump[1].format(BUS_ID) + '/error', payload=str(ex))
+                self.mqttc.publish(topic=topic_dump.format(PROJECT) + '/error', payload=str(ex))
             else:
                 # print('ответ: {0}'.format(out))
                 print('====================================================================================')
@@ -960,7 +960,7 @@ class RGPTCPAdapterLauncher:
             out = device.recive_data()
         except BaseException as ex:
             # logging.exception(ex)
-            self.mqttc.publish(topic=topic_dump[1].format(BUS_ID) + '/error', payload=str(ex))
+            self.mqttc.publish(topic=topic_dump.format(PROJECT) + '/error', payload=str(ex))
         else:
             if out is not None:
                 while len(out) > 0:
@@ -1269,7 +1269,7 @@ class RGPTCPAdapterLauncher:
                     # print(data)
                 except BaseException as ex:
                     logging.exception(ex)
-                    self.mqttc.publish(topic=topic_dump[1].format(BUS_ID) + '/error', payload=str(ex))
+                    self.mqttc.publish(topic=topic_dump.format(PROJECT) + '/error', payload=str(ex))
                 else:
                     try:
                         self._start_time=time.time()
