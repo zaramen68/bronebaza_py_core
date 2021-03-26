@@ -548,11 +548,11 @@ class RGPTCPAdapterLauncher:
         self.connect_rpg()
         # self.rpg_listen_fun()
 
-        listen = threading.Process(target=self.listen_rpg, args=(self.startEvent,))
-        listen1 = threading.Process(target=self.listen_rpg1,
+        listen = threading.Thread(target=self.listen_rpg, args=(self.startEvent,))
+        listen1 = threading.Thread(target=self.listen_rpg1,
                                           args=(canQueue, daliQueue, modBusQueue,
                                                                           self.startListenEvent ))
-        listen2 = threading.Process(target=self.modbusQuery, args=(self.startEvent,))
+        listen2 = threading.Thread(target=self.modbusQuery, args=(self.startEvent,))
 
 
         listen1.daemon = True
@@ -562,8 +562,9 @@ class RGPTCPAdapterLauncher:
 
         self.start_dali()
 
-        # listen2.start()
+        listen2.start()
         self.startEvent.set()
+        self.queryPassEvent.set()
         self.mqttc.loop_forever()
 
         # self.test_dali_num()
@@ -647,7 +648,8 @@ class RGPTCPAdapterLauncher:
                                 # t.start()
                                 # t.join()
 
-                                self.queryDali(daliDevice.getCallTime, daliDevice)
+                                t=threading.Thread(target=self.queryDali, args=(daliDevice.getCallTime, daliDevice, self.queryPassEvent))
+                                t.start()
 
                         elif prov.dev['type'] == 'SwitchingLight':
                             grList = []  #список групп
@@ -698,8 +700,8 @@ class RGPTCPAdapterLauncher:
                                 # threads.append(t)
                                 # t.start()
                                 # t.join()
-
-                                self.queryDali(daliDevice.getCallTime, daliDevice)
+                                t=threading.Thread(target=self.queryDali, args=(daliDevice.getCallTime, daliDevice, self.queryPassEvent))
+                                t.start()
 
 
         except BaseException as ex:
@@ -803,15 +805,20 @@ class RGPTCPAdapterLauncher:
         self.mqttc.publish(topic=clientTopic, payload=out.pack(), qos=0, retain=True)
 
 
-    def queryDali(self, starTime, dev):
+    def queryDali(self, starTime, dev, passEvent):
         if dev.fadeTime == 0:
             delta = MIN_FADE_TIME
         else:
             delta = dev.fadeTime
         while True:
             # self.queryOfDaliDevice(dev)
-            t=threading.Process(target=self.queryOfDaliDevice, args=(dev, self.queryPassEvent))
-            t.start()
+            passEvent.wait()
+            passEvent.clear()
+
+            self.queryOfDaliDevice(dev)
+
+            passEvent.set()
+
 
             if (current_milli_time() - starTime) > delta*1000:
                 break
