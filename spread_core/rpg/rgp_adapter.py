@@ -17,7 +17,7 @@ from spread_core.mqtt.variables import VariableJocket
 
 settings.DUMPED = False
 PROJECT=config['PROJ']
-BUS_ID=config['BUS_ID']
+
 
 HOSTnPORT = config['BUS_HOST_PORT']
 TIMEOUT = config['BUS_TIMEOUT']
