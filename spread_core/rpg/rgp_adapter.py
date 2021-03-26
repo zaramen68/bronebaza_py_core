@@ -741,6 +741,7 @@ class RGPTCPAdapterLauncher:
 
         if daliDev.answerIs and self.daliAnswer == 1:  # success
             # state = bitstring.BitArray(hex(int(prov.state, 16)))
+            daliDev.state=resData
             state = copy.deepcopy(daliDev.state)
             self.writeMqtt(dev=daliDev, data=state[5], fl=1, comm=2)
 
@@ -777,6 +778,7 @@ class RGPTCPAdapterLauncher:
 
             if daliDev.answerIs and self.daliAnswer == 1:
                 # success
+                daliDev.state=resData
                 self.writeMqtt(dev=daliDev, data=int(daliDev.state.uint / 254 * 100), comm=4)
             else:  # no answer
                 daliDev.state = None
@@ -850,7 +852,8 @@ class RGPTCPAdapterLauncher:
                                     break
 
                     if prov.answerIs and self.daliAnswer == 1:  # success
-                        fTime = prov.shDev['value'][:4].uint
+                        prov.state=resData
+                        fTime = prov.state[:4].uint
                         prov.fadeTime = math.sqrt(2**fTime)/2.
 
 
@@ -886,7 +889,8 @@ class RGPTCPAdapterLauncher:
                                 break
 
                 if prov.answerIs and self.daliAnswer == 1:  # success
-                    prov.group2 = copy.deepcopy(prov.shDev['value'])
+                    prov.state = resData
+                    prov.group2 = copy.deepcopy(prov.state)
                     prov.groupList = list(prov.group2)
 
 
@@ -921,7 +925,8 @@ class RGPTCPAdapterLauncher:
                                 break
 
                 if prov.answerIs and self.daliAnswer == 1:  # success
-                    prov.group1 = copy.deepcopy(prov.shDev['value'])
+                    prov.state=resData
+                    prov.group1 = copy.deepcopy(prov.state)
                     prov.groupList.extend(list(prov.group1))
                     prov.groupList.reverse()
                     # success
