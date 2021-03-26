@@ -1060,10 +1060,10 @@ class RGPTCPAdapterLauncher:
                             # print('===={0}========={1}========'.format(hex(rpgData['payloadCAN']['canId'][0]), hex(rpgData['payloadCAN']['canId'][1])))
                         elif hex(rpgData['opCode']) == OPCODEPINGREQ:
                             print("04 00 00 00")
-                            canQue.put(rpgData['payloadCAN']['data'])
+                            canQue.put(rpgData['payloadLen'])
                         elif hex(rpgData['opCode']) == OPCODECONNECT:
                             print("RPG GATEWAY IS CONNECTED")
-                            canQue.put(rpgData['payloadCAN']['data'])
+                            canQue.put(rpgData['payload'])
                         if len(rest) == 0:
                             break
                         out = out[(len(out)-len(rest)):]
