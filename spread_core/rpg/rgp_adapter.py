@@ -50,7 +50,7 @@ MIN_FADE_TIME = 0.3
 
 MODBUS_DEV = config['MODBUS_DEV']
 DALI_DEV = config['DALI_DEV']
-ID_DEV = config['ID_DEV']
+DI_DEV = config['DI_DEV']
 
 topic_dump = 'Tros3/{}'
 
@@ -605,6 +605,7 @@ class RGPTCPAdapterLauncher:
         self.callModBusTime = current_milli_time()
         self.daliProviders = []
         self.modbusProviders = []
+        self.diProviders = []
         self.daliGroup = [[] for i in range(0, 16)]
         self.daliAnswer=None   # 0 - no answer,
                                 # 1 - ok,
@@ -629,11 +630,10 @@ class RGPTCPAdapterLauncher:
             modbusDev = ModBusProvider(self.sock, self.mqttc, prov)
             self.modbusProviders.append(modbusDev)
 
-        # for prov in self.daliProviders:
-        #     for index, val in prov.dev['FunctionUnitIndex'].items():
-        #         topic = 'Jocket/Command/{}/#'.format(PROJECT)
-        #         self.mqttc.subscribe(topic)
-        #         logging.debug('Subscribed to {}'.format(topic))
+        for prov in DI_DEV:
+            diDev = DiProvider(self.sock, self.mqttc, prov)
+            self.diProviders.append(diDev)
+
         topic = 'Tros3/Command/{}/#'.format(PROJECT)
         self.mqttc.subscribe(topic)
         logging.debug('Subscribed to {}'.format(topic))
@@ -647,15 +647,19 @@ class RGPTCPAdapterLauncher:
         listen = threading.Thread(target=self.listen_rpg, args=(self.startEvent,))
         listen1 = threading.Thread(target=self.listen_rpg1, args=(self.diQueue, self.startListenEvent))
         listen2 = threading.Thread(target=self.modbusQuery, args=(self.startEvent,))
+        listen3 = threading.Thread(target=self.listenDI, args=(self.diQueue, self.startListenEvent, self.diProviders))
 
 
 
         listen.start()
         listen1.start()
+
         self.startListenEvent.set()
 
         self.start_dali()
+        self.startDi()
 
+        listen3.start()
         listen2.start()
         self.startEvent.set()
         self.qFl.set()
@@ -1064,10 +1068,60 @@ class RGPTCPAdapterLauncher:
                 # print('ответ: {0}'.format(out))
                 print('====================================================================================')
 
-    def listenDI(self):
+    def listenDI(self,diQue,  ev, diList):
         while True:
-            while not self.diQueue.empty():
-                data = self.diQueue.get_nowait()
+            ev.wait()
+            while not diQue.empty():
+                data = diQue.get_nowait()
+                fl, res =self.workDIData(data=data)
+                if fl == 1:
+                    state = bitstring.BitArray()
+                    for byte in res:
+                        state.append(bitstring.BitArray(hex(byte)).reverse())
+                    sb=state.bin
+                    sl=list(sb)
+
+                    for i in range(1, len(sl)):
+                        for di in diList:
+                            if di.diaddr == i:
+                                di.state = state[i]
+                                di.stateInt = int(sl[i])
+                                di.dumpMqtt()
+
+                elif fl == 3:
+                    i = res[0]
+                    for di in diList:
+                        if di.diaddr == i:
+                            di.state = bool(res[1])
+                            di.stateInt = res[1]
+                            di.dumpMqtt()
+
+                elif fl == 5:
+                    i = res[0]
+                    for di in diList:
+                        if di.diaddr == i:
+                            di.state = bool(res[1])
+                            di.stateInt = res[1]
+                            di.dumpMqtt()
+
+
+
+    def workDIData(self, data):
+        dataList = list(data)
+        fl=0
+        if data[0]== 1:
+            #  состояние всех входов
+            fl = 1
+            pass
+        elif data[0]==3:
+            #  состояние отдельного входа
+            fl = 3
+            pass
+        elif data[0]==5:
+            fl = 5
+            #  событие изменения состояния входа
+            pass
+        return fl, dataList
 
 
     def startDi(self):
