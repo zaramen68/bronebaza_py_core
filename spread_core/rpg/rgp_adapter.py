@@ -1,5 +1,6 @@
 import socket
 import threading
+import queue
 import time
 import math
 import paho.mqtt.client
@@ -586,6 +587,7 @@ class RGPTcpSocket:
 class RGPTCPAdapterLauncher:
     _dumped = False
     _command_event = threading.Event()
+    diQueue = queue.Queue()
 
     def __init__(self):
         self._time = current_milli_time()
@@ -643,7 +645,7 @@ class RGPTCPAdapterLauncher:
         # self.rpg_listen_fun()
 
         listen = threading.Thread(target=self.listen_rpg, args=(self.startEvent,))
-        listen1 = threading.Thread(target=self.listen_rpg1, args=(self.startListenEvent,))
+        listen1 = threading.Thread(target=self.listen_rpg1, args=(self.diQueue, self.startListenEvent))
         listen2 = threading.Thread(target=self.modbusQuery, args=(self.startEvent,))
 
 
@@ -831,7 +833,7 @@ class RGPTCPAdapterLauncher:
                 ((current_milli_time() - daliDev.getCallTime) < (DALI_GAP + 50)) and \
                 self.daliAnswer == None:
 
-            self.reciveData()
+            self.reciveData(self.diQueue)
             if daliDev.answerIs:
                 print('answerIs = True')
                 break
@@ -865,7 +867,7 @@ class RGPTCPAdapterLauncher:
                     ((current_milli_time() - daliDev.getCallTime) < (DALI_GAP + 50)) and \
                     self.daliAnswer == None:
 
-                self.reciveData()
+                self.reciveData(self.diQueue)
                 if daliDev.answerIs:
                     print('answerIs = True')
                     break
@@ -1062,8 +1064,33 @@ class RGPTCPAdapterLauncher:
                 # print('ответ: {0}'.format(out))
                 print('====================================================================================')
 
+    def startDi(self):
+        canId = CanId(31, self.dev['dev']['bus'])
+        byte0 = Byte0(5)
 
-    def reciveData(self):
+        # byte1 = bitstring.BitArray(6)
+        # byte1[5]=part
+        # byte1_ = bitstring.BitArray(hex(self.dev['dev']['channel']))[:2]
+        # byte1.append(byte1_)
+        byte1 = '00'
+        data = '0001'
+
+        dCommand = canId[2:] + canId[:2] + byte0.hex + byte1
+        # mbCommand = 'E203010001' + data
+        mbCommand = dCommand + data
+        opCode = '07'
+        pLen = bytearray(3)
+        pLen[0] = int(len(mbCommand) / 2)
+        pL = opCode + make_two_bit(hex(pLen[0]).split('x')[1]) + \
+             make_two_bit(hex(pLen[1]).split('x')[1]) + make_two_bit(hex(pLen[2]).split('x')[1]) + \
+             mbCommand
+        size = len(pL)
+        dd = bytes.fromhex(pL)
+
+        self.sock.send_message(dd, size)
+        self.answerIs=False
+
+    def reciveData(self, diQue=None):
         device = self.sock
         try:
             out = device.recive_data()
@@ -1073,7 +1100,7 @@ class RGPTCPAdapterLauncher:
         else:
             if out is not None:
                 while len(out) > 0:
-                    rpgData, rest = self.parceData(out)
+                    rpgData, rest = self.parceData(out, diQue)
                     if hex(rpgData['opCode']) == OPCODECANDATA:
                         self.parceCAN(rpgData['payloadCAN'])
                         # print('===={0}========={1}========'.format(hex(rpgData['payloadCAN']['canId'][0]), hex(rpgData['payloadCAN']['canId'][1])))
@@ -1086,13 +1113,13 @@ class RGPTCPAdapterLauncher:
                     out = out[(len(out) - len(rest)):]
 
 
-    def listen_rpg1(self, startEvent):
+    def listen_rpg1(self, diQue, startEvent):
 
         # device = self.sock
 
         while True:
             startEvent.wait()
-            self.reciveData()
+            self.reciveData(diQue)
             # try:
             #     out = device.recive_data()
             #         # if out:
@@ -1120,7 +1147,7 @@ class RGPTCPAdapterLauncher:
                     # self.mqttc.publish(topic=topic_send[1] + '/lamp', payload=str(out))
                     # logging.debug('[recive from server  <-]: {}'.format(out))
 
-    def parceCAN(self, data):
+    def parceCAN(self, data, diq=None):
         canId=bytearray(2)
         canId[0]=data['canId'][1]
         canId[1]=data['canId'][0]
@@ -1250,7 +1277,8 @@ class RGPTCPAdapterLauncher:
                             self.callDaliProvider.isValid = False
                 # else:
                 #     self.daliAnswer = -4
-
+            elif n==5:  # DI
+                diq.put_nowait(data('data'))
 
 
 
