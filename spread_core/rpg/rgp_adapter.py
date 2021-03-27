@@ -175,7 +175,7 @@ def Byte1(waitAns=False, st=False):
     return byte1
 
 
-class IdProvider:
+class DiProvider:
     def __init__(self, rpgClient, mqtt, *args):
         self._socket = rpgClient
         self.dev = args[0]
@@ -194,9 +194,12 @@ class IdProvider:
         self.time_gap = args[0]['t_gap']
         self._call = None
         self.answerIs = False
-        self.maddr = args[0]['dev']['maddr']
-        self.reg = args[0]['attrib']['reg']
-        self._stateTopicLevel = 'Tros3/State/{}/Equipment/{}/{}/0'.format(PROJECT, args[0]['dev']['type'], args[0]['dev']['id'])
+        self.diaddr = args[0]['dev']['diaddr']
+        self.topicV = args[0]['dev']['topicV']
+        self.type = args[0]['dev']['type']
+        self.topicIn = args[0]['dev']['id']
+
+        self._stateTopicLevel = 'Tros3/State/{}/{}'.format(PROJECT, args[0]['dev']['id'])
         self.answer = None
 
 
@@ -232,11 +235,11 @@ class IdProvider:
             self.dumpMqtt()
 
 
-    def callModBus(self, data = None, part=False):
+    def callDi(self, data = None, part=False):
 
         self._call = data
         canId = CanId(31, self.dev['dev']['bus'])
-        byte0 = Byte0(2)
+        byte0 = Byte0(5)
 
         byte1 = bitstring.BitArray(6)
         byte1[5]=part
@@ -269,12 +272,21 @@ class IdProvider:
 
     def dumpMqtt(self, data=None):
         if data == None:
-            data = self.stateInt
-        out = VariableTRS3(None, self.dev['dev']['id'], 0, data, invalid=(not self.isValid))
+            data = self.state
+
 
         clientTopic = self._stateTopicLevel
+        num = 0
+        for key, value in self.topicV.items():
+            if key == 'isOpenedId':
+                out = VariableTRS3(None, self.dev['dev']['id'], 0, data, invalid=(not self.isValid))
+                self._mqtt.publish(topic=clientTopic+'/{}'.format(num), payload=out.pack(), qos=0, retain=True)
+            else:
+                out = VariableTRS3(None, self.dev['dev']['id'], 0, value, invalid=(not self.isValid))
+                self._mqtt.publish(topic=clientTopic+'/{}'.format(num), payload=out.pack(), qos=0, retain=True)
+            num += 1
 
-        self._mqtt.publish(topic=clientTopic, payload=out.pack(), qos=0, retain=True)
+
 
 
 class ModBusProvider:
@@ -1049,11 +1061,7 @@ class RGPTCPAdapterLauncher:
             else:
                 # print('ответ: {0}'.format(out))
                 print('====================================================================================')
-                # self._start_time = time.time()
-                # out = VariableTRS3(None, int(BUS_ID), 0, tk)
-                # top_out = topic_dump.format(PROJECT, BUS_ID, '0')
-                # self.mqttc.publish(topic=topic_dump.format(PROJECT, BUS_ID, '0'), payload=out.pack())
-                # logging.debug('[  <-]: {}'.format(out))
+
 
     def reciveData(self):
         device = self.sock
