@@ -1064,6 +1064,12 @@ class RGPTCPAdapterLauncher:
                 # print('ответ: {0}'.format(out))
                 print('====================================================================================')
 
+    def listenDI(self):
+        while True:
+            while not self.diQueue.empty():
+                data = self.diQueue.get_nowait()
+
+
     def startDi(self):
         canId = CanId(31, self.dev['dev']['bus'])
         byte0 = Byte0(5)
