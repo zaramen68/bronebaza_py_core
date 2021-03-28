@@ -17,18 +17,7 @@ from spread_core.tools.settings import config, logging
 from spread_core.mqtt.variables import VariableJocket
 
 
-SHUXER_1= [0,0,10,10,0,0]
-SHUXER_2= [0,0,50,50,0,0]
 
-
-SAVED_LIGHT={
-'111427':0,
-'111428':0,
-'111429':0,
-'111430':0,
-'111431':0,
-'111432':0,
-}
 
 settings.DUMPED = False
 PROJECT=config['PROJ']
@@ -525,6 +514,49 @@ class DaliProvider:
 
 
 class Blackout:
+
+    # shuxer1 = [0, 0, 10, 10, 0, 0, 0, 0, 0]
+    # shuxer2 = [0, 0, 50, 50, 0, 0, 0, 0, 0]
+    shuxer1 = {
+        # dimming light
+        '635561': 0,
+        '635562': 10,
+        '635563': 10,
+        '635564': 0,
+        '659939': 0,
+        #  swiching light
+        '659853': 0,
+        '659854': 0,
+        '659855': 0,
+        '659856': 0,
+    }
+    shuxer2 = {
+        # dimming light
+        '635561': 0,
+        '635562': 0,
+        '635563': 50,
+        '635564': 50,
+        '659939': 0,
+        #  swiching light
+        '659853': 0,
+        '659854': 0,
+        '659855': 0,
+        '659856': 0,
+    }
+
+    saved_light = {
+        # dimming light
+        '635561': 0,
+        '635562': 0,
+        '635563': 0,
+        '635564': 0,
+        '659939': 0,
+        #  swiching light
+        '659853': 0,
+        '659854': 0,
+        '659855': 0,
+        '659856': 0,
+    }
     def __init__(self, diList, daliList):
 
         self._is_shuxer = False
@@ -599,35 +631,29 @@ class Blackout:
         if self._reg == 1:
             ii = 0
             self._is_shuxer = True
-            while ii < len(topic_pub):
+            for dev in self.daliList:
+                dev.setLevel(self.shuxer1['{}'.format(dev['id'])])
 
-                jocket = VariableJocket.create_data(int(topic_pub[ii].split('/')[10]), 31090132,
-                                                    'set', shuxer1[ii], "{00000000-0000-0000-0000-000000000000}")
-                self._mqtts.publish(topic_pub[ii], jocket.pack(), qos=1)
-                ii+=1
 
         elif self._reg == 2:
             ii = 0
             self._is_shuxer = True
-            while ii < len(topic_pub):
-                jocket = VariableJocket.create_data(int(topic_pub[ii].split('/')[10]), 31090132,
-                                                    'set', shuxer2[ii], "{00000000-0000-0000-0000-000000000000}")
-                self._mqtts.publish(topic_pub[ii], jocket.pack(), qos=1)
-                ii += 1
+            for dev in self.daliList:
+                dev.setLevel(self.shuxer2['{}'.format(dev['id'])])
+
 
 
 
     def save_light(self):
-        for key, value in light_topics.items():
-            saved_light[key.split('/')[9]] = value
+        for dev in self.daliList:
+
+            self.saved_light[dev['id']] = dev['state']
     # TODO: добавить None значения в стоварь SAVED_DATA и проверку их присутствия после запоминания состояния света
 
     def entwarnung(self):
 
-        for top in topic_pub:
-            jocket = VariableJocket.create_data(int(top.split('/')[10]), 31090132,
-                                                'set', saved_light[top.split('/')[10]], "{00000000-0000-0000-0000-000000000000}")
-            self._mqtts.publish(top, jocket.pack(), qos=1)
+        for dev in self.daliList:
+            dev.setLevel(self.saved_light['{}'.format(dev['id'])])
 
         self._is_shuxer = False
 
