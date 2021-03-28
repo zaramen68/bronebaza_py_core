@@ -60,7 +60,8 @@ topic_dump = 'Tros3/{}'
 
 is_lock=False
 
-current_milli_time = lambda: int(round(time.time() * 1000))
+# current_milli_time = lambda: int(round(time.time() * 1000))
+current_milli_time = lambda: time.time() * 1000
 
 def hex_to_bool(x):
     if x=='FE'or x=='fe' or x=='FF' or 'ff':
@@ -194,7 +195,7 @@ class DiProvider:
         self.twoByteAnswer = None
         self.typeOfQuery = None # 0 - no answer, 1 - need answer
         self.bus = args[0]['dev']['bus']
-
+        self.classF = args[0]['type']
         self.time_gap = args[0]['t_gap']
         self._call = None
         self.answerIs = False
@@ -289,8 +290,6 @@ class DiProvider:
                 out = VariableTRS3(None, self.dev['dev']['id'], 0, value, invalid=(not self.isValid))
                 self._mqtt.publish(topic=clientTopic+'/{}'.format(num), payload=out.pack(), qos=0, retain=True)
             num += 1
-
-
 
 
 class ModBusProvider:
@@ -439,10 +438,46 @@ class DaliProvider:
     def askGroup(self):
         pass
 
-    def setLevel(self, data):
+    def setLevel(self, level):
         # set level on dali device
+        data = ShortDaliAddtessComm(self.dadr, level)
         self._call = data
-        mbCommand = 'E203010001' + data
+        # mbCommand = 'E203010001' + data
+        # opCode = '07'
+        # pLen = bytearray(3)
+        # pLen[0] = int(len(mbCommand) / 2)
+        # pL = opCode + make_two_bit(hex(pLen[0]).split('x')[1]) + \
+        #      make_two_bit(hex(pLen[1]).split('x')[1]) + make_two_bit(hex(pLen[2]).split('x')[1]) + \
+        #      mbCommand
+        # size = len(pL)
+        # data = bytes.fromhex(pL)
+        addr_from = bitstring.BitArray(hex(31))[3:]
+        addr_to_ = bitstring.BitArray(hex(self.dev['bus']))
+        addr_to = bitstring.BitArray(5 - addr_to_.length)
+        addr_to.append(addr_to_)
+        addr_from.append(addr_to)
+        can_id = bitstring.BitArray(12 - addr_from.length)
+        can_id.append(addr_from)
+        canId = make_bytes(can_id.hex)
+
+        byte0 = bitstring.BitArray(1)
+        echo = bitstring.BitArray(1)
+        reserve = bitstring.BitArray(1)
+        cls = bitstring.BitArray(5)
+        cls[4] = True
+        byte0.append(echo)
+        byte0.append(reserve)
+        byte0.append(cls)
+
+        byte1 = bitstring.BitArray(8)
+
+
+        byte2 = bitstring.BitArray(8)
+        byte2[7 - self.dev['channel']] = True
+
+        dCommand = canId[2:] + canId[:2] + byte0.hex + byte1.hex + byte2.hex
+        # mbCommand = 'E203010001' + data
+        mbCommand = dCommand + data
         opCode = '07'
         pLen = bytearray(3)
         pLen[0] = int(len(mbCommand) / 2)
@@ -450,10 +485,10 @@ class DaliProvider:
              make_two_bit(hex(pLen[1]).split('x')[1]) + make_two_bit(hex(pLen[2]).split('x')[1]) + \
              mbCommand
         size = len(pL)
-        data = bytes.fromhex(pL)
+        dd = bytes.fromhex(pL)
         self._callDTime = current_milli_time()
         self._socket.send_message(data, size)
-        self.answerIs=False
+        # self.answerIs=False
         return self._callDTime
 
     def callDali(self, data, resp=False):
@@ -557,17 +592,13 @@ class Blackout:
         '659855': 0,
         '659856': 0,
     }
-    def __init__(self, diList, daliList):
+    def __init__(self, diMask, diList, daliList):
 
         self._is_shuxer = False
         self._reg = 0
-        self._mask = []
+        self._mask = diMask
         self.diList = diList
         self.daliList = daliList
-
-
-        for dev in self.diList:
-            self._mask.append(None)
 
 
     def checkout(self):
@@ -580,28 +611,7 @@ class Blackout:
 
         return reg
 
-    def work(self, msg):
-        out = msg.payload.decode()
-        tpc = msg.topic.split('/')
-        if len(out) != 20:
-            return
-        for dev in self.diList:
-
-            if tpc[3] == dev['host']:
-               # for dev in self._dev:
-                    if str(dev['di']) == tpc[6]:
-                        value = int(out[19], 16)
-                        if value == 1:
-                            v = True
-                        elif value == 0:
-                            v = False
-                        if dev['value'] is None or dev['value'] != v:
-                            #   initial or new values
-                            dev['value'] = v
-                            if dev['topicId'] == 'night_key':
-                                self._mask[dev['di']] = v
-                            else:
-                                self._mask[dev['di']+2] = v
+    def work(self):
 
         if None not in  self._mask:
             self._reg = self.checkout()
@@ -737,6 +747,8 @@ class RGPTCPAdapterLauncher:
     _dumped = False
     _command_event = threading.Event()
     diQueue = queue.Queue()
+    diMask = dict()
+    diBlackOut = []
 
     def __init__(self):
         self._time = current_milli_time()
@@ -782,6 +794,9 @@ class RGPTCPAdapterLauncher:
         for prov in DI_DEV:
             diDev = DiProvider(self.sock, self.mqttc, prov)
             self.diProviders.append(diDev)
+            if diDev.classF == 'blackout':
+                self.diMask[str(diDev.topicIn)]=None
+                self.diBlackOut.append(diDev)
 
         topic = 'Tros3/Command/{}/#'.format(PROJECT)
         self.mqttc.subscribe(topic)
@@ -1045,7 +1060,7 @@ class RGPTCPAdapterLauncher:
             ev.clear()
             self.queryOfDaliDevice(dev)
             ev.set()
-            if (current_milli_time() - starTime) > delta*1000:
+            if (current_milli_time() - starTime) > delta*1000.:
                 break
 
 
@@ -1236,6 +1251,7 @@ class RGPTCPAdapterLauncher:
                                 di.state = state[i]
                                 di.stateInt = int(sl[i])
                                 di.dumpMqtt()
+                                self.diMask[str(di.topicIn)] = state[i]
 
                 elif fl == 3:
                     i = res[0]
@@ -1252,6 +1268,7 @@ class RGPTCPAdapterLauncher:
                             di.state = bool(res[1])
                             di.stateInt = res[1]
                             di.dumpMqtt()
+                            Blackout(self.diMask, self.diBlackOut, self.daliProviders)
 
 
 
@@ -1274,7 +1291,7 @@ class RGPTCPAdapterLauncher:
 
 
     def startDi(self):
-        canId = CanId(31, self.dev['dev']['bus'])
+        canId = CanId(31, 3)
         byte0 = Byte0(5)
 
         # byte1 = bitstring.BitArray(6)

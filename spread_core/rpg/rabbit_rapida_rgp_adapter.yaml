@@ -10,7 +10,7 @@ TOPIC_DUMP: ['Rapida/0/Can/Bus/Dump', 'Rapida/0/Dali/Bus/Dump', 'Rapida/0/Modbus
 
 DI_DEV: [
 {
-          'type': 'di',
+          'type': 'blackout',
           't_gap': 1000,
           'dev': [
           {
@@ -45,7 +45,7 @@ DI_DEV: [
           ]
         },
         {
-          'type': 'di',
+          'type': 'blackout',
           't_gap': 1000,
           'dev': [
           {
@@ -80,7 +80,7 @@ DI_DEV: [
           ]
         },
         {
-          'type': 'di',
+          'type': 'blackout',
           't_gap': 1000,
           'dev':
           {
@@ -114,7 +114,7 @@ DI_DEV: [
           },
         },
         {
-          'type': 'di',
+          'type': 'blackout',
           't_gap': 1000,
           'dev': [
           {
@@ -139,7 +139,7 @@ DI_DEV: [
           ]
         },
         {
-          'type': 'di',
+          'type': 'blackout',
           't_gap': 1000,
           'dev': [
           {
@@ -164,7 +164,7 @@ DI_DEV: [
           ]
         },
         {
-          'type': 'di',
+          'type': 'blackout',
           't_gap': 1000,
           'dev': [
           {
@@ -189,7 +189,7 @@ DI_DEV: [
           ]
         },
         {
-          'type': 'di',
+          'type': 'blackout',
           't_gap': 1000,
           'dev': [
           {
@@ -214,7 +214,7 @@ DI_DEV: [
           ]
         },
         {
-          'type': 'di',
+          'type': 'blackout',
           't_gap': 1000,
           'dev': [
           {
@@ -239,7 +239,7 @@ DI_DEV: [
           ]
         },
         {
-          'type': 'di',
+          'type': 'blackout',
           't_gap': 1000,
           'dev': [
           {
