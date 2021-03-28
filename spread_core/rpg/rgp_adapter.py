@@ -811,7 +811,7 @@ class RGPTCPAdapterLauncher:
         listen = threading.Thread(target=self.listen_rpg, args=(self.startEvent,))
         listen1 = threading.Thread(target=self.listen_rpg1, args=(self.diQueue, self.startListenEvent))
         listen2 = threading.Thread(target=self.modbusQuery, args=(self.startEvent,))
-        listen3 = threading.Thread(target=self.listenDI, args=(self.diQueue, self.startListenEvent, self.diProviders, self.daliProviders))
+        listen3 = threading.Thread(target=self.listenDI, args=(self.diQueue, self.startListenEvent, self.diMask, self.diProviders, self.daliProviders))
 
 
 
@@ -1232,7 +1232,8 @@ class RGPTCPAdapterLauncher:
                 # print('ответ: {0}'.format(out))
                 print('====================================================================================')
 
-    def listenDI(self,diQue,  ev, diList, daliList):
+    def listenDI(self, diQue,  ev, diMask, diList, daliList):
+        blackOut = Blackout(diMask, diList, daliList)
         while True:
             ev.wait()
             while not diQue.empty():
@@ -1268,7 +1269,8 @@ class RGPTCPAdapterLauncher:
                             di.state = bool(res[1])
                             di.stateInt = res[1]
                             di.dumpMqtt()
-                            Blackout(self.diMask, self.diBlackOut, self.daliProviders)
+                            blackOut.work()
+
 
 
 
