@@ -191,7 +191,7 @@ class DiProvider:
         self.twoByteAnswer = None
         self.typeOfQuery = None # 0 - no answer, 1 - need answer
         self.bus = args[0]['dev']['bus']
-        self.channel = args[0]['dev']['channel']
+
         self.time_gap = args[0]['t_gap']
         self._call = None
         self.answerIs = False
@@ -647,7 +647,7 @@ class RGPTCPAdapterLauncher:
         listen = threading.Thread(target=self.listen_rpg, args=(self.startEvent,))
         listen1 = threading.Thread(target=self.listen_rpg1, args=(self.diQueue, self.startListenEvent))
         listen2 = threading.Thread(target=self.modbusQuery, args=(self.startEvent,))
-        listen3 = threading.Thread(target=self.listenDI, args=(self.diQueue, self.startListenEvent, self.diProviders))
+        listen3 = threading.Thread(target=self.listenDI, args=(self.diQueue, self.startListenEvent, self.diProviders, self.daliProviders))
 
 
 
@@ -1068,7 +1068,7 @@ class RGPTCPAdapterLauncher:
                 # print('ответ: {0}'.format(out))
                 print('====================================================================================')
 
-    def listenDI(self,diQue,  ev, diList):
+    def listenDI(self,diQue,  ev, diList, daliList):
         while True:
             ev.wait()
             while not diQue.empty():

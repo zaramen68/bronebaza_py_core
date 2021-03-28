@@ -8,6 +8,238 @@ BUS_HOST_PORT: [['10.10.1.63', 55577],]
 TOPIC_SEND: ['Rapida/0/Can/Bus/Send', 'Rapida/0/Dali/Bus/Send', 'Rapida/0/Modbus/Bus/Send', 'Bus/Send/Rapida/0/Dali/#']
 TOPIC_DUMP: ['Rapida/0/Can/Bus/Dump', 'Rapida/0/Dali/Bus/Dump', 'Rapida/0/Modbus/Bus/Dump', 'Bus/Dump/Rapida/0/Dali/1/1']
 
+DI_DEV: [
+{
+          'type': 'di',
+          't_gap': 1000,
+          'dev': [
+          {
+            'bus': 3,
+            'type': 'seat_sw',
+            'diaddr': 0,
+            'id': 660035,
+            'value': None,
+            'topicV': {
+              'openId': True,
+              'isOpeningId':False,
+              'isOpenedId':False,
+              'closeId': True,
+              'isClosingId':False,
+              'isClosedId':False,
+              'stopId':False,
+              'isStoppedId':False,
+              'setClosenessLevelId':True,
+              'closenessLevelId':10000,
+              'rotateMinusId':True,
+              'isRotatingMinusId':True,
+              'isRotatedMinusId': True,
+              'rotatePlusId': True,
+              'isRotatingPlusId': True,
+              'isRotatedPlusId': True,
+              'rotationStopId': True,
+              'isRotationStoppedId': True,
+              'setRotationAngleId': True,
+              'rotationAngleId': 100000,
+            }
+          },
+          ]
+        },
+        {
+          'type': 'di',
+          't_gap': 1000,
+          'dev': [
+          {
+            'bus': 3,
+            'type': 'door_sw',
+            'diaddr': 1,
+            'id': 660036,
+            'value': None,
+            'topicV': {
+              'openId': True,
+              'isOpeningId':False,
+              'isOpenedId':True,
+              'closeId': True,
+              'isClosingId':False,
+              'isClosedId':False,
+              'stopId':False,
+              'isStoppedId':False,
+              'setClosenessLevelId':True,
+              'closenessLevelId':10000,
+              'rotateMinusId':True,
+              'isRotatingMinusId':True,
+              'isRotatedMinusId': True,
+              'rotatePlusId': True,
+              'isRotatingPlusId': True,
+              'isRotatedPlusId': True,
+              'rotationStopId': True,
+              'isRotationStoppedId': True,
+              'setRotationAngleId': True,
+              'rotationAngleId': 100000,
+            }
+          },
+          ]
+        },
+        {
+          'type': 'di',
+          't_gap': 1000,
+          'dev':
+          {
+            'bus': 3,
+            'type': 'seat_sw',
+            'diaddr': 2,
+            'id': 660037,
+            'value': None,
+            'topicV': {
+              'openId': True,
+              'isOpeningId':False,
+              'isOpenedId':False,
+              'closeId': True,
+              'isClosingId':False,
+              'isClosedId':False,
+              'stopId':False,
+              'isStoppedId':False,
+              'setClosenessLevelId':True,
+              'closenessLevelId':10000,
+              'rotateMinusId':True,
+              'isRotatingMinusId':True,
+              'isRotatedMinusId': True,
+              'rotatePlusId': True,
+              'isRotatingPlusId': True,
+              'isRotatedPlusId': True,
+              'rotationStopId': True,
+              'isRotationStoppedId': True,
+              'setRotationAngleId': True,
+              'rotationAngleId': 100000,
+            }
+          },
+        },
+        {
+          'type': 'di',
+          't_gap': 1000,
+          'dev': [
+          {
+            'bus': 3,
+            'type': 'door_sw',
+            'diaddr': 0,
+            'id': 660034,
+            'value': None,
+            'topicV':{
+              'openId': True,
+              'isOpeningId':False,
+              'isOpenedId':False,
+              'closeId': True,
+              'isClosingId':False,
+              'isClosedId':False,
+              'stopId':False,
+              'isStoppedId':False,
+              'setClosenessLevelId':True,
+              'closenessLevelId':10000,
+            },
+          },
+          ]
+        },
+        {
+          'type': 'di',
+          't_gap': 1000,
+          'dev': [
+          {
+            'bus': 3,
+            'type': 'door_sw',
+            'diaddr': 4,
+            'id': 660244,
+            'value': None,
+            'topicV':{
+              'openId': True,
+              'isOpeningId':False,
+              'isOpenedId':False,
+              'closeId': True,
+              'isClosingId':False,
+              'isClosedId':False,
+              'stopId':False,
+              'isStoppedId':False,
+              'setClosenessLevelId':True,
+              'closenessLevelId':10000,
+            },
+          },
+          ]
+        },
+        {
+          'type': 'di',
+          't_gap': 1000,
+          'dev': [
+          {
+            'bus': 3,
+            'type': 'door_sw',
+            'diaddr': 5,
+            'id': 660243,
+            'value': None,
+            'topicV':{
+              'openId': True,
+              'isOpeningId':False,
+              'isOpenedId':False,
+              'closeId': True,
+              'isClosingId':False,
+              'isClosedId':False,
+              'stopId':False,
+              'isStoppedId':False,
+              'setClosenessLevelId':True,
+              'closenessLevelId':10000,
+            },
+          },
+          ]
+        },
+        {
+          'type': 'di',
+          't_gap': 1000,
+          'dev': [
+          {
+            'bus': 3,
+            'type': 'door_sw',
+            'diaddr': 6,
+            'id': 660245,
+            'value': None,
+            'topicV':{
+              'openId': True,
+              'isOpeningId':False,
+              'isOpenedId':False,
+              'closeId': True,
+              'isClosingId':False,
+              'isClosedId':False,
+              'stopId':False,
+              'isStoppedId':False,
+              'setClosenessLevelId':True,
+              'closenessLevelId':10000,
+            },
+          },
+          ]
+        },
+        {
+          'type': 'di',
+          't_gap': 1000,
+          'dev': [
+          {
+            'bus': 3,
+            'type': 'blackout_sw',
+            'diaddr': 7,
+            'id': 660246,
+            'value': None,
+            'topicV':{
+              'openId': True,
+              'isOpeningId':False,
+              'isOpenedId':False,
+              'closeId': True,
+              'isClosingId':False,
+              'isClosedId':False,
+              'stopId':False,
+              'isStoppedId':False,
+              'setClosenessLevelId':True,
+              'closenessLevelId':10000,
+            },
+          },
+          ]
+        },
+]
+
 MODBUS_DEV: [
       {
         'type': 'thermometer',
