@@ -16,6 +16,20 @@ from spread_core.tools.service_launcher import Launcher
 from spread_core.tools.settings import config, logging
 from spread_core.mqtt.variables import VariableJocket
 
+
+SHUXER_1= [0,0,10,10,0,0]
+SHUXER_2= [0,0,50,50,0,0]
+
+
+SAVED_LIGHT={
+'111427':0,
+'111428':0,
+'111429':0,
+'111430':0,
+'111431':0,
+'111432':0,
+}
+
 settings.DUMPED = False
 PROJECT=config['PROJ']
 
@@ -508,6 +522,115 @@ class DaliProvider:
         elif fl == 1:
             clientTopic = self._stateTopicIsOn
         self.mqtt.publish(topic=clientTopic, payload=out.pack(), qos=0, retain=True)
+
+
+class Blackout:
+    def __init__(self, diList, daliList):
+
+        self._is_shuxer = False
+        self._reg = 0
+        self._mask = []
+        self.diList = diList
+        self.daliList = daliList
+
+
+        for dev in self.diList:
+            self._mask.append(None)
+
+
+    def checkout(self):
+        reg = 0
+        for device in self.diList:
+            if device['type'] == 'blackout_sw1' and device['value'] == True:
+                reg = 1
+            elif  device['type'] == 'blackout_sw1' and device['value'] == True:
+                reg = 2
+
+        return reg
+
+    def work(self, msg):
+        out = msg.payload.decode()
+        tpc = msg.topic.split('/')
+        if len(out) != 20:
+            return
+        for dev in self.diList:
+
+            if tpc[3] == dev['host']:
+               # for dev in self._dev:
+                    if str(dev['di']) == tpc[6]:
+                        value = int(out[19], 16)
+                        if value == 1:
+                            v = True
+                        elif value == 0:
+                            v = False
+                        if dev['value'] is None or dev['value'] != v:
+                            #   initial or new values
+                            dev['value'] = v
+                            if dev['topicId'] == 'night_key':
+                                self._mask[dev['di']] = v
+                            else:
+                                self._mask[dev['di']+2] = v
+
+        if None not in  self._mask:
+            self._reg = self.checkout()
+            if False in self._mask[2:]:
+                if self._reg != 0:
+                    if self._is_shuxer != True:
+                        self.shuxer()
+                        return
+                    else:
+                        return
+                else:
+                    if self._is_shuxer == True:
+                        self.entwarnung()
+                        return
+                    else:
+                        return
+
+            else:
+                if self._is_shuxer == True:
+                    self.entwarnung()
+                    return
+                else:
+                    return
+
+    def shuxer(self):
+        self.save_light()
+        if self._reg == 1:
+            ii = 0
+            self._is_shuxer = True
+            while ii < len(topic_pub):
+
+                jocket = VariableJocket.create_data(int(topic_pub[ii].split('/')[10]), 31090132,
+                                                    'set', shuxer1[ii], "{00000000-0000-0000-0000-000000000000}")
+                self._mqtts.publish(topic_pub[ii], jocket.pack(), qos=1)
+                ii+=1
+
+        elif self._reg == 2:
+            ii = 0
+            self._is_shuxer = True
+            while ii < len(topic_pub):
+                jocket = VariableJocket.create_data(int(topic_pub[ii].split('/')[10]), 31090132,
+                                                    'set', shuxer2[ii], "{00000000-0000-0000-0000-000000000000}")
+                self._mqtts.publish(topic_pub[ii], jocket.pack(), qos=1)
+                ii += 1
+
+
+
+    def save_light(self):
+        for key, value in light_topics.items():
+            saved_light[key.split('/')[9]] = value
+    # TODO: добавить None значения в стоварь SAVED_DATA и проверку их присутствия после запоминания состояния света
+
+    def entwarnung(self):
+
+        for top in topic_pub:
+            jocket = VariableJocket.create_data(int(top.split('/')[10]), 31090132,
+                                                'set', saved_light[top.split('/')[10]], "{00000000-0000-0000-0000-000000000000}")
+            self._mqtts.publish(top, jocket.pack(), qos=1)
+
+        self._is_shuxer = False
+
 
 class RGPTcpSocket:
 
