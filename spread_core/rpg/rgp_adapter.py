@@ -1301,7 +1301,7 @@ class RGPTCPAdapterLauncher:
         # byte1_ = bitstring.BitArray(hex(self.dev['dev']['channel']))[:2]
         # byte1.append(byte1_)
         byte1 = '00'
-        data = '0001'
+        data = ''
 
         dCommand = canId[2:] + canId[:2] + byte0.hex + byte1
         # mbCommand = 'E203010001' + data

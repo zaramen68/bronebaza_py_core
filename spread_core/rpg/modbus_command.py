@@ -206,7 +206,7 @@ class RGPTCPAdapterLauncher:
 
 
         # mbCommand = canId[2:] + canId[:2] + byte0.hex + '04'+ '01'+ '03'+'00'+'00'
-        # mbCommand = canId[2:] + canId[:2] + byte0.hex + '42'+'01'
+        mbCommand = canId[2:] + canId[:2] + byte0.hex + '42'+'00'
 
         pLen = bytearray(3)
         pLen[0] = int(len(mbCommand) / 2)
