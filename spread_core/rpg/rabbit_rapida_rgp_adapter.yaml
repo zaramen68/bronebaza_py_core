@@ -9,10 +9,10 @@ TOPIC_SEND: ['Rapida/0/Can/Bus/Send', 'Rapida/0/Dali/Bus/Send', 'Rapida/0/Modbus
 TOPIC_DUMP: ['Rapida/0/Can/Bus/Dump', 'Rapida/0/Dali/Bus/Dump', 'Rapida/0/Modbus/Bus/Dump', 'Bus/Dump/Rapida/0/Dali/1/1']
 
 DI_DEV: [
-{
+        {
           'type': 'blackout',
           't_gap': 1000,
-          'dev': [
+          'dev':
           {
             'bus': 3,
             'type': 'seat_sw',
@@ -42,12 +42,12 @@ DI_DEV: [
               'rotationAngleId': 100000,
             }
           },
-          ]
+
         },
         {
           'type': 'blackout',
           't_gap': 1000,
-          'dev': [
+          'dev':
           {
             'bus': 3,
             'type': 'door_sw',
@@ -77,7 +77,7 @@ DI_DEV: [
               'rotationAngleId': 100000,
             }
           },
-          ]
+
         },
         {
           'type': 'blackout',
@@ -116,7 +116,7 @@ DI_DEV: [
         {
           'type': 'blackout',
           't_gap': 1000,
-          'dev': [
+          'dev':
           {
             'bus': 3,
             'type': 'door_sw',
@@ -136,12 +136,12 @@ DI_DEV: [
               'closenessLevelId':10000,
             },
           },
-          ]
+
         },
         {
           'type': 'blackout',
           't_gap': 1000,
-          'dev': [
+          'dev':
           {
             'bus': 3,
             'type': 'door_sw',
@@ -161,12 +161,12 @@ DI_DEV: [
               'closenessLevelId':10000,
             },
           },
-          ]
+
         },
         {
           'type': 'blackout',
           't_gap': 1000,
-          'dev': [
+          'dev':
           {
             'bus': 3,
             'type': 'door_sw',
@@ -186,12 +186,12 @@ DI_DEV: [
               'closenessLevelId':10000,
             },
           },
-          ]
+
         },
         {
           'type': 'blackout',
           't_gap': 1000,
-          'dev': [
+          'dev':
           {
             'bus': 3,
             'type': 'door_sw',
@@ -211,12 +211,12 @@ DI_DEV: [
               'closenessLevelId':10000,
             },
           },
-          ]
+
         },
         {
           'type': 'blackout',
           't_gap': 1000,
-          'dev': [
+          'dev':
           {
             'bus': 3,
             'type': 'blackout_sw1',
@@ -236,12 +236,12 @@ DI_DEV: [
               'closenessLevelId':10000,
             },
           },
-          ]
+
         },
         {
           'type': 'blackout',
           't_gap': 1000,
-          'dev': [
+          'dev':
           {
             'bus': 3,
             'type': 'blackout_sw2',
@@ -261,7 +261,7 @@ DI_DEV: [
               'closenessLevelId':10000,
             },
           },
-          ]
+
         },
 ]
 

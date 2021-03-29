@@ -1328,9 +1328,9 @@ class RGPTCPAdapterLauncher:
         else:
             if out is not None:
                 while len(out) > 0:
-                    rpgData, rest = self.parceData(out, diQue)
+                    rpgData, rest = self.parceData(out)
                     if hex(rpgData['opCode']) == OPCODECANDATA:
-                        self.parceCAN(rpgData['payloadCAN'])
+                        self.parceCAN(rpgData['payloadCAN'], diQue)
                         # print('===={0}========={1}========'.format(hex(rpgData['payloadCAN']['canId'][0]), hex(rpgData['payloadCAN']['canId'][1])))
                     elif hex(rpgData['opCode']) == OPCODEPINGREQ:
                         print("04 00 00 00")
@@ -1506,7 +1506,7 @@ class RGPTCPAdapterLauncher:
                 # else:
                 #     self.daliAnswer = -4
             elif n==5:  # DI
-                diq.put_nowait(data('data'))
+                diq.put_nowait(data['data'])
 
 
 
