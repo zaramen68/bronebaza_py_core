@@ -443,15 +443,7 @@ class DaliProvider:
         level_=level
         data = ShortDaliAddtessComm(self.dadr, level_)
         self._call = data
-        # mbCommand = 'E203010001' + data
-        # opCode = '07'
-        # pLen = bytearray(3)
-        # pLen[0] = int(len(mbCommand) / 2)
-        # pL = opCode + make_two_bit(hex(pLen[0]).split('x')[1]) + \
-        #      make_two_bit(hex(pLen[1]).split('x')[1]) + make_two_bit(hex(pLen[2]).split('x')[1]) + \
-        #      mbCommand
-        # size = len(pL)
-        # data = bytes.fromhex(pL)
+
         addr_from = bitstring.BitArray(hex(31))[3:]
         addr_to_ = bitstring.BitArray(hex(self.dev['bus']))
         addr_to = bitstring.BitArray(5 - addr_to_.length)
@@ -660,9 +652,9 @@ class Blackout:
     def save_light(self):
         for dev in self.daliList:
             if dev.state is not None:
-                self.saved_light[str(dev.dev['id'])] = dev.state.uint
+                self.saved_light[str(dev.dev['id'])] = dev.lastLevel
             elif dev.state is None:
-                self.saved_light[str(dev.dev['id'])] = dev.state
+                self.saved_light[str(dev.dev['id'])] = dev.lastLevel
     # TODO: добавить None значения в стоварь SAVED_DATA и проверку их присутствия после запоминания состояния света
 
     def entwarnung(self):
@@ -1049,6 +1041,7 @@ class RGPTCPAdapterLauncher:
             if daliDev.answerIs and self.daliAnswer == 1:
                 # success
                 self.writeMqtt(dev=daliDev, data=int(daliDev.state.uint / 254 * 100), comm=4)
+                daliDev.lastLevel = int(daliDev.state.uint / 254 * 100)
             else:  # no answer
                 daliDev.state = None
                 daliDev.isValid = False
