@@ -440,7 +440,8 @@ class DaliProvider:
 
     def setLevel(self, level):
         # set level on dali device
-        data = ShortDaliAddtessComm(self.dadr, level)
+        level_=level
+        data = ShortDaliAddtessComm(self.dadr, level_)
         self._call = data
         # mbCommand = 'E203010001' + data
         # opCode = '07'
@@ -487,9 +488,9 @@ class DaliProvider:
         size = len(pL)
         dd = bytes.fromhex(pL)
         self._callDTime = current_milli_time()
-        self._socket.send_message(data, size)
+        self._socket.send_message(dd, size)
         # self.answerIs=False
-        return self._callDTime
+        # return self._callDTime
 
     def callDali(self, data, resp=False):
         self._call = data
@@ -604,9 +605,9 @@ class Blackout:
     def checkout(self):
         reg = 0
         for device in self.diList:
-            if device['type'] == 'blackout_sw1' and device['value'] == True:
+            if device.type == 'blackout_sw1' and device.state == True:
                 reg = 1
-            elif  device['type'] == 'blackout_sw1' and device['value'] == True:
+            elif  device.type == 'blackout_sw2' and device.state == True:
                 reg = 2
 
         return reg
@@ -615,7 +616,7 @@ class Blackout:
 
         if None not in  self._mask:
             self._reg = self.checkout()
-            if False in self._mask[2:]:
+            if False in list(self._mask.values())[2:]:
                 if self._reg != 0:
                     if self._is_shuxer != True:
                         self.shuxer()
@@ -642,28 +643,33 @@ class Blackout:
             ii = 0
             self._is_shuxer = True
             for dev in self.daliList:
-                dev.setLevel(self.shuxer1['{}'.format(dev['id'])])
+                if dev.state is not None:
+                    dev.setLevel(self.shuxer1['{}'.format(str(dev.dev['id']))])
 
 
         elif self._reg == 2:
             ii = 0
             self._is_shuxer = True
             for dev in self.daliList:
-                dev.setLevel(self.shuxer2['{}'.format(dev['id'])])
+                if dev.state is not None:
+                    dev.setLevel(self.shuxer2['{}'.format(str(dev.dev['id']))])
 
 
 
 
     def save_light(self):
         for dev in self.daliList:
-
-            self.saved_light[dev['id']] = dev['state']
+            if dev.state is not None:
+                self.saved_light[str(dev.dev['id'])] = dev.state.uint
+            elif dev.state is None:
+                self.saved_light[str(dev.dev['id'])] = dev.state
     # TODO: добавить None значения в стоварь SAVED_DATA и проверку их присутствия после запоминания состояния света
 
     def entwarnung(self):
 
         for dev in self.daliList:
-            dev.setLevel(self.saved_light['{}'.format(dev['id'])])
+            if dev.state is not None:
+                dev.setLevel(self.saved_light['{}'.format(dev.dev['id'])])
 
         self._is_shuxer = False
 
