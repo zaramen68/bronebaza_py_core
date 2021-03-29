@@ -16,7 +16,7 @@ DI_DEV: [
           {
             'bus': 3,
             'type': 'seat_sw',
-            'diaddr': 0,
+            'diaddr': 7,
             'id': 660035,
             'value': None,
             'topicV': {
@@ -51,7 +51,7 @@ DI_DEV: [
           {
             'bus': 3,
             'type': 'door_sw',
-            'diaddr': 1,
+            'diaddr': 6,
             'id': 660036,
             'value': None,
             'topicV': {
@@ -86,7 +86,7 @@ DI_DEV: [
           {
             'bus': 3,
             'type': 'seat_sw',
-            'diaddr': 2,
+            'diaddr': 8,
             'id': 660037,
             'value': None,
             'topicV': {
@@ -145,7 +145,7 @@ DI_DEV: [
           {
             'bus': 3,
             'type': 'door_sw',
-            'diaddr': 4,
+            'diaddr': 1,
             'id': 660244,
             'value': None,
             'topicV':{
@@ -170,7 +170,7 @@ DI_DEV: [
           {
             'bus': 3,
             'type': 'door_sw',
-            'diaddr': 5,
+            'diaddr': 2,
             'id': 660243,
             'value': None,
             'topicV':{
@@ -195,7 +195,7 @@ DI_DEV: [
           {
             'bus': 3,
             'type': 'door_sw',
-            'diaddr': 6,
+            'diaddr': 3,
             'id': 660245,
             'value': None,
             'topicV':{
@@ -220,7 +220,7 @@ DI_DEV: [
           {
             'bus': 3,
             'type': 'blackout_sw1',
-            'diaddr': 7,
+            'diaddr': 4,
             'id': 660246,
             'value': None,
             'topicV':{
@@ -245,7 +245,7 @@ DI_DEV: [
           {
             'bus': 3,
             'type': 'blackout_sw2',
-            'diaddr': 8,
+            'diaddr': 5,
             'id': 660247,
             'value': None,
             'topicV':{

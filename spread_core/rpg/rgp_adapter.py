@@ -1240,19 +1240,23 @@ class RGPTCPAdapterLauncher:
                 data = diQue.get_nowait()
                 fl, res =self.workDIData(data=data)
                 if fl == 1:
-                    state = bitstring.BitArray()
-                    for byte in res:
-                        state.append(bitstring.BitArray(hex(byte)).reverse())
-                    sb=state.bin
-                    sl=list(sb)
+                    sb=bitstring.BitArray()
+                    for bt in res:
+                        sb_=bitstring.BitArray(hex(bt))
+                        if sb_.length==4:
+                            sb_=bitstring.BitArray(4)+sb_
 
-                    for i in range(1, len(sl)):
+                        sb_.reverse()
+                        sb.append(sb_)
+
+
+                    for i in range(sb.length):
                         for di in diList:
                             if di.diaddr == i:
-                                di.state = state[i]
-                                di.stateInt = int(sl[i])
+                                di.state = sb[i]
+                                di.stateInt = int(sb.bin[i])
                                 di.dumpMqtt()
-                                self.diMask[str(di.topicIn)] = state[i]
+                                self.diMask[str(di.topicIn)] = sb[i]
 
                 elif fl == 3:
                     i = res[0]
@@ -1280,16 +1284,16 @@ class RGPTCPAdapterLauncher:
         if data[0]== 1:
             #  состояние всех входов
             fl = 1
-            pass
+
         elif data[0]==3:
             #  состояние отдельного входа
             fl = 3
-            pass
+
         elif data[0]==5:
             fl = 5
             #  событие изменения состояния входа
-            pass
-        return fl, dataList
+
+        return fl, dataList[1:]
 
 
     def startDi(self):
@@ -1522,7 +1526,7 @@ class RGPTCPAdapterLauncher:
                 'payloadCAN': {
                     'canId': bytearray(2),
                     'dlc': bytearray(1),
-                    'data': bytearray(8)
+                    'data': bytearray()
                 }
             }
             data['opCode']=dataAr.pop(0)
@@ -1535,7 +1539,8 @@ class RGPTCPAdapterLauncher:
             data['payloadCAN']['dlc'] = data['payloadLen'][0]-2
 
             for i in range(int(data['payloadLen'][0])-2):
-                data['payloadCAN']['data'][i]=dataAr.pop(0)
+                # data['payloadCAN']['data'][i]=dataAr.pop(0)
+                data['payloadCAN']['data'].append(dataAr.pop(0))
 
             return data, dataAr
 
