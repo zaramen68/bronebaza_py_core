@@ -284,10 +284,10 @@ class DiProvider:
         num = 0
         for key, value in self.topicV.items():
             if key == 'isOpenedId':
-                out = VariableTRS3(None, self.dev['dev']['id'], 0, data, invalid=(not self.isValid))
+                out = VariableTRS3(None, self.dev['dev']['id'], num, data)
                 self._mqtt.publish(topic=clientTopic+'/{}'.format(num), payload=out.pack(), qos=0, retain=True)
             else:
-                out = VariableTRS3(None, self.dev['dev']['id'], 0, value, invalid=(not self.isValid))
+                out = VariableTRS3(None, self.dev['dev']['id'], num, value)
                 self._mqtt.publish(topic=clientTopic+'/{}'.format(num), payload=out.pack(), qos=0, retain=True)
             num += 1
 
