@@ -528,7 +528,7 @@ class DaliProvider:
         self.answerIs=False
         return self._callDTime
 
-    def dumpMqtt(self, data=None, fl=None, comm = 4, flInvalid = False):
+    def dumpMqtt(self, data=None, fl=None):
         if data == None and self.state is not None:
             data_ = self.state
             data = data_.uint
@@ -640,7 +640,10 @@ class Blackout:
                 if dev.state is not None:
                     level=self.shuxer1['{}'.format(str(dev.dev['id']))]
                     dev.setLevel(level)
-                    dev.dumpMqtt(data=level, fl=1)
+                    if dev.dev['type'] == 'DimmingLight':
+                        dev.dumpMqtt(data=level)
+                    elif dev.dev['type'] == 'SwitchingLight':
+                        dev.dumpMqtt(data=level, fl=1)
 
 
         elif self._reg == 2:
@@ -650,7 +653,10 @@ class Blackout:
                 if dev.state is not None:
                     level = self.shuxer2['{}'.format(dev.dev['id'])]
                     dev.setLevel(level)
-                    dev.dumpMqtt(data=level, fl=1)
+                    if dev.dev['type'] == 'DimmingLight':
+                        dev.dumpMqtt(data=level)
+                    elif dev.dev['type'] == 'SwitchingLight':
+                        dev.dumpMqtt(data=level, fl=1)
 
 
 
@@ -669,7 +675,10 @@ class Blackout:
             if dev.state is not None:
                 level=self.saved_light['{}'.format(dev.dev['id'])]
                 dev.setLevel(level)
-                dev.dumpMqtt(data=level, fl=1)
+                if dev.dev['type']=='DimmingLight':
+                    dev.dumpMqtt(data=level)
+                elif dev.dev['type']=='SwitchingLight':
+                    dev.dumpMqtt(data=level, fl=1)
 
         self._is_shuxer = False
 
