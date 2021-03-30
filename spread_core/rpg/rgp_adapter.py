@@ -608,9 +608,9 @@ class Blackout:
 
     def work(self):
 
-        if None not in  self._mask:
+        if None not in  [t[1] for t in list(self._mask.values())]:
             self._reg = self.checkout()
-            if False in list(self._mask.values())[2:]:
+            if False in [t[1] for t in list(self._mask.values()) if t[0]=='door_sw']:
                 if self._reg != 0:
                     if self._is_shuxer != True:
                         self.shuxer()
@@ -636,6 +636,7 @@ class Blackout:
         if self._reg == 1:
             ii = 0
             self._is_shuxer = True
+
             for dev in self.daliList:
                 if dev.state is not None:
                     level=self.shuxer1['{}'.format(str(dev.dev['id']))]
@@ -811,7 +812,7 @@ class RGPTCPAdapterLauncher:
             diDev = DiProvider(self.sock, self.mqttc, prov)
             self.diProviders.append(diDev)
             if diDev.classF == 'blackout':
-                self.diMask[str(diDev.topicIn)]=None
+                self.diMask[str(diDev.topicIn)]=(diDev.dev['type'], None)
                 self.diBlackOut.append(diDev)
 
         topic = 'Tros3/Command/{}/#'.format(PROJECT)
@@ -1278,7 +1279,7 @@ class RGPTCPAdapterLauncher:
                                 di.state = sb[i]
                                 di.stateInt = int(sb.bin[i])
                                 di.dumpMqtt()
-                                self.diMask[str(di.topicIn)] = sb[i]
+                                self.diMask[str(di.topicIn)][1] = sb[i]
 
                 elif fl == 3:
                     i = res[0]

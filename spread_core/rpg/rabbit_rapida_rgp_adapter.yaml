@@ -10,7 +10,7 @@ TOPIC_DUMP: ['Rapida/0/Can/Bus/Dump', 'Rapida/0/Dali/Bus/Dump', 'Rapida/0/Modbus
 
 DI_DEV: [
         {
-          'type': 'blackout',
+          'type': 'seat',
           't_gap': 1000,
           'dev':
           {
@@ -50,7 +50,7 @@ DI_DEV: [
           'dev':
           {
             'bus': 3,
-            'type': 'door_sw',
+            'type': 'seat_sw',
             'diaddr': 6,
             'id': 660036,
             'value': None,
@@ -80,7 +80,7 @@ DI_DEV: [
 
         },
         {
-          'type': 'blackout',
+          'type': 'seat',
           't_gap': 1000,
           'dev':
           {
