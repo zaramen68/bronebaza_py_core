@@ -532,12 +532,14 @@ class DaliProvider:
         if data == None and self.state is not None:
             data_ = self.state
             data = data_.uint
-
-        out = VariableTRS3(None, self.dev['id'], comm, data)
         if fl == None:
+            comm = 4
             clientTopic = self._stateTopicLevel
         elif fl == 1:
+            comm = 2
             clientTopic = self._stateTopicIsOn
+
+        out = VariableTRS3(None, self.dev['id'], comm, data)
         self.mqtt.publish(topic=clientTopic, payload=out.pack(), qos=0, retain=True)
 
 
@@ -638,7 +640,7 @@ class Blackout:
                 if dev.state is not None:
                     level=self.shuxer1['{}'.format(str(dev.dev['id']))]
                     dev.setLevel(level)
-                    dev.dumpMqtt(level)
+                    dev.dumpMqtt(data=level, fl=1)
 
 
         elif self._reg == 2:
@@ -648,7 +650,7 @@ class Blackout:
                 if dev.state is not None:
                     level = self.shuxer2['{}'.format(dev.dev['id'])]
                     dev.setLevel(level)
-                    dev.dumpMqtt(level)
+                    dev.dumpMqtt(data=level, fl=1)
 
 
 
@@ -667,7 +669,7 @@ class Blackout:
             if dev.state is not None:
                 level=self.saved_light['{}'.format(dev.dev['id'])]
                 dev.setLevel(level)
-                dev.dumpMqtt(level)
+                dev.dumpMqtt(data=level, fl=1)
 
         self._is_shuxer = False
 
