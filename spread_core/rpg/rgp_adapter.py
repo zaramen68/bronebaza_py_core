@@ -177,7 +177,7 @@ class RGPTCPAdapterLauncher:
         self.connect_rpg()
         # self.rpg_listen_fun()
 
-        listen = threading.Thread(target=self.listen_rpg, args=(self.startEvent,))
+        listen = threading.Thread(target=self.listen_rpg, args=(self.startEvent, self.daliProviders))
         listen1 = threading.Thread(target=self.listen_rpg1, args=(self.diQueue, self.startListenEvent, self.diListenEvent))
         listen2 = threading.Thread(target=self.modbusQuery, args=(self.startEvent,))
         listen3 = threading.Thread(target=self.listenDI, args=(self.diQueue, self.diListenEvent, self.diMask, self.diBlackOut, self.daliProviders))
@@ -976,14 +976,14 @@ class RGPTCPAdapterLauncher:
                 # self.mqttc.publish(topic=topic_dump.format(BUS_ID) + '/error', payload=str(ex))
 
 
-    def listen_rpg(self, startEvent):
+    def listen_rpg(self, startEvent, dalidev):
+        count=0
         while True:
-            # time.sleep(1)    10 03 01 02 00 02 - команда чтения температуры
-            # self._command_event.wait()
+
             startEvent.wait()
 
             if (time.time()- self._start_time) >= 5.:
-
+                count = count + 1
                 device = self.sock
                 # for data in device.commands():
                 data = '03000000'
@@ -996,15 +996,16 @@ class RGPTCPAdapterLauncher:
                     logging.exception(ex)
                     self.mqttc.publish(topic=topic_dump.format(PROJECT) + '/error', payload=str(ex))
                 else:
-                    try:
-                        self._start_time=time.time()
-                       # out = VariableTRS3(None, int(BUS_ID), 0, tk)
-                       # top_out = topic_dump.format(PROJECT, BUS_ID, '0')
-                       # self.mqttc.publish(topic=topic_dump.format(PROJECT, BUS_ID, '0'), payload=out.pack())
-                       # logging.debug('[  <-]: {}'.format(out))
 
-                    except BaseException as ex:
-                        logging.exception(ex)
+                    self._start_time=time.time()
+
+
+
+
+            if (count > 10):
+                count=0
+                for dev in dalidev:
+                    self.queryOfDaliDevice(dev)
 
     #    self._step_event.clear()
 

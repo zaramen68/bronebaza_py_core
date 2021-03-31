@@ -148,6 +148,10 @@ class DaliProvider:
         elif fl == 1:
             comm = 2
             clientTopic = self._stateTopicIsOn
+            if data == 0:
+                data = False
+            else:
+                data = True
 
         out = VariableTRS3(None, self.dev['id'], comm, data)
         self.mqtt.publish(topic=clientTopic, payload=out.pack(), qos=0, retain=True)
