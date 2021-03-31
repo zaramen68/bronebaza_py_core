@@ -38,10 +38,7 @@ modBusQueue = queue.Queue()
 daliQueue = queue.Queue()
 diQueue = queue.Queue()
 canQueue = queue.Queue()
-
-
-
-
+diQueue = queue.Queue()
 
 class RGPTcpSocket:
 
@@ -125,6 +122,9 @@ class RGPTCPAdapterLauncher:
     startListenEvent = threading.Event()
     queryPassEvent = threading.Event()
 
+    diMask = dict()
+    diBlackOut = []
+
     def __init__(self):
         self._time = current_milli_time()
         self.mqttc = paho.mqtt.client.Client()
@@ -141,7 +141,7 @@ class RGPTCPAdapterLauncher:
         self.callModBusTime = current_milli_time()
         self.daliProviders = []
         self.modbusProviders = []
-
+        self.diProviders = []
         self.daliGroup = [[] for i in range(0, 16)]
 
 
@@ -155,6 +155,10 @@ class RGPTCPAdapterLauncher:
         self.modbusAnswer = False
         self.callDaliProvider = None
         self.beginTime = None
+        self.startEvent = threading.Event()
+        self.startListenEvent = threading.Event()
+        self.qFl = threading.Event()
+        self.diListenEvent=threading.Event()
 
 
 
@@ -168,6 +172,13 @@ class RGPTCPAdapterLauncher:
             modbusDev = ModBusProvider(self.sock, self.mqttc, prov)
             self.modbusProviders.append(modbusDev)
 
+        for prov in DI_DEV:
+            diDev = DiProvider(self.sock, self.mqttc, prov)
+            self.diProviders.append(diDev)
+            if diDev.classF == 'blackout':
+                self.diMask[str(diDev.topicIn)] = [diDev.dev['dev']['type'], None]
+                self.diBlackOut.append(diDev)
+
         topic = 'Tros3/Command/{}/#'.format(PROJECT)
         self.mqttc.subscribe(topic)
         logging.debug('Subscribed to {}'.format(topic))
@@ -178,13 +189,13 @@ class RGPTCPAdapterLauncher:
         self.connect_rpg()
         # self.rpg_listen_fun()
 
-        listen = threading.Thread(target=self.listen_rpg, args=(self.startEvent,), daemon=True)
+        listen = threading.Thread(target=self.listen_rpg, args=(self.startEvent,))
         listen1 = threading.Thread(target=self.listen_rpg1,
-                                          args=(canQueue, daliQueue, modBusQueue,
-                                                                          self.startListenEvent ), daemon=True)
-        listen2 = threading.Thread(target=self.modbusQuery, args=(self.startEvent,), daemon=True)
-        listen3 = threading.Thread(target=self.queryDaliInTime, args=(self.startEvent,), daemon=True)
-
+                                          args=(canQueue, daliQueue, modBusQueue, diQueue,
+                                                                          self.startListenEvent, self.diListenEvent ))
+        listen2 = threading.Thread(target=self.modbusQuery, args=(self.startEvent,))
+        listen3 = threading.Thread(target=self.queryDaliInTime, args=(self.startEvent,))
+        listen4 = threading.Thread(target=self.listenDI, args=(diQueue, self.diListenEvent, self.diMask, self.diBlackOut, self.daliProviders))
 
         # listen1.daemon = True
         listen.start()
@@ -192,10 +203,11 @@ class RGPTCPAdapterLauncher:
         self.startListenEvent.set()
 
         self.start_dali()
+        self.startDi()
 
         listen2.start()
         listen3.start()
-
+        listen4.start()
         self.startEvent.set()
         # self.queryPassEvent.set()
         self.mqttc.loop_forever()
@@ -343,6 +355,99 @@ class RGPTCPAdapterLauncher:
     def of(self, topic):
         arr = topic.split('/')
         return arr
+
+    def listenDI(self, diQue,  ev, diMask, diList, daliList):
+        blackOut = Blackout(diMask, diList, daliList)
+        while True:
+            ev.wait()
+            while not diQue.empty():
+                data = diQue.get_nowait()
+                fl, res =self.workDIData(data=data)
+                if fl == 1:
+                    sb=bitstring.BitArray()
+                    for bt in res:
+                        sb_=bitstring.BitArray(hex(bt))
+                        if sb_.length==4:
+                            sb_=bitstring.BitArray(4)+sb_
+
+                        sb_.reverse()
+                        sb.append(sb_)
+
+
+                    for i in range(sb.length):
+                        for di in diList:
+                            if di.diaddr == i:
+                                di.state = sb[i]
+                                di.stateInt = int(sb.bin[i])
+                                di.dumpMqtt()
+                                self.diMask[str(di.topicIn)][1] = sb[i]
+
+                elif fl == 3:
+                    i = res[0]
+                    for di in diList:
+                        if di.diaddr == i:
+                            di.state = bool(res[1])
+                            di.stateInt = res[1]
+                            di.dumpMqtt()
+
+                elif fl == 5:
+                    i = res[0]
+                    for di in diList:
+                        if di.diaddr == i:
+                            di.state = bool(res[1])
+                            di.stateInt = res[1]
+                            self.diMask[str(di.topicIn)][1] = bool(res[1])
+                            di.dumpMqtt()
+                            blackOut.work()
+            ev.clear()
+
+
+
+
+    def workDIData(self, data):
+        dataList = list(data)
+        fl=0
+        if data[0]== 1:
+            #  состояние всех входов
+            fl = 1
+
+        elif data[0]==3:
+            #  состояние отдельного входа
+            fl = 3
+
+        elif data[0]==5:
+            fl = 5
+            #  событие изменения состояния входа
+
+        return fl, dataList[1:]
+
+
+    def startDi(self):
+        canId = CanId(31, 3)
+        byte0 = Byte0(5)
+
+        # byte1 = bitstring.BitArray(6)
+        # byte1[5]=part
+        # byte1_ = bitstring.BitArray(hex(self.dev['dev']['channel']))[:2]
+        # byte1.append(byte1_)
+        byte1 = '00'
+        data = ''
+
+        dCommand = canId[2:] + canId[:2] + byte0.hex + byte1
+        # mbCommand = 'E203010001' + data
+        mbCommand = dCommand + data
+        opCode = '07'
+        pLen = bytearray(3)
+        pLen[0] = int(len(mbCommand) / 2)
+        pL = opCode + make_two_bit(hex(pLen[0]).split('x')[1]) + \
+             make_two_bit(hex(pLen[1]).split('x')[1]) + make_two_bit(hex(pLen[2]).split('x')[1]) + \
+             mbCommand
+        size = len(pL)
+        dd = bytes.fromhex(pL)
+
+        self.sock.send_message(dd, size)
+        self.answerIs=False
+
     def callDaliQueue(self, dev, typeOfQ, dd):
         dev.answerIs = False
         dev.typeOfQuery = typeOfQ  # 8 bit answer is needed
@@ -472,7 +577,7 @@ class RGPTCPAdapterLauncher:
     def queryDaliInTime(self, ev):
         while True:
             ev.wait()
-            time.sleep(2)
+            time.sleep(10)
             for dev in self.daliProviders:
                 self.queryOfDaliDevice(dev)
 
@@ -789,7 +894,7 @@ class RGPTCPAdapterLauncher:
                     out = out[(len(out) - len(rest)):]
 
 
-    def listen_rpg1(self, canQue, daliQue, modBusQue, startEvent):
+    def listen_rpg1(self, canQue, daliQue, modBusQue, diQue, startEvent, diEvent):
 
         device = self.sock
 
@@ -810,7 +915,7 @@ class RGPTCPAdapterLauncher:
                         rpgData, rest = self.parceData(out)
                         if hex(rpgData['opCode']) == OPCODECANDATA:
 
-                            self.parceCAN(rsvTime, daliQue, modBusQue, rpgData['payloadCAN'])
+                            self.parceCAN(rsvTime, daliQue, modBusQue, diQue, diEvent, rpgData['payloadCAN'])
 
 
                             # print('===={0}========={1}========'.format(hex(rpgData['payloadCAN']['canId'][0]), hex(rpgData['payloadCAN']['canId'][1])))
@@ -828,7 +933,7 @@ class RGPTCPAdapterLauncher:
                     # self.mqttc.publish(topic=topic_send[1] + '/lamp', payload=str(out))
                     # logging.debug('[recive from server  <-]: {}'.format(out))
 
-    def parceCAN(self, rsvTime, daliQue, modBusQue, data):
+    def parceCAN(self, rsvTime, daliQue, modBusQue, diQue,  diEvent, data):
         canId=bytearray(2)
         canId[0]=data['canId'][1]
         canId[1]=data['canId'][0]
@@ -858,6 +963,10 @@ class RGPTCPAdapterLauncher:
                 # if (current_milli_time()-self.callDaliTime)<= DALI_GAP:
                 daliQue.put_nowait((rsvTime, data['data']))
                 daliQue.join()
+            elif n==5:
+                diEvent.set()
+                diQue.put_nowait(data['data'])
+
 
 
 
@@ -1058,9 +1167,9 @@ class RGPTCPAdapterLauncher:
 
 
     def listen_rpg(self, startEvent):
+
         while True:
-            # time.sleep(1)    10 03 01 02 00 02 - команда чтения температуры
-            # self._command_event.wait()
+
             startEvent.wait()
 
             if (time.time()- self._start_time) >= 5.:
@@ -1077,17 +1186,10 @@ class RGPTCPAdapterLauncher:
                     logging.exception(ex)
                     self.mqttc.publish(topic=topic_dump.format(PROJECT) + '/error', payload=str(ex))
                 else:
-                    try:
-                        self._start_time=time.time()
-                       # out = VariableTRS3(None, int(BUS_ID), 0, tk)
-                       # top_out = topic_dump.format(PROJECT, BUS_ID, '0')
-                       # self.mqttc.publish(topic=topic_dump.format(PROJECT, BUS_ID, '0'), payload=out.pack())
-                       # logging.debug('[  <-]: {}'.format(out))
 
-                    except BaseException as ex:
-                        logging.exception(ex)
+                    self._start_time=time.time()
 
-    #    self._step_event.clear()
+
 
     def connect_rpg(self):
 
