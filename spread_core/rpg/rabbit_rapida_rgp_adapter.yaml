@@ -45,7 +45,7 @@ DI_DEV: [
 
         },
         {
-          'type': 'blackout',
+          'type': 'seat',
           't_gap': 1000,
           'dev':
           {
