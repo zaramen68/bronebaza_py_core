@@ -1,0 +1,443 @@
+include: ['/home/awada/bronebaza/bronebaza_py_core/spread_core/broker.yaml']
+
+PROJ: 2434
+BUS_ID: '635558'
+
+
+BUS_HOST_PORT: [['10.10.1.63', 55577],]
+TOPIC_SEND: ['Rapida/0/Can/Bus/Send', 'Rapida/0/Dali/Bus/Send', 'Rapida/0/Modbus/Bus/Send', 'Bus/Send/Rapida/0/Dali/#']
+TOPIC_DUMP: ['Rapida/0/Can/Bus/Dump', 'Rapida/0/Dali/Bus/Dump', 'Rapida/0/Modbus/Bus/Dump', 'Bus/Dump/Rapida/0/Dali/1/1']
+
+DI_DEV: [
+        {
+          'type': 'seat',
+          't_gap': 1000,
+          'dev':
+          {
+            'bus': 3,
+            'type': 'seat_sw',
+            'diaddr': 7,
+            'id': 660035,
+            'value': None,
+            'topicV': {
+              'openId': True,
+              'isOpeningId':False,
+              'isOpenedId':False,
+              'closeId': True,
+              'isClosingId':False,
+              'isClosedId':False,
+              'stopId':False,
+              'isStoppedId':False,
+              'setClosenessLevelId':True,
+              'closenessLevelId':10000,
+              'rotateMinusId':True,
+              'isRotatingMinusId':True,
+              'isRotatedMinusId': True,
+              'rotatePlusId': True,
+              'isRotatingPlusId': True,
+              'isRotatedPlusId': True,
+              'rotationStopId': True,
+              'isRotationStoppedId': True,
+              'setRotationAngleId': True,
+              'rotationAngleId': 100000,
+            }
+          },
+
+        },
+        {
+          'type': 'seat',
+          't_gap': 1000,
+          'dev':
+          {
+            'bus': 3,
+            'type': 'seat_sw',
+            'diaddr': 6,
+            'id': 660036,
+            'value': None,
+            'topicV': {
+              'openId': True,
+              'isOpeningId':False,
+              'isOpenedId':True,
+              'closeId': True,
+              'isClosingId':False,
+              'isClosedId':False,
+              'stopId':False,
+              'isStoppedId':False,
+              'setClosenessLevelId':True,
+              'closenessLevelId':10000,
+              'rotateMinusId':True,
+              'isRotatingMinusId':True,
+              'isRotatedMinusId': True,
+              'rotatePlusId': True,
+              'isRotatingPlusId': True,
+              'isRotatedPlusId': True,
+              'rotationStopId': True,
+              'isRotationStoppedId': True,
+              'setRotationAngleId': True,
+              'rotationAngleId': 100000,
+            }
+          },
+
+        },
+        {
+          'type': 'seat',
+          't_gap': 1000,
+          'dev':
+          {
+            'bus': 3,
+            'type': 'seat_sw',
+            'diaddr': 8,
+            'id': 660037,
+            'value': None,
+            'topicV': {
+              'openId': True,
+              'isOpeningId':False,
+              'isOpenedId':False,
+              'closeId': True,
+              'isClosingId':False,
+              'isClosedId':False,
+              'stopId':False,
+              'isStoppedId':False,
+              'setClosenessLevelId':True,
+              'closenessLevelId':10000,
+              'rotateMinusId':True,
+              'isRotatingMinusId':True,
+              'isRotatedMinusId': True,
+              'rotatePlusId': True,
+              'isRotatingPlusId': True,
+              'isRotatedPlusId': True,
+              'rotationStopId': True,
+              'isRotationStoppedId': True,
+              'setRotationAngleId': True,
+              'rotationAngleId': 100000,
+            }
+          },
+        },
+        {
+          'type': 'blackout',
+          't_gap': 1000,
+          'dev':
+          {
+            'bus': 3,
+            'type': 'door_sw',
+            'diaddr': 0,
+            'id': 660034,
+            'value': None,
+            'topicV':{
+              'openId': True,
+              'isOpeningId':False,
+              'isOpenedId':False,
+              'closeId': True,
+              'isClosingId':False,
+              'isClosedId':False,
+              'stopId':False,
+              'isStoppedId':False,
+              'setClosenessLevelId':True,
+              'closenessLevelId':10000,
+            },
+          },
+
+        },
+        {
+          'type': 'blackout',
+          't_gap': 1000,
+          'dev':
+          {
+            'bus': 3,
+            'type': 'door_sw',
+            'diaddr': 1,
+            'id': 660244,
+            'value': None,
+            'topicV':{
+              'openId': True,
+              'isOpeningId':False,
+              'isOpenedId':False,
+              'closeId': True,
+              'isClosingId':False,
+              'isClosedId':False,
+              'stopId':False,
+              'isStoppedId':False,
+              'setClosenessLevelId':True,
+              'closenessLevelId':10000,
+            },
+          },
+
+        },
+        {
+          'type': 'blackout',
+          't_gap': 1000,
+          'dev':
+          {
+            'bus': 3,
+            'type': 'door_sw',
+            'diaddr': 2,
+            'id': 660243,
+            'value': None,
+            'topicV':{
+              'openId': True,
+              'isOpeningId':False,
+              'isOpenedId':False,
+              'closeId': True,
+              'isClosingId':False,
+              'isClosedId':False,
+              'stopId':False,
+              'isStoppedId':False,
+              'setClosenessLevelId':True,
+              'closenessLevelId':10000,
+            },
+          },
+
+        },
+        {
+          'type': 'blackout',
+          't_gap': 1000,
+          'dev':
+          {
+            'bus': 3,
+            'type': 'door_sw',
+            'diaddr': 3,
+            'id': 660245,
+            'value': None,
+            'topicV':{
+              'openId': True,
+              'isOpeningId':False,
+              'isOpenedId':False,
+              'closeId': True,
+              'isClosingId':False,
+              'isClosedId':False,
+              'stopId':False,
+              'isStoppedId':False,
+              'setClosenessLevelId':True,
+              'closenessLevelId':10000,
+            },
+          },
+
+        },
+        {
+          'type': 'blackout',
+          't_gap': 1000,
+          'dev':
+          {
+            'bus': 3,
+            'type': 'blackout_sw1',
+            'diaddr': 4,
+            'id': 660246,
+            'value': None,
+            'topicV':{
+              'openId': True,
+              'isOpeningId':False,
+              'isOpenedId':False,
+              'closeId': True,
+              'isClosingId':False,
+              'isClosedId':False,
+              'stopId':False,
+              'isStoppedId':False,
+              'setClosenessLevelId':True,
+              'closenessLevelId':10000,
+            },
+          },
+
+        },
+        {
+          'type': 'blackout',
+          't_gap': 1000,
+          'dev':
+          {
+            'bus': 3,
+            'type': 'blackout_sw2',
+            'diaddr': 5,
+            'id': 660247,
+            'value': None,
+            'topicV':{
+              'openId': True,
+              'isOpeningId':False,
+              'isOpenedId':False,
+              'closeId': True,
+              'isClosingId':False,
+              'isClosedId':False,
+              'stopId':False,
+              'isStoppedId':False,
+              'setClosenessLevelId':True,
+              'closenessLevelId':10000,
+            },
+          },
+
+        },
+]
+
+MODBUS_DEV: [
+      {
+        'type': 'thermometer',
+        't_gap': 8000,
+        'pres': 1.,
+        'dev':
+        {
+          'channel': 0,
+          'bus': 2,
+          'maddr': 16,
+          'type': 'TemperatureSensor',
+          'value': None,
+          'id': 635558,
+        },
+        'attrib': {
+        'reg': 258,
+        'nreg': 1,
+        'command': '0x03',
+
+        }
+
+      },
+        {
+        'type': 'CO',
+        't_gap': 8000,
+        'pres': 1.,
+        'dev':
+        {
+          'channel': 1,
+          'bus': 2,
+          'maddr': 1,
+          'type': 'COSensor',
+          'value': None,
+          'id': 635559,
+        },
+        'attrib': {
+        'reg': 6,
+        'nreg': 1,
+        'command': '0x03',
+
+        }
+
+      },
+]
+
+
+DALI_DEV: [
+      {
+      "channel": 0,
+      "bus": 1,
+      "dadr": 3,
+      "attributes": {
+          "positionCount": 101,
+          "lowerLimit": 0,
+          "power": 0,
+          "upperLimit": 100
+       },
+      "type": "DimmingLight",
+      "FunctionUnitIndex": {"onId": 0, "offId": 1, "setLevelId": 3},
+      "id": 635561
+      },
+
+      {
+      "channel": 0,
+      "bus": 1,
+      "dadr": 4,
+      "attributes": {
+          "positionCount": 101,
+          "lowerLimit": 0,
+          "power": 0,
+          "upperLimit": 100
+      },
+      "type": "DimmingLight",
+      "FunctionUnitIndex": {"onId": 0, "offId": 1, "setLevelId": 3},
+      "id": 635562
+      },
+
+      {
+      "channel": 0,
+      "bus": 1,
+      "dadr": 1,
+      "attributes": {
+          "positionCount": 101,
+          "lowerLimit": 0,
+          "power": 0,
+          "upperLimit": 100
+       },
+      "type": "DimmingLight",
+      "FunctionUnitIndex": {"onId": 0, "offId": 1, "setLevelId": 3},
+      "id": 635563
+      },
+
+      {
+      "channel": 0,
+      "bus": 1,
+      "dadr": 2,
+      "attributes": {
+          "positionCount": 101,
+          "lowerLimit": 0,
+          "power": 0,
+          "upperLimit": 100
+      },
+      "type": "DimmingLight",
+      "FunctionUnitIndex": {"onId": 0, "offId": 1, "setLevelId": 3},
+      "id": 635564
+      },
+
+      {
+      "channel": 0,
+      "bus": 1,
+      "dadr": 0,
+      "attributes": {
+          "positionCount": 101,
+          "lowerLimit": 0,
+          "power": 0,
+          "upperLimit": 100
+      },
+      "type": "DimmingLight",
+      "FunctionUnitIndex": {"onId": 0, "offId": 1, "setLevelId": 3},
+      "id": 659939
+      },
+
+      {
+      "channel": 0,
+      "bus": 1,
+      "dadr": 7,
+      "attributes": {
+          "power": 0
+      },
+      "type": "SwitchingLight",
+      "FunctionUnitIndex": {"onId": 0, "offId": 1},
+      "id": 659853
+      },
+
+      {
+      "channel": 0,
+      "bus": 1,
+      "dadr": 9,
+      "attributes": {
+          "power": 0
+      },
+      "type": "SwitchingLight",
+      "FunctionUnitIndex": {"onId": 0, "offId": 1},
+      "id": 659854
+      },
+
+      {
+      "channel": 0,
+      "bus": 1,
+      "dadr": 8,
+      "attributes": {
+          "power": 0
+      },
+      "type": "SwitchingLight",
+      "FunctionUnitIndex": {"onId": 0, "offId": 1},
+      "id": 659855
+      },
+
+      {
+      "channel": 0,
+      "bus": 1,
+      "dadr": 3,
+      "attributes": {
+          "power": 0
+      },
+      "type": "SwitchingLight",
+      "FunctionUnitIndex": {"onId": 0, "offId": 1},
+      "id": 659856
+      },
+
+
+]
+
+BUS_TIMEOUT: 1
+KILL_TIMEOUT: 1
+DUMP: false
