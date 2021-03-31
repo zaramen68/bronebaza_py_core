@@ -472,7 +472,7 @@ class RGPTCPAdapterLauncher:
                     continue
                 elif res == 2:
                     break
-        return res, resFl, resData
+
 
     def queryOfDaliDevice(self, daliDev, passEvent=None):
         if passEvent is not None:
@@ -481,7 +481,7 @@ class RGPTCPAdapterLauncher:
 
         dd = ShortDaliAddtessComm(daliDev.dadr, QUERY_STATE, 1)
 
-        res, resFl, resData = self.callDaliQueue(daliDev, 1, dd)
+        self.callDaliQueue(daliDev, 1, dd)
 
         # daliDev.answerIs = False
         # daliDev.typeOfQuery = 1  # 8 bit answer is needed
@@ -522,7 +522,7 @@ class RGPTCPAdapterLauncher:
         if daliDev.isValid == True and daliDev.dev['type'] == 'DimmingLight':
             # query level
             dd = ShortDaliAddtessComm(daliDev.dadr, QUERY_ACTUAL_LEVEL, 1)
-            res, resFl, resData = self.callDaliQueue(daliDev, 1, dd)
+            self.callDaliQueue(daliDev, 1, dd)
             # daliDev.answerIs = False
             # daliDev.typeOfQuery = 1  # 8 bit answer is needed
             # daliDev.twoByteAnswer = None
