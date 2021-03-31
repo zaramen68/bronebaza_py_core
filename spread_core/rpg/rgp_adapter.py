@@ -164,7 +164,7 @@ class RGPTCPAdapterLauncher:
             diDev = DiProvider(self.sock, self.mqttc, prov)
             self.diProviders.append(diDev)
             if diDev.classF == 'blackout':
-                self.diMask[str(diDev.topicIn)]=(diDev.dev['type'], None)
+                self.diMask[str(diDev.topicIn)]=[diDev.dev['dev']['type'], None]
                 self.diBlackOut.append(diDev)
 
         topic = 'Tros3/Command/{}/#'.format(PROJECT)
@@ -180,7 +180,7 @@ class RGPTCPAdapterLauncher:
         listen = threading.Thread(target=self.listen_rpg, args=(self.startEvent,))
         listen1 = threading.Thread(target=self.listen_rpg1, args=(self.diQueue, self.startListenEvent, self.diListenEvent))
         listen2 = threading.Thread(target=self.modbusQuery, args=(self.startEvent,))
-        listen3 = threading.Thread(target=self.listenDI, args=(self.diQueue, self.diListenEvent, self.diMask, self.diProviders, self.daliProviders))
+        listen3 = threading.Thread(target=self.listenDI, args=(self.diQueue, self.diListenEvent, self.diMask, self.diBlackOut, self.daliProviders))
 
 
 
@@ -647,6 +647,7 @@ class RGPTCPAdapterLauncher:
                         if di.diaddr == i:
                             di.state = bool(res[1])
                             di.stateInt = res[1]
+                            self.diMask[str(di.topicIn)][1] = bool(res[1])
                             di.dumpMqtt()
                             blackOut.work()
             ev.clear()
