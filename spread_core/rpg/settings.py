@@ -36,3 +36,4 @@ MIN_FADE_TIME = 0.3
 MODBUS_DEV = config['MODBUS_DEV']
 DALI_DEV = config['DALI_DEV']
 DI_DEV = config['DI_DEV']
+topic_dump = 'Tros3/{}'
