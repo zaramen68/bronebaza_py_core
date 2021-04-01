@@ -12,7 +12,7 @@ from spread_core.tools.settings import config, logging
 
 
 class ProjectAdapterLauncher(Launcher):
-    # ZIP_TOPIC = 'data_project_ctp'
+    ZIP_TOPIC_OLD = 'data_project_ctp'
     ZIP_TOPIC = 'Project/2434/Ctp'
     ZIP_NAME = os.path.basename(config['CTP_PATH'])
     HASH_NAME = ZIP_NAME + '.hash'
@@ -72,6 +72,8 @@ class ProjectAdapterLauncher(Launcher):
                     hash_file.write(json.dumps(hash_data).encode('utf-8'))
                 self.publish(self.ZIP_TOPIC, data=b'', retain=True)
                 self.publish(self.ZIP_TOPIC, data=zip_data, retain=True)
+                self.publish(self.ZIP_TOPIC_OLD, data=b'', retain=True)
+                self.publish(self.ZIP_TOPIC_OLD, data=zip_data, retain=True)
                 logging.info('CTP packet of {} size emitted'.format(len(zip_data)))
                 self.subscribe(self.ZIP_TOPIC)
             else:
