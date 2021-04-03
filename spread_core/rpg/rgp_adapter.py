@@ -150,6 +150,7 @@ class RGPTCPAdapterLauncher:
         self.startListenEvent = threading.Event()
         self.qFl = threading.Event()
         self.diListenEvent=threading.Event()
+        self.queryDaliInTimeGo=threading.Event()
 
 
         for prov in DALI_DEV:
@@ -272,18 +273,24 @@ class RGPTCPAdapterLauncher:
                                 qList = qList+self.daliGroup[gr]
                             qList = list(set(qList))    # формирование списка DALI устройств для опроса
 
-                            self.startEvent.clear()
-                            self.startListenEvent.clear()
-                            self.qFl.set()
-                            for daliDevice in qList:
-                                t=threading.Thread(target=self.queryDali,
-                                                   args= (daliDevice.getCallTime, daliDevice, self.qFl, self.diListenEvent, self.diQueue))
-                                t.start()
-                                # t.join()
+                            # self.startEvent.clear()
+                            # self.startListenEvent.clear()
+                            # self.qFl.set()
+                            # for daliDevice in qList:
+                            #     t=threading.Thread(target=self.queryDali,
+                            #                        args= (daliDevice.getCallTime, daliDevice, self.qFl, self.diListenEvent, self.diQueue))
+                            #     t.start()
+                            #     # t.join()
+                            #
+                            # self.qFl.clear()
+                            # self.startEvent.set()
+                            # self.startListenEvent.set()
 
-                            self.qFl.clear()
-                            self.startEvent.set()
-                            self.startListenEvent.set()
+                            for daliDevice in qList:
+                                if daliDevice.dev['type']=='DimmingLight':
+                                    daliDevice.dumpMqtt(data=dd)
+                                elif daliDevice.dev['type']=='SwitchingLight':
+                                    daliDevice.dumpMqtt(data=dd, fl=1)
                                 # self.queryDali(daliDevice.getCallTime, daliDevice)
 
                         elif prov.dev['type'] == 'SwitchingLight':
@@ -295,6 +302,7 @@ class RGPTCPAdapterLauncher:
                                 dd_ = VariableTRS3(VariableReader(msg.payload)).value
                                 if dd_ is True:
                                     dd = 254
+                                    set_level=True
 
 
                             elif int(topic[4]) == 4:
@@ -304,6 +312,7 @@ class RGPTCPAdapterLauncher:
                                 if dd_ is True:
                                     dd = 0
                                     clf =1
+                                    set_level=False
 
                             n=0
                             for gr in prov.groupList:
@@ -328,22 +337,24 @@ class RGPTCPAdapterLauncher:
                             for gr in grList:
                                 qList = qList+self.daliGroup[gr]
                             qList = list(set(qList))    # формирование списка DALI устройств для опроса
-                            self.startEvent.clear()
-                            self.startListenEvent.clear()
-                            self.qFl.set()
-
+                            # self.startEvent.clear()
+                            # self.startListenEvent.clear()
+                            # self.qFl.set()
+                            #
+                            # for daliDevice in qList:
+                            #     t=threading.Thread(target=self.queryDali,
+                            #                        args=(daliDevice.getCallTime, daliDevice, self.qFl, self.diListenEvent, self.diQueue))
+                            #     t.start()
+                            #     # t.join()
+                            #
+                            # self.qFl.clear()
+                            # self.startEvent.set()
+                            # self.startListenEvent.set()
                             for daliDevice in qList:
-                                t=threading.Thread(target=self.queryDali,
-                                                   args=(daliDevice.getCallTime, daliDevice, self.qFl, self.diListenEvent, self.diQueue))
-                                t.start()
-                                # t.join()
-
-                            self.qFl.clear()
-                            self.startEvent.set()
-                            self.startListenEvent.set()
-
-
-                                # self.queryDali(daliDevice.getCallTime, daliDevice)
+                                if daliDevice.dev['type']=='DimmingLight':
+                                    daliDevice.dumpMqtt(data=dd)
+                                elif daliDevice.dev['type']=='SwitchingLight':
+                                    daliDevice.dumpMqtt(data=dd, fl=1)
 
 
         except BaseException as ex:
@@ -352,6 +363,16 @@ class RGPTCPAdapterLauncher:
     def of(self, topic):
         arr = topic.split('/')
         return arr
+
+    def queryDaliInTime(self, daliList, goEvent, listenEvent):
+        while True:
+            goEvent.wait()
+            time.sleep(10)
+            listenEvent.clear()
+            for dev in daliList:
+                self.queryOfDaliDevice(dev)
+            listenEvent.set()
+
 
     def queryOfDaliDevice(self, daliDev, diQue=None, diEv=None):
 
