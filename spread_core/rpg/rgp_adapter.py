@@ -123,6 +123,8 @@ class RGPTCPAdapterLauncher:
     diMask = dict()
     diBlackOut = []
 
+    queryLock = threading.RLock()
+
     def __init__(self):
         self._time = current_milli_time()
         self.mqttc = paho.mqtt.client.Client()
@@ -475,43 +477,47 @@ class RGPTCPAdapterLauncher:
         self.callDaliProvider=None
 
     def queryOfDaliDevice(self, daliDev, daliQue, passEvent=None):
-        if passEvent is not None:
-            passEvent.wait()
-            passEvent.clear()
+        self.queryLock.acquire()
+        try:
+            if passEvent is not None:
+                passEvent.wait()
+                passEvent.clear()
 
-        dd = ShortDaliAddtessComm(daliDev.dadr, QUERY_STATE, 1)
+            dd = ShortDaliAddtessComm(daliDev.dadr, QUERY_STATE, 1)
 
-        self.callDaliQueue(daliDev, daliQue, 1, dd)
-
-
-
-        if daliDev.answerIs and self.daliAnswer == 1:  # success
-            # state = bitstring.BitArray(hex(int(prov.state, 16)))
-            state = copy.deepcopy(daliDev.state)
-            self.writeMqtt(dev=daliDev, data=state[5], fl=1, comm=2)
-
-        else:  # no answer
-            daliDev.state = None
-            daliDev.isValid = False
-            self.writeMqtt(dev=daliDev, data=None, fl=1, comm=2)
-
-        if daliDev.isValid == True and daliDev.dev['type'] == 'DimmingLight':
-            # query level
-            dd = ShortDaliAddtessComm(daliDev.dadr, QUERY_ACTUAL_LEVEL, 1)
-            self.callDaliQueue(daliDev, self.daliQueue, 1, dd)
+            self.callDaliQueue(daliDev, daliQue, 1, dd)
 
 
-            if daliDev.answerIs and self.daliAnswer == 1:
-                # success
-                self.writeMqtt(dev=daliDev, data=int(daliDev.state.uint / 254 * 100), comm=4)
+
+            if daliDev.answerIs and self.daliAnswer == 1:  # success
+                # state = bitstring.BitArray(hex(int(prov.state, 16)))
+                state = copy.deepcopy(daliDev.state)
+                self.writeMqtt(dev=daliDev, data=state[5], fl=1, comm=2)
+
             else:  # no answer
                 daliDev.state = None
                 daliDev.isValid = False
+                self.writeMqtt(dev=daliDev, data=None, fl=1, comm=2)
 
-        # self.startEvent.set()
-        if passEvent is not None:
-            passEvent.set()
-        # self.startListenEvent.set()
+            if daliDev.isValid == True and daliDev.dev['type'] == 'DimmingLight':
+                # query level
+                dd = ShortDaliAddtessComm(daliDev.dadr, QUERY_ACTUAL_LEVEL, 1)
+                self.callDaliQueue(daliDev, self.daliQueue, 1, dd)
+
+
+                if daliDev.answerIs and self.daliAnswer == 1:
+                    # success
+                    self.writeMqtt(dev=daliDev, data=int(daliDev.state.uint / 254 * 100), comm=4)
+                else:  # no answer
+                    daliDev.state = None
+                    daliDev.isValid = False
+
+            # self.startEvent.set()
+            if passEvent is not None:
+                passEvent.set()
+        finally:
+            self.queryLock.release()
+
 
 
     def writeMqtt(self, dev, data=None, fl=None, comm=0):
