@@ -27,7 +27,7 @@ class DiProvider:
         self.type = args[0]['dev']['type']
         self.topicIn = args[0]['dev']['id']
 
-        self._stateTopicLevel = 'Tros3/State/{}/{}'.format(PROJECT, args[0]['dev']['id'])
+        self._stateTopicLevel = 'Tros3/State/{}/Equipment/Sutter/{}'.format(PROJECT, args[0]['dev']['id'])
         self.answer = None
 
 
