@@ -114,6 +114,7 @@ class RGPTcpSocket:
 class RGPTCPAdapterLauncher:
     _dumped = False
     _command_event = threading.Event()
+    queryLock = threading.RLock()
     diQueue = queue.Queue()
     diMask = dict()
     diBlackOut = []
@@ -211,7 +212,7 @@ class RGPTCPAdapterLauncher:
         print("Subscribed: " + str(mid) + " " + str(granted_qos))
 
     def on_message(self, mqttc, userdata, msg):
-
+        self.startEvent.clear()
         try:
             topic = self.of(msg.topic)
             if 'Modbus' in topic:
@@ -359,6 +360,9 @@ class RGPTCPAdapterLauncher:
 
         except BaseException as ex:
             logging.exception(ex)
+        finally:
+            self.startEvent.set()
+
 
     def of(self, topic):
         arr = topic.split('/')
@@ -376,42 +380,10 @@ class RGPTCPAdapterLauncher:
 
     def queryOfDaliDevice(self, daliDev, diQue=None, diEv=None):
 
-        dd = ShortDaliAddtessComm(daliDev.dadr, QUERY_STATE, 1)
+        self.queryLock.acquire()
+        try:
 
-        daliDev.answerIs = False
-        daliDev.typeOfQuery = 1  # 8 bit answer is needed
-        daliDev.twoByteAnswer = None
-        daliDev.oneByteAnswer = None
-
-        self.isDaliQueried = True
-        self.callDaliProvider = daliDev
-        self.daliAnswer = None
-        self.callDaliTime = daliDev.callDali(data=dd, resp=True)
-
-
-        while (daliDev.getCallTime != 0) and \
-                ((current_milli_time() - daliDev.getCallTime) < (DALI_GAP + 50)) and \
-                self.daliAnswer == None:
-
-            self.reciveData(diEv, diQue)
-            if daliDev.answerIs:
-                print('answerIs = True')
-                break
-
-        if daliDev.answerIs and self.daliAnswer == 1:  # success
-            # state = bitstring.BitArray(hex(int(prov.state, 16)))
-            state = copy.deepcopy(daliDev.state)
-            self.writeMqtt(dev=daliDev, data=state[5], fl=1, comm=2)
-
-        else:  # no answer
-            daliDev.state = None
-            daliDev.isValid = False
-            self.writeMqtt(dev=daliDev, data=None, fl=1, comm=2)
-
-        if daliDev.isValid == True:
-        # if daliDev.isValid == True and daliDev.dev['type'] == 'DimmingLight':
-            # query level
-            dd = ShortDaliAddtessComm(daliDev.dadr, QUERY_ACTUAL_LEVEL, 1)
+            dd = ShortDaliAddtessComm(daliDev.dadr, QUERY_STATE, 1)
 
             daliDev.answerIs = False
             daliDev.typeOfQuery = 1  # 8 bit answer is needed
@@ -421,7 +393,7 @@ class RGPTCPAdapterLauncher:
             self.isDaliQueried = True
             self.callDaliProvider = daliDev
             self.daliAnswer = None
-            self.callDaliTime = daliDev.callDali(data=dd)
+            self.callDaliTime = daliDev.callDali(data=dd, resp=True)
 
 
             while (daliDev.getCallTime != 0) and \
@@ -433,13 +405,50 @@ class RGPTCPAdapterLauncher:
                     print('answerIs = True')
                     break
 
-            if daliDev.answerIs and self.daliAnswer == 1:
-                # success
-                self.writeMqtt(dev=daliDev, data=int(daliDev.state.uint / 254 * 100), comm=4)
-                daliDev.lastLevel = int(daliDev.state.uint / 254 * 100)
+            if daliDev.answerIs and self.daliAnswer == 1:  # success
+                # state = bitstring.BitArray(hex(int(prov.state, 16)))
+                state = copy.deepcopy(daliDev.state)
+                self.writeMqtt(dev=daliDev, data=state[5], fl=1, comm=2)
+
             else:  # no answer
                 daliDev.state = None
                 daliDev.isValid = False
+                self.writeMqtt(dev=daliDev, data=None, fl=1, comm=2)
+
+            if daliDev.isValid == True:
+            # if daliDev.isValid == True and daliDev.dev['type'] == 'DimmingLight':
+                # query level
+                dd = ShortDaliAddtessComm(daliDev.dadr, QUERY_ACTUAL_LEVEL, 1)
+
+                daliDev.answerIs = False
+                daliDev.typeOfQuery = 1  # 8 bit answer is needed
+                daliDev.twoByteAnswer = None
+                daliDev.oneByteAnswer = None
+
+                self.isDaliQueried = True
+                self.callDaliProvider = daliDev
+                self.daliAnswer = None
+                self.callDaliTime = daliDev.callDali(data=dd)
+
+
+                while (daliDev.getCallTime != 0) and \
+                        ((current_milli_time() - daliDev.getCallTime) < (DALI_GAP + 50)) and \
+                        self.daliAnswer == None:
+
+                    self.reciveData(diEv, diQue)
+                    if daliDev.answerIs:
+                        print('answerIs = True')
+                        break
+
+                if daliDev.answerIs and self.daliAnswer == 1:
+                    # success
+                    self.writeMqtt(dev=daliDev, data=int(daliDev.state.uint / 254 * 100), comm=4)
+                    daliDev.lastLevel = int(daliDev.state.uint / 254 * 100)
+                else:  # no answer
+                    daliDev.state = None
+                    daliDev.isValid = False
+        finally:
+            self.queryLock.release()
 
 
     def queryDali(self, starTime, dev, ev, diEv=None, diQue=None):
