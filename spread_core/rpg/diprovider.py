@@ -26,7 +26,7 @@ class DiProvider:
         self.topicV = args[0]['dev']['topicV']
         self.type = args[0]['dev']['type']
         self.topicIn = args[0]['dev']['id']
-
+        # self._stateTopicLevel = 'Tros3/State/{}/{}'.format(PROJECT, args[0]['dev']['id'])
         self._stateTopicLevel = 'Tros3/State/{}/Equipment/Sutter/{}'.format(PROJECT, args[0]['dev']['id'])
         self.answer = None
 
@@ -104,13 +104,14 @@ class DiProvider:
 
 
         clientTopic = self._stateTopicLevel
-        num = 0
+
         for key, value in self.topicV.items():
+            num = value['n']
             if key == 'isOpenedId':
                 out = VariableTRS3(None, self.dev['dev']['id'], num, data)
                 self._mqtt.publish(topic=clientTopic+'/{}'.format(num), payload=out.pack(), qos=0, retain=True)
             else:
-                out = VariableTRS3(None, self.dev['dev']['id'], num, value)
+                out = VariableTRS3(None, self.dev['dev']['id'], num, value['value'])
                 self._mqtt.publish(topic=clientTopic+'/{}'.format(num), payload=out.pack(), qos=0, retain=True)
-            num += 1
+
 
