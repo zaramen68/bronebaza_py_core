@@ -1,40 +1,402 @@
 import socket
 import threading
-import queue
 import time
 import math
 import paho.mqtt.client
 from threading import Timer
 import bitstring
 import copy
-
-
+from bitstring import BitArray
+import array
 
 from spread_core.mqtt.variables import VariableTRS3, VariableReader
+from spread_core.tools import settings
+from spread_core.tools.service_launcher import Launcher
+from spread_core.tools.settings import config, logging
+from spread_core.mqtt.variables import VariableJocket
+
+settings.DUMPED = False
+PROJECT=config['PROJ']
+BUS_ID=config['BUS_ID']
+
+HOSTnPORT = config['BUS_HOST_PORT']
+TIMEOUT = config['BUS_TIMEOUT']
+KILL_TIMEOUT = config['KILL_TIMEOUT']
+
+ROJECT_ID = config['PROJECT_ID']
+BROKER_HOST = config['BROKER_HOST']
+BROKER_PORT = config['BROKER_PORT']
+BROKER_USERNAME = config['BROKER_USERNAME']
+BROKER_PWD = config['BROKER_PASSWORD']
+
+OPCODEDISCONNECT = '0x0'
+OPCODECONNECT = '0x1'
+OPCODEERROR = '0x2'
+OPCODEPINGREG = '0x3'
+OPCODEPINGREQ = '0x4'
+OPCODECANDATA = '0x7'
 
 
-from spread_core.tools.settings import logging
+QUERY_ACTUAL_LEVEL='A0'
+QUERY_GROU_07 = 'C0'
+QUERY_GROU_811 = 'C1'
+QUERY_IS_ON = '93'
+QUERY_STATE ='90'
+QUERY_FADE_TIME='A5'
+DALI_GAP = 100
 
+MIN_FADE_TIME = 0.5
 
+MODBUS_DEV = config['MODBUS_DEV']
+DALI_DEV = config['DALI_DEV']
 
-from spread_core.rpg.protocol import *
-from spread_core.rpg.settings import *
-
-from spread_core.rpg.diprovider import DiProvider
-from spread_core.rpg.modbus_provder import ModBusProvider
-from spread_core.rpg.dali_provider import DaliProvider
-from spread_core.rpg.blackout import Blackout
-
-
-
-topic_dump = 'Tros3/{}'
-
+# topic_dump = 'Tros3/State/{}/{}/{}'
+# topic_send = 'ModBus/from_Client/{}'
+topic_send =config['TOPIC_SEND']
+topic_dump = config['TOPIC_DUMP']
 
 is_lock=False
 
-# current_milli_time = lambda: int(round(time.time() * 1000))
+current_milli_time = lambda: int(round(time.time() * 1000))
+
+def hex_to_bool(x):
+    if x=='FE'or x=='fe' or x=='FF' or 'ff':
+        return True
+    elif x=='00':
+        return False
+
+def isONID(x):
+    if x == 'SwitchingLight':
+        return 2
+    elif x == 'DimmingLight':
+        return 2
+
+def make_two_bit(x):
+    bytes_list =list('00')
+    list_x = list(x)
+    i=-1
+    while abs(i) <= len(x):
+        bytes_list[i]=list_x[i]
+        i=i-1
+    return ''.join(bytes_list)
+
+def make_bytes(x):
+    bytes_list =list('0000')
+    list_x = list(x)
+    i=-1
+    while abs(i) <= len(x):
+        bytes_list[i]=list_x[i]
+        i=i-1
+    return ''.join(bytes_list)
+
+def CanId(addrFrom, addrTo):
+    addr_from_ = bitstring.BitArray(hex(addrFrom))
+    addr_to_ = bitstring.BitArray(hex(addrTo))
+    if addr_from_.length < 5:
+        addr_from = bitstring.BitArray(5-addr_from_.length)
+        addr_from.append(addr_from_)
+    elif addr_from_.length >= 5:
+        addr_from = addr_from_[(addr_from_.length-5):]
+
+    if addr_to_.length < 5:
+        addr_to = bitstring.BitArray(5 - addr_to_.length)
+        addr_to.append(addr_to_)
+    elif addr_to_.length >= 5:
+        addr_to = addr_to_[(addr_to_.length - 5):]
+
+    addr_from.append(addr_to)
+    can_id = bitstring.BitArray(12 - addr_from.length)
+    can_id.append(addr_from)
+
+    return make_bytes(can_id.hex)
+
+def ShortDaliAddtessComm(devAddr, data, cfl=0):
+
+    devaddr = bitstring.BitArray(hex(devAddr))
+    daddr = bitstring.BitArray(6 - devaddr.length)
+    daddr.append(devaddr)
+    addrbyte = bitstring.BitArray(bin(0))
+    addrbyte.append(daddr)
+    addrbyte.append(bitstring.BitArray(bin(cfl)))
+    if isinstance(data, int):
+        dd = addrbyte.hex + make_two_bit(hex(data).split('x')[1])
+    elif isinstance(data, str):
+        dd_=data.split('x')
+        if len(dd_)>1:
+            dd = addrbyte.hex + make_two_bit(dd_[1])
+        else:
+            dd = addrbyte.hex + make_two_bit(dd_[0])
+    return dd
+
+def GroupDaliAddtessComm(groupAddr, data, cfl=0):
+
+    devaddr = bitstring.BitArray(hex(groupAddr))
+    daddr = bitstring.BitArray(6 - devaddr.length)
+    daddr.append(devaddr)
+    addrbyte = bitstring.BitArray(bin(1))
+    addrbyte.append(daddr)
+    addrbyte.append(bitstring.BitArray(bin(cfl)))
+    if isinstance(data, int):
+        dd = addrbyte.hex + make_two_bit(hex(data).split('x')[1])
+    elif isinstance(data, str):
+        dd_=data.split('x')
+        if len(dd_)>1:
+            dd = addrbyte.hex + make_two_bit(dd_[1])
+        else:
+            dd = addrbyte.hex + make_two_bit(dd_[0])
+    return dd
+
+def Byte0(clss, cmd=False):
+
+    byte0 = bitstring.BitArray(1)
+    byte0[0]=cmd
+
+    echo = bitstring.BitArray(1)
+    reserve = bitstring.BitArray(1)
+    cls_ = bitstring.BitArray(hex(clss))
+    if cls_.length < 5:
+        cls = bitstring.BitArray(5 - cls_.length)
+        cls.append(cls_)
+    elif cls_.length >= 5:
+        cls = cls_[(cls_.length - 5):]
+    byte0.append(echo)
+    byte0.append(reserve)
+    byte0.append(cls)
+
+    return byte0
+
+def Byte1(waitAns=False, st=False):
+    byte1_=bitstring.BitArray(8)
+    if waitAns:
+        byte1_[7]=waitAns
+    if st:
+        byte1_[5]=st
+    byte1 = byte1_.hex
+
+    return byte1
 
 
+class ModBusProvider:
+    def __init__(self, rpgClient, mqtt, *args):
+        self._socket = rpgClient
+        self.dev = args[0]
+        self._mqtt = mqtt
+        self._callMTime = 0
+        self.state = None
+        self.stateInt = 0
+        self.lastState = None
+        self.lastStateInt = 0
+        self.isValid = None
+        self.oneByteAnswer = None
+        self.twoByteAnswer = None
+        self.typeOfQuery = None # 0 - no answer, 1 - need answer
+        self.bus = args[0]['dev']['bus']
+        self.channel = args[0]['dev']['channel']
+        self.time_gap = args[0]['t_gap']
+        self._call = None
+        self.answerIs = False
+        self.maddr = args[0]['dev']['maddr']
+        self.reg = args[0]['attrib']['reg']
+        self._stateTopicLevel = 'Tros3/State/{}/Equipment/{}/{}/0'.format(PROJECT, args[0]['dev']['type'], args[0]['dev']['id'])
+        self.answer = None
+
+
+    def setValue(self, val):
+        self.isValid=True
+        b_=''
+        self.state = val
+        for b in val:
+            b_=b_+hex(b).split('x')[1]
+        self.stateInt = int(b_, 16)
+        if self.lastState is None:
+            self.lastState = val
+            self.lastStateInt = self.stateInt
+            self.dumpMqtt()
+
+    @property
+    def getCallTime(self):
+        return self._callMTime
+
+    def getAnswer(self, data):
+        print('modbus answer is {}'.format(str(data)))
+        self.answerIs = True
+        pass
+
+    def askLevel(self):
+        pass
+
+
+    def work(self):
+        if abs(self.stateInt-self.lastStateInt)/self.stateInt*100. >= self.dev['pres']:
+            self.lastState = self.state
+            self.lastStateInt = self.stateInt
+            self.dumpMqtt()
+
+
+    def callModBus(self, data = None, part=False):
+
+        self._call = data
+        canId = CanId(31, self.dev['dev']['bus'])
+        byte0 = Byte0(2)
+
+        byte1 = bitstring.BitArray(6)
+        byte1[5]=part
+        byte1_ = bitstring.BitArray(hex(self.dev['dev']['channel']))[:2]
+        byte1.append(byte1_)
+
+        data_id = make_two_bit(hex(self.dev['dev']['maddr']).split('x')[1])
+        data_command = make_two_bit(self.dev['attrib']['command'].split('x')[1])
+        data_reg = make_bytes(hex(self.dev['attrib']['reg']).split('x')[1])
+        data_nreg = make_bytes(hex(self.dev['attrib']['nreg']).split('x')[1])
+
+        if data is None:
+            data = data_id + data_command + data_reg + data_nreg
+
+        dCommand = canId[2:] + canId[:2] + byte0.hex + byte1.hex
+        # mbCommand = 'E203010001' + data
+        mbCommand = dCommand + data
+        opCode = '07'
+        pLen = bytearray(3)
+        pLen[0] = int(len(mbCommand) / 2)
+        pL = opCode + make_two_bit(hex(pLen[0]).split('x')[1]) + \
+             make_two_bit(hex(pLen[1]).split('x')[1]) + make_two_bit(hex(pLen[2]).split('x')[1]) + \
+             mbCommand
+        size = len(pL)
+        dd = bytes.fromhex(pL)
+
+        self._socket.send_message(dd, size)
+        self.answerIs=False
+        self._callMTime = current_milli_time()
+
+    def dumpMqtt(self, data=None):
+        if data == None:
+            data = self.stateInt
+        out = VariableTRS3(None, self.dev['dev']['id'], 0, data, invalid=(not self.isValid))
+
+        clientTopic = self._stateTopicLevel
+
+        self._mqtt.publish(topic=clientTopic, payload=out.pack(), qos=0, retain=True)
+
+
+class DaliProvider:
+    def __init__(self, rpgClient, mqtt, *args):
+        self._socket = rpgClient
+        self.dev = args[0]
+        self._mqtt = mqtt
+        self._callDTime = 0
+        self.state = None
+        self.lastLevel = 0
+        self.fadeTime = 0.
+        self.timeOfChange = time.time()
+        self.isValid = None
+        self.oneByteAnswer = None
+        self.twoByteAnswer = None
+        self.typeOfQuery = None # 0 - no answer, 1 - need answer
+        self.group1 = bitstring.BitArray(8)
+        self.group2 = bitstring.BitArray(8)
+        self.groupList=list()
+        self._call = None
+        self.answerIs = False
+        self.dadr = args[0]['dadr']
+        self._stateTopicLevel = 'Tros3/State/{}/Equipment/{}/{}/4'.format(PROJECT, args[0]['type'], args[0]['id'])
+        self._stateTopicIsOn = 'Tros3/State/{}/Equipment/{}/{}/{}'.format(PROJECT, args[0]['type'], args[0]['id'], isONID(args[0]['type']))
+        self.answer = None
+
+
+    def setValue(self, val):
+
+        self.state = val
+
+    @property
+    def getCallTime(self):
+        return self._callDTime
+
+    def getAnswer(self, data):
+        print('dali answer is {}'.format(data))
+        self.answerIs = True
+
+
+    def askLevel(self):
+        pass
+
+    def askGroup(self):
+        pass
+
+    def setLevel(self, data):
+        # set level on dali device
+        self._call = data
+        mbCommand = 'E203010001' + data
+        opCode = '07'
+        pLen = bytearray(3)
+        pLen[0] = int(len(mbCommand) / 2)
+        pL = opCode + make_two_bit(hex(pLen[0]).split('x')[1]) + \
+             make_two_bit(hex(pLen[1]).split('x')[1]) + make_two_bit(hex(pLen[2]).split('x')[1]) + \
+             mbCommand
+        size = len(pL)
+        data = bytes.fromhex(pL)
+        self._callDTime = current_milli_time()
+        self._socket.send_message(data, size)
+        self.answerIs=False
+        return self._callDTime
+
+    def callDali(self, data, resp=False):
+        self._call = data
+
+        addr_from = bitstring.BitArray(hex(31))[3:]
+        addr_to_ = bitstring.BitArray(hex(self.dev['bus']))
+        addr_to = bitstring.BitArray(5-addr_to_.length)
+        addr_to.append(addr_to_)
+        addr_from.append(addr_to)
+        can_id = bitstring.BitArray(12-addr_from.length)
+        can_id.append(addr_from)
+        canId = make_bytes(can_id.hex)
+
+
+        byte0 = bitstring.BitArray(1)
+        echo = bitstring.BitArray(1)
+        reserve = bitstring.BitArray(1)
+        cls = bitstring.BitArray(5)
+        cls[4]=True
+        byte0.append(echo)
+        byte0.append(reserve)
+        byte0.append(cls)
+
+        byte1 = bitstring.BitArray(8)
+        byte1[5]=resp
+
+        byte2=bitstring.BitArray(8)
+        byte2[7-self.dev['channel']]=True
+
+        dCommand = canId[2:] + canId[:2] + byte0.hex + byte1.hex + byte2.hex
+        # mbCommand = 'E203010001' + data
+        mbCommand = dCommand + data
+        opCode = '07'
+        pLen = bytearray(3)
+        pLen[0] = int(len(mbCommand) / 2)
+        pL = opCode + make_two_bit(hex(pLen[0]).split('x')[1]) + \
+             make_two_bit(hex(pLen[1]).split('x')[1]) + make_two_bit(hex(pLen[2]).split('x')[1]) + \
+             mbCommand
+        size = len(pL)
+        dd = bytes.fromhex(pL)
+        self._callDTime = current_milli_time()
+        self._socket.send_message(dd, size)
+        self.answerIs=False
+        return self._callDTime
+
+    def dumpMqtt(self, data=None, fl=None, comm = 0, flInvalid = False):
+        if data == None and self.state is not None:
+            data_ = self.state
+            data = data_.uint
+
+        # out = VariableTRS3(None, self.dev['id'], 0, data, invalid=(not self.isValid))
+        # if self.isValid == False:
+        #     data = None
+        out = VariableTRS3(None, self.dev['id'], comm, data)
+        if fl == None:
+            clientTopic = self._stateTopicLevel
+        elif fl == 1:
+            clientTopic = self._stateTopicIsOn
+        self._mqtt.publish(topic=clientTopic, payload=out.pack(), qos=0, retain=True)
 
 class RGPTcpSocket:
 
@@ -114,10 +476,6 @@ class RGPTcpSocket:
 class RGPTCPAdapterLauncher:
     _dumped = False
     _command_event = threading.Event()
-    queryLock = threading.RLock()
-    diQueue = queue.Queue()
-    diMask = dict()
-    diBlackOut = []
 
     def __init__(self):
         self._time = current_milli_time()
@@ -135,7 +493,6 @@ class RGPTCPAdapterLauncher:
         self.callModBusTime = current_milli_time()
         self.daliProviders = []
         self.modbusProviders = []
-        self.diProviders = []
         self.daliGroup = [[] for i in range(0, 16)]
         self.daliAnswer=None   # 0 - no answer,
                                 # 1 - ok,
@@ -147,11 +504,9 @@ class RGPTCPAdapterLauncher:
         self.modbusAnswer = False
         self.callDaliProvider = None
         self.beginTime = None
+        self.modBusEv = threading.Event()
         self.startEvent = threading.Event()
-        self.startListenEvent = threading.Event()
-        self.qFl = threading.Event()
-        self.diListenEvent=threading.Event()
-        self.queryDaliInTimeGo=threading.Event()
+
 
 
         for prov in DALI_DEV:
@@ -162,13 +517,11 @@ class RGPTCPAdapterLauncher:
             modbusDev = ModBusProvider(self.sock, self.mqttc, prov)
             self.modbusProviders.append(modbusDev)
 
-        for prov in DI_DEV:
-            diDev = DiProvider(self.sock, self.mqttc, prov)
-            self.diProviders.append(diDev)
-            if diDev.classF == 'blackout':
-                self.diMask[str(diDev.topicIn)]=[diDev.dev['dev']['type'], None]
-                self.diBlackOut.append(diDev)
-
+        # for prov in self.daliProviders:
+        #     for index, val in prov.dev['FunctionUnitIndex'].items():
+        #         topic = 'Jocket/Command/{}/#'.format(PROJECT)
+        #         self.mqttc.subscribe(topic)
+        #         logging.debug('Subscribed to {}'.format(topic))
         topic = 'Tros3/Command/{}/#'.format(PROJECT)
         self.mqttc.subscribe(topic)
         logging.debug('Subscribed to {}'.format(topic))
@@ -179,25 +532,20 @@ class RGPTCPAdapterLauncher:
         self.connect_rpg()
         # self.rpg_listen_fun()
 
-        listen = threading.Thread(target=self.listen_rpg, args=(self.startEvent, self.daliProviders))
-        listen1 = threading.Thread(target=self.listen_rpg1, args=(self.diQueue, self.startListenEvent, self.diListenEvent))
-        listen2 = threading.Thread(target=self.modbusQuery, args=(self.startEvent,))
-        listen3 = threading.Thread(target=self.listenDI, args=(self.diQueue, self.diListenEvent, self.diMask, self.diBlackOut, self.daliProviders))
+        listen = threading.Thread(target=self.listen_rpg, args=(self.startEvent,))
+        listen1 = threading.Thread(target=self.listen_rpg1, args=(self.startEvent,))
+        listen2 = threading.Thread(target=self.modbusQuery, args=(self.modBusEv,))
 
 
 
         listen.start()
         listen1.start()
 
-        self.startListenEvent.set()
-
         self.start_dali()
-        self.startDi()
 
-        listen3.start()
         listen2.start()
+        self.modBusEv.set()
         self.startEvent.set()
-        self.qFl.set()
         self.mqttc.loop_forever()
 
         # self.test_dali_num()
@@ -213,6 +561,7 @@ class RGPTCPAdapterLauncher:
 
     def on_message(self, mqttc, userdata, msg):
         self.startEvent.clear()
+        self.modBusEv.clear()
         try:
             topic = self.of(msg.topic)
             if 'Modbus' in topic:
@@ -263,7 +612,7 @@ class RGPTCPAdapterLauncher:
                                     self.isDaliQueried = True
                                     self.callDaliTime = prov.callDali(grComm)
                                     self.callDaliProvider = prov
-                                    while (prov.getCallTime != 0) and (current_milli_time()-prov.getCallTime < DALI_GAP):
+                                    while (prov.getCallTime != 0) and (current_milli_time()-prov.getCallTime < 100):
                                         if prov.answerIs:
                                             break
 
@@ -274,25 +623,9 @@ class RGPTCPAdapterLauncher:
                                 qList = qList+self.daliGroup[gr]
                             qList = list(set(qList))    # формирование списка DALI устройств для опроса
 
-                            # self.startEvent.clear()
-                            # self.startListenEvent.clear()
-                            # self.qFl.set()
-                            # for daliDevice in qList:
-                            #     t=threading.Thread(target=self.queryDali,
-                            #                        args= (daliDevice.getCallTime, daliDevice, self.qFl, self.diListenEvent, self.diQueue))
-                            #     t.start()
-                            #     # t.join()
-                            #
-                            # self.qFl.clear()
-                            # self.startEvent.set()
-                            # self.startListenEvent.set()
 
                             for daliDevice in qList:
-                                if daliDevice.dev['type']=='DimmingLight':
-                                    daliDevice.dumpMqtt(data=dd)
-                                elif daliDevice.dev['type']=='SwitchingLight':
-                                    daliDevice.dumpMqtt(data=dd, fl=1)
-                                # self.queryDali(daliDevice.getCallTime, daliDevice)
+                                self.queryDali(daliDevice.getCallTime, daliDevice)
 
                         elif prov.dev['type'] == 'SwitchingLight':
                             grList = []  #список групп
@@ -303,7 +636,6 @@ class RGPTCPAdapterLauncher:
                                 dd_ = VariableTRS3(VariableReader(msg.payload)).value
                                 if dd_ is True:
                                     dd = 254
-                                    set_level=True
 
 
                             elif int(topic[4]) == 4:
@@ -313,7 +645,6 @@ class RGPTCPAdapterLauncher:
                                 if dd_ is True:
                                     dd = 0
                                     clf =1
-                                    set_level=False
 
                             n=0
                             for gr in prov.groupList:
@@ -328,7 +659,7 @@ class RGPTCPAdapterLauncher:
                                     self.isDaliQueried = True
                                     self.callDaliTime = prov.callDali(grComm)
                                     self.callDaliProvider = prov
-                                    while (prov.getCallTime != 0) and (current_milli_time()-prov.getCallTime < DALI_GAP):
+                                    while (prov.getCallTime != 0) and (current_milli_time()-prov.getCallTime < 100):
                                         if prov.answerIs:
                                             break
 
@@ -338,52 +669,52 @@ class RGPTCPAdapterLauncher:
                             for gr in grList:
                                 qList = qList+self.daliGroup[gr]
                             qList = list(set(qList))    # формирование списка DALI устройств для опроса
-                            # self.startEvent.clear()
-                            # self.startListenEvent.clear()
-                            # self.qFl.set()
-                            #
-                            # for daliDevice in qList:
-                            #     t=threading.Thread(target=self.queryDali,
-                            #                        args=(daliDevice.getCallTime, daliDevice, self.qFl, self.diListenEvent, self.diQueue))
-                            #     t.start()
-                            #     # t.join()
-                            #
-                            # self.qFl.clear()
-                            # self.startEvent.set()
-                            # self.startListenEvent.set()
+
+
                             for daliDevice in qList:
-                                if daliDevice.dev['type']=='DimmingLight':
-                                    daliDevice.dumpMqtt(data=dd)
-                                elif daliDevice.dev['type']=='SwitchingLight':
-                                    daliDevice.dumpMqtt(data=dd, fl=1)
-
-
+                                self.queryDali(daliDevice.getCallTime, daliDevice)
         except BaseException as ex:
             logging.exception(ex)
-        finally:
-            self.startEvent.set()
-
+        self.startEvent.set()
+        self.modBusEv.set()
 
     def of(self, topic):
         arr = topic.split('/')
         return arr
 
-    def queryDaliInTime(self, daliList, goEvent, listenEvent):
-        while True:
-            goEvent.wait()
-            time.sleep(10)
-            listenEvent.clear()
-            for dev in daliList:
-                self.queryOfDaliDevice(dev)
-            listenEvent.set()
+    def queryOfDaliDevice(self, daliDev):
+        # query state
+        dd = ShortDaliAddtessComm(daliDev.dadr, QUERY_STATE, 1)
 
+        daliDev.answerIs = False
+        daliDev.typeOfQuery = 1  # 8 bit answer is needed
+        daliDev.twoByteAnswer = None
+        daliDev.oneByteAnswer = None
 
-    def queryOfDaliDevice(self, daliDev, diQue=None, diEv=None):
+        self.isDaliQueried = True
+        self.callDaliProvider = daliDev
+        self.callDaliTime = daliDev.callDali(data=dd)
 
-        self.queryLock.acquire()
-        try:
+        while (daliDev.getCallTime != 0) and \
+                ((current_milli_time() - daliDev.getCallTime) < (DALI_GAP + 50)) and \
+                self.daliAnswer != 0:
 
-            dd = ShortDaliAddtessComm(daliDev.dadr, QUERY_STATE, 1)
+            if daliDev.answerIs:
+                print('answerIs = True')
+                break
+        if daliDev.answerIs and self.daliAnswer != 0:  # success
+            # state = bitstring.BitArray(hex(int(prov.state, 16)))
+            state = copy.deepcopy(daliDev.state)
+            daliDev.dumpMqtt(data=state[5], fl=1, comm=2)
+
+        else:  # no answer
+            daliDev.state = None
+            daliDev.isValid = False
+            daliDev.dumpMqtt(data=None, fl=1, comm=2, flInvalid=True)
+
+        if daliDev.isValid == True and daliDev.dev['type'] == 'DimmingLight':
+            # query level
+            dd = ShortDaliAddtessComm(daliDev.dadr, QUERY_ACTUAL_LEVEL, 1)
 
             daliDev.answerIs = False
             daliDev.typeOfQuery = 1  # 8 bit answer is needed
@@ -392,95 +723,32 @@ class RGPTCPAdapterLauncher:
 
             self.isDaliQueried = True
             self.callDaliProvider = daliDev
-            self.daliAnswer = None
-            self.callDaliTime = daliDev.callDali(data=dd, resp=True)
-
+            self.callDaliTime = daliDev.callDali(data=dd)
 
             while (daliDev.getCallTime != 0) and \
                     ((current_milli_time() - daliDev.getCallTime) < (DALI_GAP + 50)) and \
-                    self.daliAnswer == None:
+                    self.daliAnswer != 0:
 
-                self.reciveData(diEv, diQue)
                 if daliDev.answerIs:
                     print('answerIs = True')
                     break
-
-            if daliDev.answerIs and self.daliAnswer == 1:  # success
-                # state = bitstring.BitArray(hex(int(prov.state, 16)))
-                state = copy.deepcopy(daliDev.state)
-                self.writeMqtt(dev=daliDev, data=state[5], fl=1, comm=2)
-
+            if daliDev.answerIs and self.daliAnswer != 0:
+                # success
+                # prov.dumpMqtt(data=prov.state)
+                daliDev.dumpMqtt(data=int(daliDev.state.uint / 254 * 100), comm=4)
             else:  # no answer
                 daliDev.state = None
                 daliDev.isValid = False
-                self.writeMqtt(dev=daliDev, data=None, fl=1, comm=2)
 
-            if daliDev.isValid == True:
-            # if daliDev.isValid == True and daliDev.dev['type'] == 'DimmingLight':
-                # query level
-                dd = ShortDaliAddtessComm(daliDev.dadr, QUERY_ACTUAL_LEVEL, 1)
-
-                daliDev.answerIs = False
-                daliDev.typeOfQuery = 1  # 8 bit answer is needed
-                daliDev.twoByteAnswer = None
-                daliDev.oneByteAnswer = None
-
-                self.isDaliQueried = True
-                self.callDaliProvider = daliDev
-                self.daliAnswer = None
-                self.callDaliTime = daliDev.callDali(data=dd)
-
-
-                while (daliDev.getCallTime != 0) and \
-                        ((current_milli_time() - daliDev.getCallTime) < (DALI_GAP + 50)) and \
-                        self.daliAnswer == None:
-
-                    self.reciveData(diEv, diQue)
-                    if daliDev.answerIs:
-                        print('answerIs = True')
-                        break
-
-                if daliDev.answerIs and self.daliAnswer == 1:
-                    # success
-                    self.writeMqtt(dev=daliDev, data=int(daliDev.state.uint / 254 * 100), comm=4)
-                    daliDev.lastLevel = int(daliDev.state.uint / 254 * 100)
-                else:  # no answer
-                    daliDev.state = None
-                    daliDev.isValid = False
-        finally:
-            self.queryLock.release()
-
-
-    def queryDali(self, starTime, dev, ev, diEv=None, diQue=None):
-
+    def queryDali(self, starTime, dev):
         if dev.fadeTime == 0:
             delta = MIN_FADE_TIME
         else:
             delta = dev.fadeTime
-
         while True:
-            ev.wait()
-            ev.clear()
-            diEv.clear()
-            self.queryOfDaliDevice(dev, diEv, diQue)
-            diEv.set()
-            ev.set()
-            if (current_milli_time() - starTime) > delta*1000.:
+            self.queryOfDaliDevice(dev)
+            if (current_milli_time() - starTime) > delta*1000:
                 break
-
-
-    def writeMqtt(self, dev, data=None, fl=None, comm=0):
-
-        if data == None and dev.state is not None:
-            data_ = dev.state
-            data = data_.uint
-
-        out = VariableTRS3(None, dev.dev['id'], comm, data)
-        if fl == None:
-            clientTopic = dev._stateTopicLevel
-        elif fl == 1:
-            clientTopic = dev._stateTopicIsOn
-        self.mqttc.publish(topic=clientTopic, payload=out.pack(), qos=0, retain=True)
 
     def start_dali(self):
 
@@ -583,7 +851,6 @@ class RGPTCPAdapterLauncher:
                             self.daliGroup[n].append(prov)
                         n=n+1
 
-
     def rpg_listen_fun(self):
 
         data = '07050000E103824200' #запрос настроек канала 00
@@ -597,7 +864,7 @@ class RGPTCPAdapterLauncher:
 
         except BaseException as ex:
             logging.exception(ex)
-            self.mqttc.publish(topic=topic_dump.format(PROJECT) + '/error', payload=str(ex))
+            self.mqttc.publish(topic=topic_dump.format(BUS_ID) + '/error', payload=str(ex))
         else:
             try:
                 self._start_time = time.time()
@@ -632,137 +899,50 @@ class RGPTCPAdapterLauncher:
 
             except BaseException as ex:
                 logging.exception(ex)
-                self.mqttc.publish(topic=topic_dump.format(PROJECT) + '/error', payload=str(ex))
+                self.mqttc.publish(topic=topic_dump[1].format(BUS_ID) + '/error', payload=str(ex))
             else:
                 # print('ответ: {0}'.format(out))
                 print('====================================================================================')
-
-    def listenDI(self, diQue,  ev, diMask, diList, daliList):
-        blackOut = Blackout(diMask, diList, daliList)
-        while True:
-            ev.wait()
-            while not diQue.empty():
-                data = diQue.get_nowait()
-                fl, res =self.workDIData(data=data)
-                if fl == 1:
-                    sb=bitstring.BitArray()
-                    for bt in res:
-                        sb_=bitstring.BitArray(hex(bt))
-                        if sb_.length==4:
-                            sb_=bitstring.BitArray(4)+sb_
-
-                        sb_.reverse()
-                        sb.append(sb_)
-
-
-                    for i in range(sb.length):
-                        for di in diList:
-                            if di.diaddr == i:
-                                di.state = sb[i]
-                                di.stateInt = int(sb.bin[i])
-                                di.dumpMqtt()
-                                self.diMask[str(di.topicIn)][1] = sb[i]
-
-                elif fl == 3:
-                    i = res[0]
-                    for di in diList:
-                        if di.diaddr == i:
-                            di.state = bool(res[1])
-                            di.stateInt = res[1]
-                            di.dumpMqtt()
-
-                elif fl == 5:
-                    i = res[0]
-                    for di in diList:
-                        if di.diaddr == i:
-                            di.state = bool(res[1])
-                            di.stateInt = res[1]
-                            self.diMask[str(di.topicIn)][1] = bool(res[1])
-                            di.dumpMqtt()
-                            blackOut.work()
-            ev.clear()
+                # self._start_time = time.time()
+                # out = VariableTRS3(None, int(BUS_ID), 0, tk)
+                # top_out = topic_dump.format(PROJECT, BUS_ID, '0')
+                # self.mqttc.publish(topic=topic_dump.format(PROJECT, BUS_ID, '0'), payload=out.pack())
+                # logging.debug('[  <-]: {}'.format(out))
 
 
 
+    def listen_rpg1(self, startEv):
 
-    def workDIData(self, data):
-        dataList = list(data)
-        fl=0
-        if data[0]== 1:
-            #  состояние всех входов
-            fl = 1
-
-        elif data[0]==3:
-            #  состояние отдельного входа
-            fl = 3
-
-        elif data[0]==5:
-            fl = 5
-            #  событие изменения состояния входа
-
-        return fl, dataList[1:]
-
-
-    def startDi(self):
-        canId = CanId(31, 3)
-        byte0 = Byte0(5)
-
-        # byte1 = bitstring.BitArray(6)
-        # byte1[5]=part
-        # byte1_ = bitstring.BitArray(hex(self.dev['dev']['channel']))[:2]
-        # byte1.append(byte1_)
-        byte1 = '00'
-        data = ''
-
-        dCommand = canId[2:] + canId[:2] + byte0.hex + byte1
-        # mbCommand = 'E203010001' + data
-        mbCommand = dCommand + data
-        opCode = '07'
-        pLen = bytearray(3)
-        pLen[0] = int(len(mbCommand) / 2)
-        pL = opCode + make_two_bit(hex(pLen[0]).split('x')[1]) + \
-             make_two_bit(hex(pLen[1]).split('x')[1]) + make_two_bit(hex(pLen[2]).split('x')[1]) + \
-             mbCommand
-        size = len(pL)
-        dd = bytes.fromhex(pL)
-
-        self.sock.send_message(dd, size)
-        self.answerIs=False
-
-    def reciveData(self, diEvent=None, diQue=None, ):
         device = self.sock
-        try:
-            out = device.recive_data()
-        except BaseException as ex:
-            # logging.exception(ex)
-            self.mqttc.publish(topic=topic_dump.format(PROJECT) + '/error', payload=str(ex))
-        else:
-            if out is not None:
-                while len(out) > 0:
-                    rpgData, rest = self.parceData(out)
-                    if hex(rpgData['opCode']) == OPCODECANDATA:
-                        self.parceCAN(rpgData['payloadCAN'], diEvent, diQue)
-                        # print('===={0}========={1}========'.format(hex(rpgData['payloadCAN']['canId'][0]), hex(rpgData['payloadCAN']['canId'][1])))
-                    elif hex(rpgData['opCode']) == OPCODEPINGREQ:
-                        print("04 00 00 00")
-                    elif hex(rpgData['opCode']) == OPCODECONNECT:
-                        print("RPG GATEWAY IS CONNECTED")
-                    if len(rest) == 0:
-                        break
-                    out = out[(len(out) - len(rest)):]
-
-
-    def listen_rpg1(self, diQue, startEvent, diEvent):
-
-        # device = self.sock
-
         while True:
-            startEvent.wait()
-            self.reciveData(diEvent, diQue)
-
-
-
-    def parceCAN(self, data, diEvent=None, diq=None):
+            # startEv.wait()
+            try:
+                out = device.recive_data()
+                    # if out:
+                    #     break
+                    #
+                    # logging.debug('[  <-]: {}'.format(out))
+            except BaseException as ex:
+                # logging.exception(ex)
+                self.mqttc.publish(topic=topic_dump[1].format(BUS_ID) + '/error', payload=str(ex))
+            else:
+                if out is not None:
+                    while len(out) > 0:
+                        rpgData, rest = self.parceData(out)
+                        if hex(rpgData['opCode']) == OPCODECANDATA:
+                            self.parceCAN(rpgData['payloadCAN'])
+                            # print('===={0}========={1}========'.format(hex(rpgData['payloadCAN']['canId'][0]), hex(rpgData['payloadCAN']['canId'][1])))
+                        elif hex(rpgData['opCode']) == OPCODEPINGREQ:
+                            print("04 00 00 00")
+                        elif hex(rpgData['opCode']) == OPCODECONNECT:
+                            print("RPG GATEWAY IS CONNECTED")
+                        if len(rest) == 0:
+                            break
+                        out = out[(len(out)-len(rest)):]
+                    #
+                    # self.mqttc.publish(topic=topic_send[1] + '/lamp', payload=str(out))
+                    # logging.debug('[recive from server  <-]: {}'.format(out))
+    def parceCAN(self, data):
         canId=bytearray(2)
         canId[0]=data['canId'][1]
         canId[1]=data['canId'][0]
@@ -892,10 +1072,7 @@ class RGPTCPAdapterLauncher:
                             self.callDaliProvider.isValid = False
                 # else:
                 #     self.daliAnswer = -4
-            elif n==5 and diEvent is not None and diq is not None:
-                # DI
-                diEvent.set()
-                diq.put_nowait(data['data'])
+
 
 
 
@@ -911,7 +1088,7 @@ class RGPTCPAdapterLauncher:
                 'payloadCAN': {
                     'canId': bytearray(2),
                     'dlc': bytearray(1),
-                    'data': bytearray()
+                    'data': bytearray(8)
                 }
             }
             data['opCode']=dataAr.pop(0)
@@ -924,8 +1101,7 @@ class RGPTCPAdapterLauncher:
             data['payloadCAN']['dlc'] = data['payloadLen'][0]-2
 
             for i in range(int(data['payloadLen'][0])-2):
-                # data['payloadCAN']['data'][i]=dataAr.pop(0)
-                data['payloadCAN']['data'].append(dataAr.pop(0))
+                data['payloadCAN']['data'][i]=dataAr.pop(0)
 
             return data, dataAr
 
@@ -979,9 +1155,9 @@ class RGPTCPAdapterLauncher:
         self.mqttc.publish(topic=topic_dump.format(PROJECT, str(topId), str(num)), payload=out.pack())
         logging.debug('[  <-]: {}'.format(out))
 
-    def modbusQuery(self, startEvent):
+    def modbusQuery(self, event):
         while True:
-            startEvent.wait()
+            event.wait()
             for prov in self.modbusProviders:
                 if (current_milli_time() - prov.getCallTime)>= prov.time_gap:
                     prov.callModBus()
@@ -1006,14 +1182,14 @@ class RGPTCPAdapterLauncher:
                 # self.mqttc.publish(topic=topic_dump.format(BUS_ID) + '/error', payload=str(ex))
 
 
-    def listen_rpg(self, startEvent, dalidev):
-        count=0
+    def listen_rpg(self, startEvent):
         while True:
+            # time.sleep(1)    10 03 01 02 00 02 - команда чтения температуры
+            # self._command_event.wait()
 
             startEvent.wait()
-
             if (time.time()- self._start_time) >= 5.:
-                count = count + 1
+
                 device = self.sock
                 # for data in device.commands():
                 data = '03000000'
@@ -1024,18 +1200,17 @@ class RGPTCPAdapterLauncher:
                     # print(data)
                 except BaseException as ex:
                     logging.exception(ex)
-                    self.mqttc.publish(topic=topic_dump.format(PROJECT) + '/error', payload=str(ex))
+                    self.mqttc.publish(topic=topic_dump[1].format(BUS_ID) + '/error', payload=str(ex))
                 else:
+                    try:
+                        self._start_time=time.time()
+                       # out = VariableTRS3(None, int(BUS_ID), 0, tk)
+                       # top_out = topic_dump.format(PROJECT, BUS_ID, '0')
+                       # self.mqttc.publish(topic=topic_dump.format(PROJECT, BUS_ID, '0'), payload=out.pack())
+                       # logging.debug('[  <-]: {}'.format(out))
 
-                    self._start_time=time.time()
-
-
-
-
-            if (count > 10):
-                count=0
-                for dev in dalidev:
-                    self.queryOfDaliDevice(dev)
+                    except BaseException as ex:
+                        logging.exception(ex)
 
     #    self._step_event.clear()
 
