@@ -155,7 +155,7 @@ class RGPTCPAdapterLauncher:
 
         self._manager = self
         self._stopped = False
-        self.sock= RGPTcpSocket('10.10.1.61', 55577)
+        self.sock= RGPTcpSocket('10.10.1.63', 55577)
         self._start_time = time.time()
 
 
@@ -175,17 +175,17 @@ class RGPTCPAdapterLauncher:
     def modbusSendCommand(self):
 
         opCode = '07'
-        channel = 1
-        bus=1
-        maddr = 1
+        channel = 0
+        bus=2
+        maddr = 16
         command = '0x03'
-        reg = 6
+        reg = 258
         nreg =1
         canId = CanId(31, bus)
 
 
         part = False
-        byte0 = Byte0(clss=2, cmd=True)
+        byte0 = Byte0(clss=2, cmd=False)
 
         byte1 = bitstring.BitArray(6)
         byte1[5] = part
@@ -205,8 +205,8 @@ class RGPTCPAdapterLauncher:
         mbCommand = dCommand + data
 
 
-        # mbCommand = canId[2:] + canId[:2] + byte0.hex + '04'+ '01'+ '03'+'00'+'00'
-        mbCommand = canId[2:] + canId[:2] + byte0.hex + '42'+'00'
+        # mbCommand = canId[2:] + canId[:2] + byte0.hex + '40'+ '00'+ '04'+'00'+'00'
+        # mbCommand = canId[2:] + canId[:2] + byte0.hex + '42'+'00'
 
         pLen = bytearray(3)
         pLen[0] = int(len(mbCommand) / 2)

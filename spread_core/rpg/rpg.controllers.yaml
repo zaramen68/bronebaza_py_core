@@ -151,27 +151,27 @@ MODBUS_DEV: [
         }
 
       },
-        {
-        'type': 'CO',
-        't_gap': 8000,
-        'pres': 1.,
-        'dev':
-        {
-          'channel': 1,
-          'bus': 2,
-          'maddr': 1,
-          'type': 'COSensor',
-          'value': None,
-          'id': 635559,
-        },
-        'attrib': {
-        'reg': 6,
-        'nreg': 1,
-        'command': '0x03',
-
-        }
-
-      },
+#        {
+#        'type': 'CO',
+#        't_gap': 8000,
+#        'pres': 1.,
+#        'dev':
+#        {
+#          'channel': 1,
+#          'bus': 2,
+#          'maddr': 1,
+#          'type': 'COSensor',
+#          'value': None,
+#          'id': 635559,
+#        },
+#        'attrib': {
+#        'reg': 6,
+#        'nreg': 1,
+#        'command': '0x03',
+#
+#        }
+#
+#      },
 ]
 
 
