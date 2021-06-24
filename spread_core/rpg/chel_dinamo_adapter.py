@@ -553,7 +553,7 @@ class RGPTCPAdapterLauncher:
 
         # listen1.start()
 
-        # self.start_dali()
+        self.start_dali()
 
         listen2.start()
         self.modBusEv.set()
@@ -724,104 +724,104 @@ class RGPTCPAdapterLauncher:
 
     def start_dali(self):
 
-        for prov  in self.daliProviders:
+        for prov  in self.modbusProviders:
             # query state
-            self.queryOfDaliDevice(prov)
+            prov.dumpMqtt(0)
 
-            # query groups
-            if prov.isValid:
-                if prov.dev['type'] == 'DimmingLight':
-                    dd= ShortDaliAddtessComm(prov.dadr, QUERY_FADE_TIME, 1)
-
-                    prov.answerIs = False
-                    prov.typeOfQuery = 1  # 8 bit answer is needed
-                    prov.twoByteAnswer = None
-                    prov.oneByteAnswer = None
-
-                    self.callDaliTime = prov.callDali(data=dd)
-                    self.isDaliQueried = True
-
-                    self.callDaliProvider = prov
-                    while (prov.getCallTime != 0) and \
-                            ((current_milli_time() - prov.getCallTime) < (DALI_GAP + 50)) and \
-                            self.daliAnswer != 0:
-
-                        if prov.answerIs:
-                            print('answerIs = True')
-                            break
-                    if prov.answerIs and self.daliAnswer != 0:
-                        fTime = prov.state[:4].uint
-                        prov.fadeTime = math.sqrt(2**fTime)/2.
-
-
-                        # success
-                    else:
-                        prov.isValid = False
-                        # no answer
-                        pass
-
-                dd= ShortDaliAddtessComm(prov.dadr, QUERY_GROU_811, 1)
-
-                prov.answerIs = False
-                prov.typeOfQuery = 1  # 8 bit answer is needed
-                prov.twoByteAnswer = None
-                prov.oneByteAnswer = None
-
-                self.callDaliTime = prov.callDali(data=dd)
-                self.isDaliQueried = True
-
-                self.callDaliProvider = prov
-                while (prov.getCallTime != 0) and \
-                        ((current_milli_time() - prov.getCallTime) < (DALI_GAP + 50)) and \
-                        self.daliAnswer != 0:
-
-                    if prov.answerIs:
-                        print('answerIs = True')
-                        break
-                if prov.answerIs and self.daliAnswer != 0:
-                    prov.group2 = copy.deepcopy(prov.state)
-                    prov.groupList = list(prov.group2)
-
-
-                    # success
-                else:
-                    prov.isValid = False
-                    # no answer
-                    pass
-                #######################################
-                dd = ShortDaliAddtessComm(prov.dadr, QUERY_GROU_07, 1)
-
-                prov.answerIs = False
-                prov.typeOfQuery = 1  # 8 bit answer is needed
-                prov.twoByteAnswer = None
-                prov.oneByteAnswer = None
-
-                self.callDaliTime = prov.callDali(data=dd)
-                self.isDaliQueried = True
-
-                self.callDaliProvider = prov
-                while (prov.getCallTime != 0) and \
-                        ((current_milli_time() - prov.getCallTime) < (DALI_GAP + 50)) and \
-                        self.daliAnswer != 0:
-
-                    if prov.answerIs:
-                        print('answerIs = True')
-                        break
-                if prov.answerIs and self.daliAnswer != 0:
-                    prov.group1 = copy.deepcopy(prov.state)
-                    prov.groupList.extend(list(prov.group1))
-                    prov.groupList.reverse()
-                    # success
-                else:
-                    prov.isValid = False
-                    # no answer
-                if prov.isValid:
-
-                    n=0
-                    for grp in prov.groupList:
-                        if grp:
-                            self.daliGroup[n].append(prov)
-                        n=n+1
+            # # query groups
+            # if prov.isValid:
+            #     if prov.dev['type'] == 'DimmingLight':
+            #         dd= ShortDaliAddtessComm(prov.dadr, QUERY_FADE_TIME, 1)
+            #
+            #         prov.answerIs = False
+            #         prov.typeOfQuery = 1  # 8 bit answer is needed
+            #         prov.twoByteAnswer = None
+            #         prov.oneByteAnswer = None
+            #
+            #         self.callDaliTime = prov.callDali(data=dd)
+            #         self.isDaliQueried = True
+            #
+            #         self.callDaliProvider = prov
+            #         while (prov.getCallTime != 0) and \
+            #                 ((current_milli_time() - prov.getCallTime) < (DALI_GAP + 50)) and \
+            #                 self.daliAnswer != 0:
+            #
+            #             if prov.answerIs:
+            #                 print('answerIs = True')
+            #                 break
+            #         if prov.answerIs and self.daliAnswer != 0:
+            #             fTime = prov.state[:4].uint
+            #             prov.fadeTime = math.sqrt(2**fTime)/2.
+            #
+            #
+            #             # success
+            #         else:
+            #             prov.isValid = False
+            #             # no answer
+            #             pass
+            #
+            #     dd= ShortDaliAddtessComm(prov.dadr, QUERY_GROU_811, 1)
+            #
+            #     prov.answerIs = False
+            #     prov.typeOfQuery = 1  # 8 bit answer is needed
+            #     prov.twoByteAnswer = None
+            #     prov.oneByteAnswer = None
+            #
+            #     self.callDaliTime = prov.callDali(data=dd)
+            #     self.isDaliQueried = True
+            #
+            #     self.callDaliProvider = prov
+            #     while (prov.getCallTime != 0) and \
+            #             ((current_milli_time() - prov.getCallTime) < (DALI_GAP + 50)) and \
+            #             self.daliAnswer != 0:
+            #
+            #         if prov.answerIs:
+            #             print('answerIs = True')
+            #             break
+            #     if prov.answerIs and self.daliAnswer != 0:
+            #         prov.group2 = copy.deepcopy(prov.state)
+            #         prov.groupList = list(prov.group2)
+            #
+            #
+            #         # success
+            #     else:
+            #         prov.isValid = False
+            #         # no answer
+            #         pass
+            #     #######################################
+            #     dd = ShortDaliAddtessComm(prov.dadr, QUERY_GROU_07, 1)
+            #
+            #     prov.answerIs = False
+            #     prov.typeOfQuery = 1  # 8 bit answer is needed
+            #     prov.twoByteAnswer = None
+            #     prov.oneByteAnswer = None
+            #
+            #     self.callDaliTime = prov.callDali(data=dd)
+            #     self.isDaliQueried = True
+            #
+            #     self.callDaliProvider = prov
+            #     while (prov.getCallTime != 0) and \
+            #             ((current_milli_time() - prov.getCallTime) < (DALI_GAP + 50)) and \
+            #             self.daliAnswer != 0:
+            #
+            #         if prov.answerIs:
+            #             print('answerIs = True')
+            #             break
+            #     if prov.answerIs and self.daliAnswer != 0:
+            #         prov.group1 = copy.deepcopy(prov.state)
+            #         prov.groupList.extend(list(prov.group1))
+            #         prov.groupList.reverse()
+            #         # success
+            #     else:
+            #         prov.isValid = False
+            #         # no answer
+            #     if prov.isValid:
+            #
+            #         n=0
+            #         for grp in prov.groupList:
+            #             if grp:
+            #                 self.daliGroup[n].append(prov)
+            #             n=n+1
 
     def rpg_listen_fun(self):
 

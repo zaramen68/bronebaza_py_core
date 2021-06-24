@@ -1,4 +1,4 @@
-include: ['/home/awada/bronebaza/bronebaza_py_core/spread_core/rabbit_broker.yaml']
+include: ['/home/awada/bronebaza/bronebaza_py_core/spread_core/broker_chel.yaml']
 
 PROJ: 1331
 BUS_ID: '635558'
@@ -10,109 +10,131 @@ TOPIC_DUMP: ['Rapida/0/Can/Bus/Dump', 'Rapida/0/Dali/Bus/Dump', 'Rapida/0/Modbus
 
 MODBUS_DEV: [
       {
-        'type': 'thermometer',
+        'type': 'SwitchingLight',
         't_gap': 8000,
         'pres': 1.,
         'dev':
         {
-          'channel': 0,
-          'bus': 1,
-          'maddr': 16,
-          'type': 'TemperatureSensor',
-          'value': None,
-          'id': 635558,
-        },
-        'attrib': {
-        'reg': 258,
-        'nreg': 1,
-        'command': '0x03',
 
-        }
-
-      },
-        {
-        'type': 'CO',
-        't_gap': 8000,
-        'pres': 1.,
-        'dev':
-        {
-          'channel': 1,
-          'bus': 1,
           'maddr': 1,
-          'type': 'COSensor',
+          'type': 'SwitchingLight',
           'value': None,
-          'id': 635559,
+          'id': 373220,
         },
         'attrib': {
-        'reg': 6,
+        'reg': 512,
         'nreg': 1,
-        'command': '0x03',
+        'command': '0x10',
 
         }
 
       },
+      {
+        'type': 'SwitchingLight',
+        't_gap': 8000,
+        'pres': 1.,
+        'dev':
+          {
+
+            'maddr': 1,
+            'type': 'SwitchingLight',
+            'value': None,
+            'id': 373221,
+          },
+        'attrib': {
+          'reg': 513,
+          'nreg': 1,
+          'command': '0x10',
+
+        }
+
+      },
+
+      {
+        'type': 'SwitchingLight',
+        't_gap': 8000,
+        'pres': 1.,
+        'dev':
+          {
+
+            'maddr': 1,
+            'type': 'SwitchingLight',
+            'value': None,
+            'id': 373222,
+          },
+        'attrib': {
+          'reg': 514,
+          'nreg': 1,
+          'command': '0x10',
+
+        }
+      },
+
+      {
+        'type': 'SwitchingLight',
+        't_gap': 8000,
+        'pres': 1.,
+        'dev':
+          {
+
+            'maddr': 1,
+            'type': 'SwitchingLight',
+            'value': None,
+            'id': 373223,
+          },
+        'attrib': {
+          'reg': 515,
+          'nreg': 1,
+          'command': '0x10',
+
+        }
+      },
+
+      {
+        'type': 'SwitchingLight',
+        't_gap': 8000,
+        'pres': 1.,
+        'dev':
+          {
+
+            'maddr': 1,
+            'type': 'SwitchingLight',
+            'value': None,
+            'id': 373224,
+          },
+        'attrib': {
+          'reg': 516,
+          'nreg': 1,
+          'command': '0x10',
+
+        }
+      },
+
+      {
+        'type': 'SwitchingLight',
+        't_gap': 8000,
+        'pres': 1.,
+        'dev':
+          {
+
+            'maddr': 1,
+            'type': 'SwitchingLight',
+            'value': None,
+            'id': 373225,
+          },
+        'attrib': {
+          'reg': 517,
+          'nreg': 1,
+          'command': '0x10',
+
+        }
+      },
+
+
 ]
 
 DALI_DEV: [
-      {
-      "channel": 0,
-      "bus": 2,
-      "dadr": 4,
-      "attributes": {
-          "positionCount": 101,
-          "lowerLimit": 0,
-          "power": 0,
-          "upperLimit": 100
-       },
-      "type": "DimmingLight",
-      "FunctionUnitIndex": {"onId": 0, "offId": 1, "setLevelId": 3},
-      "id": 635561
-      },
 
-      {
-      "channel": 0,
-      "bus": 2,
-      "dadr": 2,
-      "attributes": {
-          "positionCount": 101,
-          "lowerLimit": 0,
-          "power": 0,
-          "upperLimit": 100
-      },
-      "type": "DimmingLight",
-      "FunctionUnitIndex": {"onId": 0, "offId": 1, "setLevelId": 3},
-      "id": 635562
-      },
-
-      {
-      "channel": 0,
-      "bus": 2,
-      "dadr": 5,
-      "attributes": {
-          "positionCount": 101,
-          "lowerLimit": 0,
-          "power": 0,
-          "upperLimit": 100
-       },
-      "type": "DimmingLight",
-      "FunctionUnitIndex": {"onId": 0, "offId": 1, "setLevelId": 3},
-      "id": 635563
-      },
-
-      {
-      "channel": 0,
-      "bus": 2,
-      "dadr": 1,
-      "attributes": {
-          "positionCount": 101,
-          "lowerLimit": 0,
-          "power": 0,
-          "upperLimit": 100
-      },
-      "type": "DimmingLight",
-      "FunctionUnitIndex": {"onId": 0, "offId": 1, "setLevelId": 3},
-      "id": 635564
-      },
 
       {
       "channel": 0,
@@ -162,20 +184,7 @@ DALI_DEV: [
       "id": 659856
       },
 
-      {
-      "channel": 0,
-      "bus": 2,
-      "dadr": 3,
-      "attributes": {
-          "positionCount": 101,
-          "lowerLimit": 0,
-          "power": 0,
-          "upperLimit": 100
-      },
-      "type": "DimmingLight",
-      "FunctionUnitIndex": {"onId": 0, "offId": 1, "setLevelId": 3},
-      "id": 659939
-      },
+
 ]
 
 BUS_TIMEOUT: 1
