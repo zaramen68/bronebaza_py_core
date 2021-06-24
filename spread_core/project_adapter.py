@@ -13,7 +13,7 @@ from spread_core.tools.settings import config, logging
 
 class ProjectAdapterLauncher(Launcher):
     # ZIP_TOPIC = 'data_project_ctp'
-    ZIP_TOPIC = 'Project/2434/Ctp'
+    ZIP_TOPIC = 'Project/1331/Ctp'
     ZIP_NAME = os.path.basename(config['CTP_PATH'])
     HASH_NAME = ZIP_NAME + '.hash'
     cd = os.path.dirname(config['CTP_PATH']) + '/'

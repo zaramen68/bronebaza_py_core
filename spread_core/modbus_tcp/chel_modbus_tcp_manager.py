@@ -20,6 +20,10 @@ CONTROLLERS = config['CONTROLLERS']
 PROJECT = config['PROJ']
 
 topic_read = 'ModBus/State/{}/{}/{}/{}/{}'
+# Tros3/Command/{ProjectID}/Equipment/SwitchingLightLight/{EngineryID}/{FunctionUnitIndex}/inOn&inOff
+topic_light_command = 'Tros3/Command/{}/Equipment/SwitchingLightLight/{}'
+# Tros3/State/{ProjectID}/Equipment/SwitchingLightLight/{EngineryID}/{FunctionUnitIndex}: [isOnId - 2]
+topic_light_state = 'Tros3/State/{}/Equipment/SwitchingLightLight/{}'
 topic_dump = 'Tros3/State/{}/{}/{}'
 light_topics = config['TOPIC_SUB']
 
@@ -88,6 +92,47 @@ class DoorsSw:
                             num+=1
             self._time = time
 
+class Light:
+    def __init__(self, mqtt, t_gap, *args):
+        self._t_gap = t_gap
+        self._mqtt = mqtt
+        self._time = current_milli_time()
+        self._dev = args
+        self._topicValues = {'value': None,}
+
+    def devices(self):
+        return self._dev
+
+    def work(self, msg, time):
+        if (time - self._time) >= self._t_gap:
+            out = msg.payload.decode()
+            # if len(out) != 23:
+            #     return
+            for dev_ice in self._dev:
+                device = dev_ice[0]
+                try:
+                    tt=out[18:22]
+                    tk=int(tt, 16)
+                    tk = tk + 27315
+                    # tk = 27315
+                    if self._topicValues['value'] is None:
+                        #   initial values
+                        self._topicValues['value'] = tk
+                        out = VariableTRS3(None, self._topicValues['topicId'], 0, tk)
+                        top_out = topic_dump.format(PROJECT, self._topicValues['topicId'], '0')
+                        self._mqtt.publish(topic=topic_dump.format(PROJECT, self._topicValues['topicId'], '0'), payload=out.pack())
+                        #logging.debug('[  <-]: {}'.format(out))
+                    elif (abs(self._topicValues['value'] - tk) > 10):
+                        self._topicValues['value'] = tk
+                        out = VariableTRS3(None, device['topicId'], 0, tk)
+                        top_out = topic_dump.format(PROJECT, self._topicValues['topicId'], '0')
+                        self._mqtt.publish(topic=top_out, payload=out.pack())
+                        # self._mqtt.publish(topic=topic_dump.format(PROJECT, self._topicValues['topicId'], '0'),
+                        #                    payload=out.pack())
+                        # logging.debug('[  <-]: {}'.format(out))
+                except BaseException as ex:
+                    logging.exception(ex)
+            self._time = time
 
 
 class Thermometer:
@@ -162,6 +207,8 @@ class ModBusManagerLauncher:
                 self.controllers.append(DoorsSw(self.mqttc, cntr['t_gap'], cntr['dev']))
             elif cntr['type'] == 'thermometer':
                 self.controllers.append(Thermometer(self.mqttc, cntr['t_gap'], cntr['dev']))
+            elif cntr['type'] == 'light':
+                self.controllers.append(Light(self.mqtt, cntr['t_gap'], cntr['dev']))
             # elif cntr['type'] == 'blackout':
             #     self.controllers.append(Blackout(self.mqttc, cntr['dev']))
 

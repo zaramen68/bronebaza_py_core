@@ -5,7 +5,7 @@ from spread_core.mqtt.data import *
 from spread_core.protocols.dali.device import general as device, light_sensor_ext as device_light, \
     presence_sensor_ext as device_presence
 from spread_core.protocols.dali.gear import led as led, general as gear
-from spread_core.protocols.mercury import commands as mercury
+# from spread_core.protocols.mercury import commands as mercury
 
 TPLUS = '+'
 TSHARP = '#'
@@ -401,29 +401,29 @@ classifier = dict(
             CurrentPresence=dict(id=31090762, get=dict(func='GetCurrentPresence'), state=int)
         ),
     ),
-    Mercury=dict(
-        Ready=dict(id=41010002, state=bool),
-        MercuryElectricMeter=dict(
-            Power=dict(id=41010101, get=dict(params=dict(phase=int, power_id=int), cmd=mercury.AUXPower)),
-            Voltage=dict(id=41010102, get=dict(params=dict(phase=int), cmd=mercury.AUXVoltage)),
-            Amperage=dict(id=41010103, get=dict(params=dict(phase=int), cmd=mercury.AUXAmperage)),
-            Angle=dict(id=41010104, get=dict(params=dict(phase=int), cmd=mercury.AUXAngle)),
-            Frequency=dict(id=41010105, get=dict(params=dict(phase=int), cmd=mercury.AUXFrequency)),
-            PowerRate=dict(id=41010106, get=dict(params=dict(phase=int), cmd=mercury.AUXPowerRate)),
-            StoredEnergyActiveStraight=dict(id=41010107, get=dict(params=dict(period=int, tariff=int, month=int), cmd=mercury.StoredEnergy)),
-            StoredEnergyReactiveStraight=dict(id=41010108, get=dict(params=dict(period=int, tariff=int, month=int), cmd=mercury.StoredEnergy)),
-            StoredEnergyActiveReverse=dict(id=41010109, get=dict(params=dict(period=int, tariff=int, month=int), cmd=mercury.StoredEnergy)),
-            StoredEnergyReactiveReverse=dict(id=41010110, get=dict(params=dict(period=int, tariff=int, month=int), cmd=mercury.StoredEnergy)),
-            StoredEnergyCombo=dict(id=41010111, get=dict(params=dict(period=int, tariff=int, month=int), cmd=mercury.StoredEnergyCombo)),
-            Temperature=dict(id=41010112, get=dict(cmd=mercury.AUXTemp)),
-            SerialDate=dict(id=41010113, get=dict(cmd=mercury.SerialCommand)),
-            CurrentDateTime=dict(id=41010114, get=dict(cmd=mercury.CurrentDateTime)),
-            OpenCloseTime=dict(id=41010115, get=dict(params=dict(item_id=int), cmd=mercury.OpenCloseTime)),
-            Version=dict(id=41010116, get=dict(cmd=mercury.Version)),
-            TransformRateVoltage=dict(id=41010117, set=dict(cmd=mercury.SetTransformRate), get=dict(cmd=mercury.TransformRate)),
-            TransformRateAmperage=dict(id=41010118, set=dict(cmd=mercury.SetTransformRate), get=dict(cmd=mercury.TransformRate)),
-            Info=dict(id=41010119)
-        )
-    ),
+    # Mercury=dict(
+    #     Ready=dict(id=41010002, state=bool),
+    #     MercuryElectricMeter=dict(
+    #         Power=dict(id=41010101, get=dict(params=dict(phase=int, power_id=int), cmd=mercury.AUXPower)),
+    #         Voltage=dict(id=41010102, get=dict(params=dict(phase=int), cmd=mercury.AUXVoltage)),
+    #         Amperage=dict(id=41010103, get=dict(params=dict(phase=int), cmd=mercury.AUXAmperage)),
+    #         Angle=dict(id=41010104, get=dict(params=dict(phase=int), cmd=mercury.AUXAngle)),
+    #         Frequency=dict(id=41010105, get=dict(params=dict(phase=int), cmd=mercury.AUXFrequency)),
+    #         PowerRate=dict(id=41010106, get=dict(params=dict(phase=int), cmd=mercury.AUXPowerRate)),
+    #         StoredEnergyActiveStraight=dict(id=41010107, get=dict(params=dict(period=int, tariff=int, month=int), cmd=mercury.StoredEnergy)),
+    #         StoredEnergyReactiveStraight=dict(id=41010108, get=dict(params=dict(period=int, tariff=int, month=int), cmd=mercury.StoredEnergy)),
+    #         StoredEnergyActiveReverse=dict(id=41010109, get=dict(params=dict(period=int, tariff=int, month=int), cmd=mercury.StoredEnergy)),
+    #         StoredEnergyReactiveReverse=dict(id=41010110, get=dict(params=dict(period=int, tariff=int, month=int), cmd=mercury.StoredEnergy)),
+    #         StoredEnergyCombo=dict(id=41010111, get=dict(params=dict(period=int, tariff=int, month=int), cmd=mercury.StoredEnergyCombo)),
+    #         Temperature=dict(id=41010112, get=dict(cmd=mercury.AUXTemp)),
+    #         SerialDate=dict(id=41010113, get=dict(cmd=mercury.SerialCommand)),
+    #         CurrentDateTime=dict(id=41010114, get=dict(cmd=mercury.CurrentDateTime)),
+    #         OpenCloseTime=dict(id=41010115, get=dict(params=dict(item_id=int), cmd=mercury.OpenCloseTime)),
+    #         Version=dict(id=41010116, get=dict(cmd=mercury.Version)),
+    #         TransformRateVoltage=dict(id=41010117, set=dict(cmd=mercury.SetTransformRate), get=dict(cmd=mercury.TransformRate)),
+    #         TransformRateAmperage=dict(id=41010118, set=dict(cmd=mercury.SetTransformRate), get=dict(cmd=mercury.TransformRate)),
+    #         Info=dict(id=41010119)
+    #     )
+    # ),
 
 )

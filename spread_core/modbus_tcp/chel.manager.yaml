@@ -1,0 +1,205 @@
+include: ['C:\Users\zaram\PycharmProjects\spread-core\spread_core\broker.yaml']
+
+PROJ: '2434'
+BUS_ID: '635558'
+BUS_HOST: '10.10.1.198'
+BUS_PORT: 502
+
+
+TOPIC_SUB: {
+ 'Jocket/State/2434/Hardware/AppServer/2537/RapidaDali/3171/RapidaDaliDimmer/111427/BrightnessLevel': 0,
+ 'Jocket/State/2434/Hardware/AppServer/2537/RapidaDali/3171/RapidaDaliDimmer/111428/BrightnessLevel': 0,
+ 'Jocket/State/2434/Hardware/AppServer/2537/RapidaDali/3171/RapidaDaliDimmer/111429/BrightnessLevel': 0,
+ 'Jocket/State/2434/Hardware/AppServer/2537/RapidaDali/3171/RapidaDaliDimmer/111430/BrightnessLevel': 0,
+ 'Jocket/State/2434/Hardware/AppServer/2537/RapidaDali/3171/RapidaDaliDimmer/111431/BrightnessLevel': 0,
+ 'Jocket/State/2434/Hardware/AppServer/2537/RapidaDali/3171/RapidaDaliDimmer/111432/BrightnessLevel': 0,
+}
+
+TOPIC_PUB: [
+  'Jocket/Command/2434/LE_SID/Hardware/AppServer/2537/RapidaDali/3171/RapidaDaliDimmer/111427/GroupLevel',
+  'Jocket/Command/2434/LE_SID/Hardware/AppServer/2537/RapidaDali/3171/RapidaDaliDimmer/111428/GroupLevel',
+  'Jocket/Command/2434/LE_SID/Hardware/AppServer/2537/RapidaDali/3171/RapidaDaliDimmer/111429/GroupLevel',
+  'Jocket/Command/2434/LE_SID/Hardware/AppServer/2537/RapidaDali/3171/RapidaDaliDimmer/111430/GroupLevel',
+  'Jocket/Command/2434/LE_SID/Hardware/AppServer/2537/RapidaDali/3171/RapidaDaliDimmer/111431/GroupLevel',
+  'Jocket/Command/2434/LE_SID/Hardware/AppServer/2537/RapidaDali/3171/RapidaDaliDimmer/111432/GroupLevel',
+]
+
+SHUXER_1: [0,0,10,10,0,0]
+SHUXER_2: [0,0,50,50,0,0]
+
+
+SAVED_DATA: {
+'111427':0,
+'111428':0,
+'111429':0,
+'111430':0,
+'111431':0,
+'111432':0,
+}
+
+
+TCP_DEV: [
+            {
+              'host': '10.10.1.198',
+              'port': 502,
+              'dev': [
+
+                  #--------------- двери -----------------
+                {
+                    'type': 'di',
+                    'di': 0,
+                    'id': 1,
+                    'reg': 0,          # номер первого регистра для опроса
+                    'cmd': '0x01',     # команда
+                    'nreg': 1,         # число регистров
+                    'topicId': 660034,
+                    'command': '000100000006010100000001',
+                },
+                {
+                    'type': 'di',
+                    'di': 1,
+                    'id': 1,
+                    'reg': 1,          # номер первого регистра для опроса
+                    'cmd': '0x01',     # команда
+                    'nreg': 1,         # число регистров
+                    'topicId': 660244,
+                    'command': '000100000006010100010001',
+                },
+                {
+                    'type': 'di',
+                    'di': 2,
+                    'id': 1,
+                    'reg': 2,          # номер первого регистра для опроса
+                    'cmd': '0x01',     # команда
+                    'nreg': 1,         # число регистров
+                    'topicId': 660243,
+                    'command': '000100000006010100020001',
+                },
+                {
+                    'type': 'di',
+                    'di': 3,
+                    'id': 1,
+                    'reg': 3,          # номер первого регистра для опроса
+                    'cmd': '0x01',     # команда
+                    'nreg': 1,         # число регистров
+                    'topicId': 660245,
+                    'command': '000100000006010100030001',
+                }
+              ]
+            },
+            {                         #advantech night sw
+              'host': '10.10.1.141',
+              'port': 502,
+              'dev': [
+                {
+                  'type': 'di',
+                  'di': 0,
+                  'id': 1,
+                  'reg': 0,          # номер первого регистра для опроса
+                  'cmd': '0x01',     # команда
+                  'nreg': 1,         # число регистров
+                  'topicId':'night_key',
+                  'command':'000100000006010100000001',
+                  'topicValues': {
+                    'value': 0,
+                  }
+                },
+                {
+                  'type': 'di',
+                  'di': 1,
+                  'id': 1,
+                  'reg': 1,          # номер первого регистра для опроса
+                  'cmd': '0x01',     # команда
+                  'nreg': 1,         # число регистров
+                  'topicId':'night_key',
+                  'command':'000100000006010100010001',
+                  'topicValues': {
+                    'value': 0,
+                  }
+                },
+              ],
+            },
+
+        ]
+
+BLACKOUT_DEV:  {
+                  'type':'blackout',
+                  'dev': [
+                    {
+                      'host': '10.10.1.141',
+                      'type': 'di',
+                      'di': 0,
+                      'id': 1,
+                      'reg': 0,          # номер первого регистра для опроса
+                      'cmd': '0x01',     # команда
+                      'nreg': 1,         # число регистров
+                      'topicId':'night_key',
+                      'value': None,
+                      'topicValues': {
+                        'value': 0,
+                      }
+                    },
+                    {
+                      'host': '10.10.1.141',
+                      'type': 'di',
+                      'di': 1,
+                      'id': 1,
+                      'reg': 1,          # номер первого регистра для опроса
+                      'cmd': '0x01',     # команда
+                      'nreg': 1,         # число регистров
+                      'topicId':'night_key',
+                      'value': None,
+                      'topicValues': {
+                        'value': 0,
+                      }
+                    },
+                    {
+                      'host': '10.10.1.198',
+                      'type': 'di',
+                      'di': 0,
+                      'id': 1,
+                      'reg': 0,          # номер первого регистра для опроса
+                      'cmd': '0x01',     # команда
+                      'nreg': 1,         # число регистров
+                      'topicId': 660034,
+                      'value': None,
+                    },
+                    {
+                      'host': '10.10.1.198',
+                      'type': 'di',
+                      'di': 1,
+                      'id': 1,
+                      'reg': 1,          # номер первого регистра для опроса
+                      'cmd': '0x01',     # команда
+                      'nreg': 1,         # число регистров
+                      'topicId': 660244,
+                      'value': None,
+                    },
+                    {
+                      'host': '10.10.1.198',
+                      'type': 'di',
+                      'di': 2,
+                      'id': 1,
+                      'reg': 2,          # номер первого регистра для опроса
+                      'cmd': '0x01',     # команда
+                      'nreg': 1,         # число регистров
+                      'topicId': 660243,
+                      'value': None,
+                    },
+                    {
+                      'host': '10.10.1.198',
+                      'type': 'di',
+                      'di': 3,
+                      'id': 1,
+                      'reg': 3,          # номер первого регистра для опроса
+                      'cmd': '0x01',     # команда
+                      'nreg': 1,         # число регистров
+                      'topicId': 660245,
+                      'value': None,
+                    },
+                  ]
+                }
+
+BUS_TIMEOUT: 3
+KILL_TIMEOUT: 3
+DUMP: false
