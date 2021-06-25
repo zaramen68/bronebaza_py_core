@@ -1,4 +1,4 @@
-include: ['/home/awada/bronebaza/bronebaza_py_core/spread_core/broker_chel.yaml']
+include: ['C:\Users\zaram\PycharmProjects\bronebaza_py_core\spread_core\broker.yaml']
 
 PROJ: 1331
 BUS_ID: '635558'
@@ -10,6 +10,45 @@ TOPIC_DUMP: ['Rapida/0/Can/Bus/Dump', 'Rapida/0/Dali/Bus/Dump', 'Rapida/0/Modbus
 
 MODBUS_DEV: [
       {
+        'type': 'LeakageSensor',
+        't_gap': 8000,
+        'pres': 1.,
+        'dev':
+          {
+
+            'maddr': 1,
+            'type': 'LeakageSensor',
+            'value': False,
+            'id': 370269,
+          },
+        'attrib': {
+          'reg': 519,
+          'nreg': 1,
+          'command': '0x03',
+
+        }
+      },
+      {
+          'type': 'SwitchingLight',
+          't_gap': 8000,
+          'pres': 1.,
+          'dev':
+          {
+
+            'maddr': 1,
+            'type': 'SwitchingLight',
+            'value': False,
+            'id': 373219,
+          },
+          'attrib': {
+          'reg': 518,
+          'nreg': 1,
+          'command': '0x06',
+
+          }
+
+        },
+      {
         'type': 'SwitchingLight',
         't_gap': 8000,
         'pres': 1.,
@@ -18,13 +57,13 @@ MODBUS_DEV: [
 
           'maddr': 1,
           'type': 'SwitchingLight',
-          'value': None,
+          'value': False,
           'id': 373220,
         },
         'attrib': {
         'reg': 512,
         'nreg': 1,
-        'command': '0x10',
+        'command': '0x06',
 
         }
 
@@ -38,13 +77,13 @@ MODBUS_DEV: [
 
             'maddr': 1,
             'type': 'SwitchingLight',
-            'value': None,
+            'value': False,
             'id': 373221,
           },
         'attrib': {
           'reg': 513,
           'nreg': 1,
-          'command': '0x10',
+          'command': '0x06',
 
         }
 
@@ -59,13 +98,13 @@ MODBUS_DEV: [
 
             'maddr': 1,
             'type': 'SwitchingLight',
-            'value': None,
+            'value': False,
             'id': 373222,
           },
         'attrib': {
           'reg': 514,
           'nreg': 1,
-          'command': '0x10',
+          'command': '0x06',
 
         }
       },
@@ -79,13 +118,13 @@ MODBUS_DEV: [
 
             'maddr': 1,
             'type': 'SwitchingLight',
-            'value': None,
+            'value': False,
             'id': 373223,
           },
         'attrib': {
           'reg': 515,
           'nreg': 1,
-          'command': '0x10',
+          'command': '0x06',
 
         }
       },
@@ -99,13 +138,13 @@ MODBUS_DEV: [
 
             'maddr': 1,
             'type': 'SwitchingLight',
-            'value': None,
+            'value': False,
             'id': 373224,
           },
         'attrib': {
           'reg': 516,
           'nreg': 1,
-          'command': '0x10',
+          'command': '0x06',
 
         }
       },
@@ -119,13 +158,13 @@ MODBUS_DEV: [
 
             'maddr': 1,
             'type': 'SwitchingLight',
-            'value': None,
+            'value': False,
             'id': 373225,
           },
         'attrib': {
           'reg': 517,
           'nreg': 1,
-          'command': '0x10',
+          'command': '0x06',
 
         }
       },

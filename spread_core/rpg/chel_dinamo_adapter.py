@@ -1,6 +1,7 @@
 import socket
 import threading
 import time
+import random
 import math
 import paho.mqtt.client
 from threading import Timer
@@ -70,6 +71,8 @@ def isONID(x):
         return 2
     elif x == 'DimmingLight':
         return 2
+    elif x == 'LeakageSensor':
+        return 0
 
 def make_two_bit(x):
     bytes_list =list('00')
@@ -182,23 +185,23 @@ class ModBusProvider:
         self.dev = args[0]
         self._mqtt = mqtt
         self._callMTime = 0
-        self.state = None
+        self.state = args[0]['dev']['value']
         self.stateInt = 0
         self.lastState = None
         self.lastStateInt = 0
-        self.isValid = None
+        self.isValid = True
         self.oneByteAnswer = None
         self.twoByteAnswer = None
         self.typeOfQuery = None # 0 - no answer, 1 - need answer
-        self.bus = args[0]['dev']['bus']
-        self.channel = args[0]['dev']['channel']
+        # self.bus = args[0]['dev']['bus']
+        # self.channel = args[0]['dev']['channel']
         self.time_gap = args[0]['t_gap']
         self._call = None
         self.answerIs = False
         self.maddr = args[0]['dev']['maddr']
         self.reg = args[0]['attrib']['reg']
         self._stateTopicLevel = 'Tros3/State/{}/Equipment/{}/{}/0'.format(PROJECT, args[0]['dev']['type'], args[0]['dev']['id'])
-        self._stateTopicIsOn = 'Tros3/State/{}/Equipment/{}/{}/{}'.format(PROJECT, args[0]['type'], args[0]['id'], isONID(args[0]['type']))
+        self._stateTopicIsOn = 'Tros3/State/{}/Equipment/{}/{}/{}'.format(PROJECT, args[0]['dev']['type'], args[0]['dev']['id'], isONID(args[0]['dev']['type']))
         self.answer = None
 
 
@@ -237,36 +240,47 @@ class ModBusProvider:
     def callModBus(self, data = None, part=False):
 
         self._call = data
-        canId = CanId(31, self.dev['dev']['bus'])
+        # canId = CanId(31, self.dev['dev']['bus'])
         byte0 = Byte0(2)
 
-        byte1 = bitstring.BitArray(6)
-        byte1[5]=part
-        byte1_ = bitstring.BitArray(hex(self.dev['dev']['channel']))[:2]
-        byte1.append(byte1_)
+        # byte1 = bitstring.BitArray(6)
+        # byte1[5]=part
+        # byte1_ = bitstring.BitArray(hex(self.dev['dev']['channel']))[:2]
+        # byte1.append(byte1_)
+        transaction_id = hex(random.getrandbits(10)).split('x')[1]
+        transaction_id = make_bytes(transaction_id)
 
         data_id = make_two_bit(hex(self.dev['dev']['maddr']).split('x')[1])
         data_command = make_two_bit(self.dev['attrib']['command'].split('x')[1])
         data_reg = make_bytes(hex(self.dev['attrib']['reg']).split('x')[1])
         data_nreg = make_bytes(hex(self.dev['attrib']['nreg']).split('x')[1])
-
-        if data is None:
-            data = data_id + data_command + data_reg + data_nreg
+        if self.dev['attrib']['command'] == '0x10':
+            if data is None:
+                data = data_id + data_command + data_reg + data_nreg
+            else:
+                data = data_id + data_command + data_reg + data_nreg + make_bytes(hex(data).split('x')[1])
+        elif self.dev['attrib']['command'] == '0x03' or self.dev['attrib']['command'] == '0x06':
+            if data is None:
+                data = data_id + data_command + data_reg
+            else:
+                data_ = make_bytes(hex(data).split('x')[1])
+                data = data_id + data_command + data_reg + data_[2:] + data_[:2]
 
         # dCommand =  byte0.hex + byte1.hex
         # dCommand = canId[2:] + canId[:2] + byte0.hex + byte1.hex
         # mbCommand = 'E203010001' + data
         # mbCommand = dCommand + data
         mbCommand = data
-        opCode = '07'
-        pLen = bytearray(3)
-        pLen[0] = int(len(mbCommand) / 2)
+
+        pLen = bytearray(4)
+        pLen[3] = int(len(mbCommand) / 2)
         # pL = opCode + make_two_bit(hex(pLen[0]).split('x')[1]) + \
         #      make_two_bit(hex(pLen[1]).split('x')[1]) + make_two_bit(hex(pLen[2]).split('x')[1]) + \
         #      mbCommand
         pL = make_two_bit(hex(pLen[0]).split('x')[1]) + \
-             make_two_bit(hex(pLen[1]).split('x')[1]) + make_two_bit(hex(pLen[2]).split('x')[1]) + \
-             mbCommand
+             make_two_bit(hex(pLen[1]).split('x')[1])  + make_two_bit(hex(pLen[2]).split('x')[1])+ \
+             make_two_bit(hex(pLen[3]).split('x')[1]) + mbCommand
+        pL = transaction_id + pL
         size = len(pL)
         dd = bytes.fromhex(pL)
 
@@ -274,12 +288,19 @@ class ModBusProvider:
         self.answerIs=False
         self._callMTime = current_milli_time()
 
-    def dumpMqtt(self, data=None):
-        if data == None:
-            data = self.stateInt
-        out = VariableTRS3(None, self.dev['dev']['id'], 0, data, invalid=(not self.isValid))
+    def dumpMqtt(self, data=None, fl = 0):
+        # if data == None:
+        #     data = self.stateInt
+        if data == None and self.state is not None:
+            data = self.state
 
-        clientTopic = self._stateTopicLevel
+        # out = VariableTRS3(None, self.dev['dev']['id'], 0, data, invalid=(not self.isValid))
+        out = VariableTRS3(id=self.dev['dev']['id'], cl=fl, val=data)
+        if fl == 0:
+            clientTopic = self._stateTopicLevel
+        elif fl == 2:
+            clientTopic = self._stateTopicIsOn
+        # clientTopic = self._stateTopicLevel
 
         self._mqtt.publish(topic=clientTopic, payload=out.pack(), qos=0, retain=True)
 
@@ -593,26 +614,26 @@ class RGPTCPAdapterLauncher:
                 # ModBus ВМЕСТО DALI!!!!!!!!!
                 #
                 for prov in self.modbusProviders:
-                    if prov.dev['id'] == int(topic[3]):
-                        if prov.dev['type'] == 'DimmingLight':
+                    if prov.dev['dev']['id'] == int(topic[5]):
+                        if prov.dev['dev']['type'] == 'DimmingLight':
                             pass
-                        elif prov.dev['type'] == 'SwitchingLight':
+                        elif prov.dev['dev']['type'] == 'SwitchingLight':
                             # grList = []  #список групп
                             clf=0
 
-                            if int(topic[4]) == 3:
+                            if int(topic[6]) == 3 or int(topic[6]) == 0:
                                 # set isOn command
                                 dd_ = VariableTRS3(VariableReader(msg.payload)).value
                                 if dd_ is True:
-                                    dd = 1
+                                    dd = True
 
 
-                            elif int(topic[4]) == 4:
+                            elif int(topic[6]) == 4 or int(topic[6]) == 1:
                                 # isOff
 
                                 dd_ = VariableTRS3(VariableReader(msg.payload)).value
                                 if dd_ is True:
-                                    dd = 0
+                                    dd = False
                                     # clf =1
 
                             # n=0
@@ -726,7 +747,7 @@ class RGPTCPAdapterLauncher:
 
         for prov  in self.modbusProviders:
             # query state
-            prov.dumpMqtt(0)
+            prov.dumpMqtt(data=None, fl=2)
 
             # # query groups
             # if prov.isValid:
@@ -1129,10 +1150,11 @@ class RGPTCPAdapterLauncher:
 
     def modbusQuery(self, event):
         while True:
+            time.sleep(60)
             event.wait()
-            for prov in self.modbusProviders:
-                if (current_milli_time() - prov.getCallTime)>= prov.time_gap:
-                    prov.callModBus()
+            # for prov in self.modbusProviders:
+            #     if (current_milli_time() - prov.getCallTime)>= prov.time_gap:
+            #         prov.callModBus()
 
     def askTempr(self):
         device = self.sock
