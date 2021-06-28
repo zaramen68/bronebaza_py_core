@@ -1,4 +1,4 @@
-include: ['C:\Users\zaram\PycharmProjects\bronebaza_py_core\spread_core\broker.yaml']
+include: ['/tmp/pycharm_project_97/spread_core/broker_chel.yaml']
 
 PROJ: 1331
 BUS_ID: '635558'

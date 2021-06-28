@@ -197,7 +197,7 @@ class ModBusProvider:
         # self.channel = args[0]['dev']['channel']
         self.time_gap = args[0]['t_gap']
         self._call = None
-        self.answerIs = False
+        self.answerIs = None
         self.maddr = args[0]['dev']['maddr']
         self.reg = args[0]['attrib']['reg']
         self._stateTopicLevel = 'Tros3/State/{}/Equipment/{}/{}/0'.format(PROJECT, args[0]['dev']['type'], args[0]['dev']['id'])
@@ -221,10 +221,6 @@ class ModBusProvider:
     def getCallTime(self):
         return self._callMTime
 
-    def getAnswer(self, data):
-        print('modbus answer is {}'.format(str(data)))
-        self.answerIs = True
-        pass
 
     def askLevel(self):
         pass
@@ -236,8 +232,43 @@ class ModBusProvider:
             self.lastStateInt = self.stateInt
             self.dumpMqtt()
 
+    def queryModBusState(self):
+        #    чтение регистров
+
+        transaction_id = hex(random.getrandbits(10)).split('x')[1]
+        transaction_id = make_bytes(transaction_id)
+
+        data_id = make_two_bit(hex(self.dev['dev']['maddr']).split('x')[1])
+
+        data_command = make_two_bit(self.dev['attrib']['command_ask'].split('x')[1])
+        data_reg = make_bytes(hex(self.dev['attrib']['reg']).split('x')[1])
+        data_nreg = make_bytes(hex(self.dev['attrib']['nreg']).split('x')[1])
+
+        data = data_id + data_command + data_reg + data_nreg
+
+        mbCommand = data
+
+        pLen = bytearray(4)
+        pLen[3] = int(len(mbCommand) / 2)
+
+        pL = make_two_bit(hex(pLen[0]).split('x')[1]) + \
+             make_two_bit(hex(pLen[1]).split('x')[1]) + make_two_bit(hex(pLen[2]).split('x')[1]) + \
+             make_two_bit(hex(pLen[3]).split('x')[1]) + mbCommand
+        pL = transaction_id + pL
+        size = len(pL)
+        dd = bytes.fromhex(pL)
+
+        out = self._socket.send_message(dd, size)
+        self.answerIs = out
+        result = str(out)
+        if result[:4].lower() == transaction_id:
+            out_ = result[4:]
+        else:
+            out_ = None
+        return out_
 
     def callModBus(self, data = None, part=False):
+        # запись в регистры
 
         self._call = data
         # canId = CanId(31, self.dev['dev']['bus'])
@@ -284,8 +315,8 @@ class ModBusProvider:
         size = len(pL)
         dd = bytes.fromhex(pL)
 
-        self._socket.send_message(dd, size)
-        self.answerIs=False
+        out = self._socket.send_message(dd, size)
+        self.answerIs=out
         self._callMTime = current_milli_time()
 
     def dumpMqtt(self, data=None, fl = 0):
@@ -293,7 +324,8 @@ class ModBusProvider:
         #     data = self.stateInt
         if data == None and self.state is not None:
             data = self.state
-
+        else:
+            self.state = data
         # out = VariableTRS3(None, self.dev['dev']['id'], 0, data, invalid=(not self.isValid))
         out = VariableTRS3(id=self.dev['dev']['id'], cl=fl, val=data)
         if fl == 0:
@@ -362,7 +394,7 @@ class DaliProvider:
         size = len(pL)
         data = bytes.fromhex(pL)
         self._callDTime = current_milli_time()
-        self._socket.send_message(data, size)
+        out = self._socket.send_message(data, size)
         self.answerIs=False
         return self._callDTime
 
@@ -406,7 +438,7 @@ class DaliProvider:
         size = len(pL)
         dd = bytes.fromhex(pL)
         self._callDTime = current_milli_time()
-        self._socket.send_message(dd, size)
+        out = self._socket.send_message(dd, size)
         self.answerIs=False
         return self._callDTime
 
@@ -475,11 +507,16 @@ class RGPTcpSocket:
         self.stop_timer()
         if self.sock is None:
             self.create()
-        #out = b''
         self.sock.send(data)
         print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
         logging.debug('[->  ]: {}'.format(' '.join(hex(b)[2:].rjust(2, '0').upper() for b in data)))
         print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+        out = self.sock.recv(2048)
+        logging.debug('[  <-]: {}'.format(' '.join(hex(b)[2:].rjust(2, '0').upper() for b in out)))
+        out_str = '{}'.format(''.join(hex(b)[2:].rjust(2, '0').upper() for b in out))
+        return out_str
+
+
 
 
     def recive_data(self):
@@ -608,7 +645,7 @@ class RGPTCPAdapterLauncher:
                     mbCommand
                 size = len(pL)
                 data=bytes.fromhex(pL)
-                self.sock.send_message(data, size)
+                out = self.sock.send_message(data, size)
             elif ('Tros3' in topic)and('Command' in topic):
                 #
                 # ModBus ВМЕСТО DALI!!!!!!!!!
@@ -649,7 +686,7 @@ class RGPTCPAdapterLauncher:
                             #         self.isDaliQueried = True
 
                             prov.callModBus(dd)
-                            prov.dumpMqtt(dd)
+                            prov.dumpMqtt(data=dd, fl=2)
 
                             # self.callDaliProvider = prov
                                 #     while (prov.getCallTime != 0) and (current_milli_time()-prov.getCallTime < 100):
@@ -852,7 +889,7 @@ class RGPTCPAdapterLauncher:
         data = bytes.fromhex(data)
         device =self.sock
         try:
-            device.send_message(data, size)
+            out = device.send_message(data, size)
             print('запрос на состояние модуля 1 ModBus: {0}'.format(data))
 
         except BaseException as ex:
@@ -887,7 +924,7 @@ class RGPTCPAdapterLauncher:
             data = bytes.fromhex(data)
             device=self.sock
             try:
-                device.send_message(data, size)
+                out = device.send_message(data, size)
                 print('запрос на состояние модуля {0} DALI: {1}'.format(ii, data))
 
             except BaseException as ex:
@@ -1169,7 +1206,7 @@ class RGPTCPAdapterLauncher:
             size = len(data.strip())
             data = bytes.fromhex(data.strip())
             try:
-                device.send_message(data, size)
+                out = device.send_message(data, size)
 
             except BaseException as ex:
                 logging.exception(ex)
@@ -1190,7 +1227,7 @@ class RGPTCPAdapterLauncher:
                 size=len(data)
                 data = bytes.fromhex(data)
                 try:
-                    device.send_message(data, size)
+                    out = device.send_message(data, size)
                     # print(data)
                 except BaseException as ex:
                     logging.exception(ex)
