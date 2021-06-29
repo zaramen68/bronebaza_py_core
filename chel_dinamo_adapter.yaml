@@ -24,7 +24,7 @@ MODBUS_DEV: [
         'attrib': {
           'reg': 519,
           'nreg': 1,
-          'command': '0x03',
+          'command_ask': '0x03',
 
         }
       },
@@ -44,6 +44,7 @@ MODBUS_DEV: [
           'reg': 518,
           'nreg': 1,
           'command': '0x06',
+          'command_ask': '0x03',
 
           }
 
@@ -64,6 +65,7 @@ MODBUS_DEV: [
         'reg': 512,
         'nreg': 1,
         'command': '0x06',
+        'command_ask': '0x03',
 
         }
 
@@ -84,6 +86,7 @@ MODBUS_DEV: [
           'reg': 513,
           'nreg': 1,
           'command': '0x06',
+          'command_ask': '0x03',
 
         }
 
@@ -105,6 +108,7 @@ MODBUS_DEV: [
           'reg': 514,
           'nreg': 1,
           'command': '0x06',
+          'command_ask': '0x03',
 
         }
       },
@@ -125,6 +129,7 @@ MODBUS_DEV: [
           'reg': 515,
           'nreg': 1,
           'command': '0x06',
+          'command_ask': '0x03',
 
         }
       },
@@ -145,6 +150,7 @@ MODBUS_DEV: [
           'reg': 516,
           'nreg': 1,
           'command': '0x06',
+          'command_ask': '0x03',
 
         }
       },
@@ -165,6 +171,7 @@ MODBUS_DEV: [
           'reg': 517,
           'nreg': 1,
           'command': '0x06',
+          'command_ask': '0x03',
 
         }
       },

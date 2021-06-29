@@ -192,6 +192,7 @@ class ModBusProvider:
         self.isValid = True
         self.oneByteAnswer = None
         self.twoByteAnswer = None
+        self.BytesAnswer = None
         self.typeOfQuery = None # 0 - no answer, 1 - need answer
         # self.bus = args[0]['dev']['bus']
         # self.channel = args[0]['dev']['channel']
@@ -263,21 +264,22 @@ class ModBusProvider:
         result = str(out)
         if result[:4].lower() == transaction_id:
             out_ = result[4:]
+            res, rest = self.parceModBusData(out_)
+            if res['error'] != bytearray():
+                self.BytesAnswer = res['payload']['data']
+                if res['payload']['nbyte'][0] == 2 or res['payload']['nbyte'][0] == 1:
+                    intRes = bitstring.BitArray(res['payload']['data'].reverse()).int
+                    res['intRes'] = intRes
         else:
-            out_ = None
-        return out_
+            res = None
+
+        return res
 
     def callModBus(self, data = None, part=False):
         # запись в регистры
 
         self._call = data
-        # canId = CanId(31, self.dev['dev']['bus'])
-        byte0 = Byte0(2)
 
-        # byte1 = bitstring.BitArray(6)
-        # byte1[5]=part
-        # byte1_ = bitstring.BitArray(hex(self.dev['dev']['channel']))[:2]
-        # byte1.append(byte1_)
         transaction_id = hex(random.getrandbits(10)).split('x')[1]
         transaction_id = make_bytes(transaction_id)
 
@@ -297,10 +299,6 @@ class ModBusProvider:
                 data_ = make_bytes(hex(data).split('x')[1])
                 data = data_id + data_command + data_reg + data_[2:] + data_[:2]
 
-        # dCommand =  byte0.hex + byte1.hex
-        # dCommand = canId[2:] + canId[:2] + byte0.hex + byte1.hex
-        # mbCommand = 'E203010001' + data
-        # mbCommand = dCommand + data
         mbCommand = data
 
         pLen = bytearray(4)
@@ -336,6 +334,40 @@ class ModBusProvider:
 
         self._mqtt.publish(topic=clientTopic, payload=out.pack(), qos=0, retain=True)
 
+    def parceModBusData(self, message):
+            dataAr = list(bytearray(0))
+            for b in message:
+                dataAr.append(b)
+            data = {
+                'protocol': bytearray(2),
+                'len': bytearray(2),
+                'payload': {
+                    'id': bytearray(1),
+                    'comres': bytearray(1),
+                    'nbyte': bytearray(),
+                    'error': bytearray(),
+                }
+            }
+            for i in range(1):
+                data['opCode'][i] = dataAr.pop(0)
+
+            for i in range(1):
+                data['len'][i] = dataAr.pop(0)
+            length = bitstring.BitArray(data['len']).int
+
+            data['payload']['id'][0] = dataAr.pop(0)
+
+            data['payload']['comres'][0] = dataAr.pop(0)
+            comres = bitstring.BitArray(data['payload']['comres'][0])
+            if comres[0] :
+                for i in range(length - 2):
+                    data['payload']['error'].append(dataAr.pop(0))
+            else:
+                data['payload']['nbyte'].append(dataAr.pop(0))
+                for i in range(length - 3):
+                    data['payload']['data'].append(dataAr.pop(0))
+
+            return data, dataAr
 
 class DaliProvider:
     def __init__(self, rpgClient, mqtt, *args):
@@ -784,7 +816,12 @@ class RGPTCPAdapterLauncher:
 
         for prov  in self.modbusProviders:
             # query state
-            prov.dumpMqtt(data=None, fl=2)
+            res = prov.queryModBusState()
+            if 'intRes' in res:
+                if res['intRes'] ==1:
+                    prov.dumpMqtt(data=True, fl=2)
+                elif res['intRes'] == 0:
+                    prov.dumpMqtt(data=False, fl=2)
 
             # # query groups
             # if prov.isValid:
