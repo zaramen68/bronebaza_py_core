@@ -38,7 +38,7 @@ MODBUS_DEV: [
             'maddr': 1,
             'type': 'SwitchingLight',
             'value': False,
-            'id': 373219,
+            'id': 373225,
           },
           'attrib': {
           'reg': 518,
@@ -80,7 +80,7 @@ MODBUS_DEV: [
             'maddr': 1,
             'type': 'SwitchingLight',
             'value': False,
-            'id': 373221,
+            'id': 373219,
           },
         'attrib': {
           'reg': 513,
@@ -102,7 +102,7 @@ MODBUS_DEV: [
             'maddr': 1,
             'type': 'SwitchingLight',
             'value': False,
-            'id': 373222,
+            'id': 373221,
           },
         'attrib': {
           'reg': 514,
@@ -123,7 +123,7 @@ MODBUS_DEV: [
             'maddr': 1,
             'type': 'SwitchingLight',
             'value': False,
-            'id': 373223,
+            'id': 373222,
           },
         'attrib': {
           'reg': 515,
@@ -144,7 +144,7 @@ MODBUS_DEV: [
             'maddr': 1,
             'type': 'SwitchingLight',
             'value': False,
-            'id': 373224,
+            'id': 373223,
           },
         'attrib': {
           'reg': 516,
@@ -165,7 +165,7 @@ MODBUS_DEV: [
             'maddr': 1,
             'type': 'SwitchingLight',
             'value': False,
-            'id': 373225,
+            'id': 373224,
           },
         'attrib': {
           'reg': 517,
