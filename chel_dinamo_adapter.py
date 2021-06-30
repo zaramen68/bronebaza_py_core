@@ -178,6 +178,9 @@ def Byte1(waitAns=False, st=False):
 
     return byte1
 
+def ByteStrToStr(out):
+    out_str = '{}'.format(''.join(hex(b)[2:].rjust(2, '0').upper() for b in out))
+    return out_str
 
 class ModBusProvider:
     def __init__(self, rpgClient, mqtt, *args):
@@ -261,15 +264,20 @@ class ModBusProvider:
 
         out = self._socket.send_message(dd, size)
         self.answerIs = out
-        result = str(out)
+        result = ByteStrToStr(out)
         if result[:4].lower() == transaction_id:
-            out_ = result[4:]
+            out_ = out[2:]
             res, rest = self.parceModBusData(out_)
-            if res['error'] != bytearray():
+            if res['payload']['error'] == bytearray():
                 self.BytesAnswer = res['payload']['data']
+                self.isValid = True
                 if res['payload']['nbyte'][0] == 2 or res['payload']['nbyte'][0] == 1:
-                    intRes = bitstring.BitArray(res['payload']['data'].reverse()).int
+                    # только для опроса одного регистра !!!!!!!!!!!!!
+                    res['payload']['data'].reverse()
+                    intRes = bitstring.BitArray(res['payload']['data']).int
                     res['intRes'] = intRes
+            else:
+                self.isValid = False
         else:
             res = None
 
@@ -339,6 +347,7 @@ class ModBusProvider:
             for b in message:
                 dataAr.append(b)
             data = {
+
                 'protocol': bytearray(2),
                 'len': bytearray(2),
                 'payload': {
@@ -346,19 +355,20 @@ class ModBusProvider:
                     'comres': bytearray(1),
                     'nbyte': bytearray(),
                     'error': bytearray(),
+                    'data': bytearray(),
                 }
             }
-            for i in range(1):
-                data['opCode'][i] = dataAr.pop(0)
+            for i in range(2):
+                data['protocol'][i] = dataAr.pop(0)
 
-            for i in range(1):
+            for i in range(2):
                 data['len'][i] = dataAr.pop(0)
             length = bitstring.BitArray(data['len']).int
 
             data['payload']['id'][0] = dataAr.pop(0)
 
             data['payload']['comres'][0] = dataAr.pop(0)
-            comres = bitstring.BitArray(data['payload']['comres'][0])
+            comres = bitstring.BitArray(hex(data['payload']['comres'][0]))
             if comres[0] :
                 for i in range(length - 2):
                     data['payload']['error'].append(dataAr.pop(0))
@@ -545,7 +555,8 @@ class RGPTcpSocket:
         print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
         out = self.sock.recv(2048)
         logging.debug('[  <-]: {}'.format(' '.join(hex(b)[2:].rjust(2, '0').upper() for b in out)))
-        out_str = '{}'.format(''.join(hex(b)[2:].rjust(2, '0').upper() for b in out))
+        # out_str = '{}'.format(''.join(hex(b)[2:].rjust(2, '0').upper() for b in out))
+        out_str = out
         return out_str
 
 
@@ -718,7 +729,15 @@ class RGPTCPAdapterLauncher:
                             #         self.isDaliQueried = True
 
                             prov.callModBus(dd)
-                            prov.dumpMqtt(data=dd, fl=2)
+                            res = prov.queryModBusState()
+                            if prov.isValid:
+                                if 'intRes' in res:
+                                    if res['intRes'] == 1:
+                                        prov.dumpMqtt(data=True, fl=2)
+                                    elif res['intRes'] == 0:
+                                        prov.dumpMqtt(data=False, fl=2)
+
+                            # prov.dumpMqtt(data=dd, fl=2)
 
                             # self.callDaliProvider = prov
                                 #     while (prov.getCallTime != 0) and (current_milli_time()-prov.getCallTime < 100):
@@ -817,11 +836,12 @@ class RGPTCPAdapterLauncher:
         for prov  in self.modbusProviders:
             # query state
             res = prov.queryModBusState()
-            if 'intRes' in res:
-                if res['intRes'] ==1:
-                    prov.dumpMqtt(data=True, fl=2)
-                elif res['intRes'] == 0:
-                    prov.dumpMqtt(data=False, fl=2)
+            if prov.isValid:
+                if 'intRes' in res:
+                    if res['intRes'] ==1:
+                        prov.dumpMqtt(data=True, fl=2)
+                    elif res['intRes'] == 0:
+                        prov.dumpMqtt(data=False, fl=2)
 
             # # query groups
             # if prov.isValid:
