@@ -10,7 +10,7 @@ import copy
 from bitstring import BitArray
 import array
 
-from spread_core.mqtt.variables import VariableTRS3, VariableReader
+from spread_core.mqtt.variables import VariableJocket, VariableTRS3, VariableReader
 from spread_core.tools import settings
 from spread_core.tools.service_launcher import Launcher
 from spread_core.tools.settings import config, logging
@@ -204,8 +204,9 @@ class ModBusProvider:
         self.answerIs = None
         self.maddr = args[0]['dev']['maddr']
         self.reg = args[0]['attrib']['reg']
-        self._stateTopicLevel = 'Tros3/State/{}/Equipment/{}/{}/0'.format(PROJECT, args[0]['dev']['type'], args[0]['dev']['id'])
-        self._stateTopicIsOn = 'Tros3/State/{}/Equipment/{}/{}/{}'.format(PROJECT, args[0]['dev']['type'], args[0]['dev']['id'], isONID(args[0]['dev']['type']))
+        self.topType = args[0]['potic_type']
+        self._stateTopicLevel = '{}/State/{}/Equipment/{}/{}/0'.format(self.topType, PROJECT, args[0]['dev']['type'], args[0]['dev']['id'])
+        self._stateTopicIsOn = '{}/State/{}/Equipment/{}/{}/{}'.format(self.topType, PROJECT, args[0]['dev']['type'], args[0]['dev']['id'], isONID(args[0]['dev']['type']))
         self.answer = None
 
 
@@ -333,14 +334,18 @@ class ModBusProvider:
         else:
             self.state = data
         # out = VariableTRS3(None, self.dev['dev']['id'], 0, data, invalid=(not self.isValid))
-        out = VariableTRS3(id=self.dev['dev']['id'], cl=fl, val=data)
+        if self.topType == 'Tros3':
+            out_ = VariableTRS3(id=self.dev['dev']['id'], cl=fl, val=data)
+            out = out_.pack()
+        elif self.topType == 'Jocket':
+            out = VariableJocket.create_data(id=self.dev['dev']['id'], cl=fl, action='state' ,val=data)
         if fl == 0:
             clientTopic = self._stateTopicLevel
         elif fl == 2:
             clientTopic = self._stateTopicIsOn
         # clientTopic = self._stateTopicLevel
 
-        self._mqtt.publish(topic=clientTopic, payload=out.pack(), qos=0, retain=True)
+        self._mqtt.publish(topic=clientTopic, payload=out, qos=0, retain=True)
 
     def parceModBusData(self, message):
             dataAr = list(bytearray(0))
