@@ -205,7 +205,7 @@ class ModBusProvider:
         self.answerIs = None
         self.maddr = args[0]['dev']['maddr']
         self.reg = args[0]['attrib']['reg']
-        self.topType = args[0]['potic_type']
+        self.topType = args[0]['topic_type']
         self._stateTopicLevel = '{}/State/{}/Equipment/{}/{}/0'.format(self.topType, PROJECT, args[0]['dev']['type'], args[0]['dev']['id'])
         self._stateTopicIsOn = '{}/State/{}/Equipment/{}/{}/{}'.format(self.topType, PROJECT, args[0]['dev']['type'], args[0]['dev']['id'], isONID(args[0]['dev']['type']))
         self.answer = None
