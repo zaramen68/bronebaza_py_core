@@ -396,7 +396,565 @@ MODBUS_DEV: [
         }
       },
 
+      {
+        'type': 'OutflowDuctFan',
+        't_gap': 80,
+        'pres': 1.,
+        'topic_type': 'Jocket',
+        'dev':
+          {
 
+            'maddr': 3,
+            'type': 'OutflowDuctFan',
+            'value': False,
+            'id': 373550,
+          },
+        'attrib': {
+          'reg': 525,
+          'nreg': 1,
+          'command': '0x06',
+          'command_ask': '0x03',
+
+        }
+      },
+      {
+        'type': 'OutflowAirValve',
+        't_gap': 80,
+        'pres': 1.,
+        'topic_type': 'Jocket',
+        'dev':
+          {
+
+            'maddr': 3,
+            'type': 'OutflowAirValve',
+            'value': False,
+            'id': 373543,
+          },
+        'attrib': {
+          'reg': 525,
+          'nreg': 1,
+          'command': '0x06',
+          'command_ask': '0x03',
+
+        }
+      },
+
+      {
+        'type': 'OutflowDuctFan',
+        't_gap': 80,
+        'pres': 1.,
+        'topic_type': 'Jocket',
+        'dev':
+          {
+
+            'maddr': 3,
+            'type': 'OutflowDuctFan',
+            'value': False,
+            'id': 373551,
+          },
+        'attrib': {
+          'reg': 526,
+          'nreg': 1,
+          'command': '0x06',
+          'command_ask': '0x03',
+
+        }
+      },
+      {
+        'type': 'OutflowAirValve',
+        't_gap': 80,
+        'pres': 1.,
+        'topic_type': 'Jocket',
+        'dev':
+          {
+
+            'maddr': 3,
+            'type': 'OutflowAirValve',
+            'value': False,
+            'id': 373544,
+          },
+        'attrib': {
+          'reg': 526,
+          'nreg': 1,
+          'command': '0x06',
+          'command_ask': '0x03',
+
+        }
+      },
+
+      {
+        'type': 'OutflowDuctFan',
+        't_gap': 80,
+        'pres': 1.,
+        'topic_type': 'Jocket',
+        'dev':
+          {
+
+            'maddr': 3,
+            'type': 'OutflowDuctFan',
+            'value': False,
+            'id': 373552,
+          },
+        'attrib': {
+          'reg': 527,
+          'nreg': 1,
+          'command': '0x06',
+          'command_ask': '0x03',
+
+        }
+      },
+      {
+        'type': 'OutflowAirValve',
+        't_gap': 80,
+        'pres': 1.,
+        'topic_type': 'Jocket',
+        'dev':
+          {
+
+            'maddr': 3,
+            'type': 'OutflowAirValve',
+            'value': False,
+            'id': 373544,
+          },
+        'attrib': {
+          'reg': 527,
+          'nreg': 1,
+          'command': '0x06',
+          'command_ask': '0x03',
+
+        }
+      },
+
+      {
+        'type': 'OutflowDuctFan',
+        't_gap': 80,
+        'pres': 1.,
+        'topic_type': 'Jocket',
+        'dev':
+          {
+
+            'maddr': 3,
+            'type': 'OutflowDuctFan',
+            'value': False,
+            'id': 373553,
+          },
+        'attrib': {
+          'reg': 528,
+          'nreg': 1,
+          'command': '0x06',
+          'command_ask': '0x03',
+
+        }
+      },
+      {
+        'type': 'OutflowAirValve',
+        't_gap': 80,
+        'pres': 1.,
+        'topic_type': 'Jocket',
+        'dev':
+          {
+
+            'maddr': 3,
+            'type': 'OutflowAirValve',
+            'value': False,
+            'id': 373546,
+          },
+        'attrib': {
+          'reg': 528,
+          'nreg': 1,
+          'command': '0x06',
+          'command_ask': '0x03',
+
+        }
+      },
+
+
+      {
+        'type': 'OutflowDuctFan',
+        't_gap': 80,
+        'pres': 1.,
+        'topic_type': 'Jocket',
+        'dev':
+          {
+
+            'maddr': 3,
+            'type': 'OutflowDuctFan',
+            'value': False,
+            'id': 373554,
+          },
+        'attrib': {
+          'reg': 529,
+          'nreg': 1,
+          'command': '0x06',
+          'command_ask': '0x03',
+
+        }
+      },
+      {
+        'type': 'OutflowAirValve',
+        't_gap': 80,
+        'pres': 1.,
+        'topic_type': 'Jocket',
+        'dev':
+          {
+
+            'maddr': 3,
+            'type': 'OutflowAirValve',
+            'value': False,
+            'id': 373547,
+          },
+        'attrib': {
+          'reg': 529,
+          'nreg': 1,
+          'command': '0x06',
+          'command_ask': '0x03',
+
+        }
+      },
+
+      {
+        'type': 'OutflowDuctFan',
+        't_gap': 80,
+        'pres': 1.,
+        'topic_type': 'Jocket',
+        'dev':
+          {
+
+            'maddr': 3,
+            'type': 'OutflowDuctFan',
+            'value': False,
+            'id': 373555,
+          },
+        'attrib': {
+          'reg': 530,
+          'nreg': 1,
+          'command': '0x06',
+          'command_ask': '0x03',
+
+        }
+      },
+      {
+        'type': 'OutflowAirValve',
+        't_gap': 80,
+        'pres': 1.,
+        'topic_type': 'Jocket',
+        'dev':
+          {
+
+            'maddr': 3,
+            'type': 'OutflowAirValve',
+            'value': False,
+            'id': 373548,
+          },
+        'attrib': {
+          'reg': 530,
+          'nreg': 1,
+          'command': '0x06',
+          'command_ask': '0x03',
+
+        }
+      },
+
+      {
+        'type': 'OutflowDuctFan',
+        't_gap': 80,
+        'pres': 1.,
+        'topic_type': 'Jocket',
+        'dev':
+          {
+
+            'maddr': 3,
+            'type': 'OutflowDuctFan',
+            'value': False,
+            'id': 373556,
+          },
+        'attrib': {
+          'reg': 531,
+          'nreg': 1,
+          'command': '0x06',
+          'command_ask': '0x03',
+
+        }
+      },
+      {
+        'type': 'OutflowAirValve',
+        't_gap': 80,
+        'pres': 1.,
+        'topic_type': 'Jocket',
+        'dev':
+          {
+
+            'maddr': 3,
+            'type': 'OutflowAirValve',
+            'value': False,
+            'id': 373549,
+          },
+        'attrib': {
+          'reg': 531,
+          'nreg': 1,
+          'command': '0x06',
+          'command_ask': '0x03',
+
+        }
+      },
+
+      {
+        'type': 'OutflowDuctFan',
+        't_gap': 80,
+        'pres': 1.,
+        'topic_type': 'Jocket',
+        'dev':
+          {
+
+            'maddr': 4,
+            'type': 'OutflowDuctFan',
+            'value': False,
+            'id': 373580,
+          },
+        'attrib': {
+          'reg': 532,
+          'nreg': 1,
+          'command': '0x06',
+          'command_ask': '0x03',
+
+        }
+      },
+      {
+        'type': 'OutflowAirValve',
+        't_gap': 80,
+        'pres': 1.,
+        'topic_type': 'Jocket',
+        'dev':
+          {
+
+            'maddr': 4,
+            'type': 'OutflowAirValve',
+            'value': False,
+            'id': 373574,
+          },
+        'attrib': {
+          'reg': 532,
+          'nreg': 1,
+          'command': '0x06',
+          'command_ask': '0x03',
+
+        }
+      },
+
+      {
+        'type': 'OutflowDuctFan',
+        't_gap': 80,
+        'pres': 1.,
+        'topic_type': 'Jocket',
+        'dev':
+          {
+
+            'maddr': 4,
+            'type': 'OutflowDuctFan',
+            'value': False,
+            'id': 373581,
+          },
+        'attrib': {
+          'reg': 538,
+          'nreg': 1,
+          'command': '0x06',
+          'command_ask': '0x03',
+
+        }
+      },
+      {
+        'type': 'OutflowAirValve',
+        't_gap': 80,
+        'pres': 1.,
+        'topic_type': 'Jocket',
+        'dev':
+          {
+
+            'maddr': 4,
+            'type': 'OutflowAirValve',
+            'value': False,
+            'id': 373575,
+          },
+        'attrib': {
+          'reg': 538,
+          'nreg': 1,
+          'command': '0x06',
+          'command_ask': '0x03',
+
+        }
+      },
+
+      {
+        'type': 'OutflowDuctFan',
+        't_gap': 80,
+        'pres': 1.,
+        'topic_type': 'Jocket',
+        'dev':
+          {
+
+            'maddr': 4,
+            'type': 'OutflowDuctFan',
+            'value': False,
+            'id': 373582,
+          },
+        'attrib': {
+          'reg': 533,
+          'nreg': 1,
+          'command': '0x06',
+          'command_ask': '0x03',
+
+        }
+      },
+      {
+        'type': 'OutflowAirValve',
+        't_gap': 80,
+        'pres': 1.,
+        'topic_type': 'Jocket',
+        'dev':
+          {
+
+            'maddr': 4,
+            'type': 'OutflowAirValve',
+            'value': False,
+            'id': 373576,
+          },
+        'attrib': {
+          'reg': 533,
+          'nreg': 1,
+          'command': '0x06',
+          'command_ask': '0x03',
+
+        }
+      },
+
+      {
+        'type': 'OutflowDuctFan',
+        't_gap': 80,
+        'pres': 1.,
+        'topic_type': 'Jocket',
+        'dev':
+          {
+
+            'maddr': 4,
+            'type': 'OutflowDuctFan',
+            'value': False,
+            'id': 373583,
+          },
+        'attrib': {
+          'reg': 534,
+          'nreg': 1,
+          'command': '0x06',
+          'command_ask': '0x03',
+
+        }
+      },
+      {
+        'type': 'OutflowAirValve',
+        't_gap': 80,
+        'pres': 1.,
+        'topic_type': 'Jocket',
+        'dev':
+          {
+
+            'maddr': 4,
+            'type': 'OutflowAirValve',
+            'value': False,
+            'id': 373577,
+          },
+        'attrib': {
+          'reg': 534,
+          'nreg': 1,
+          'command': '0x06',
+          'command_ask': '0x03',
+
+        }
+      },
+
+      {
+        'type': 'OutflowDuctFan',
+        't_gap': 80,
+        'pres': 1.,
+        'topic_type': 'Jocket',
+        'dev':
+          {
+
+            'maddr': 4,
+            'type': 'OutflowDuctFan',
+            'value': False,
+            'id': 373584,
+          },
+        'attrib': {
+          'reg': 535,
+          'nreg': 1,
+          'command': '0x06',
+          'command_ask': '0x03',
+
+        }
+      },
+      {
+        'type': 'OutflowAirValve',
+        't_gap': 80,
+        'pres': 1.,
+        'topic_type': 'Jocket',
+        'dev':
+          {
+
+            'maddr': 4,
+            'type': 'OutflowAirValve',
+            'value': False,
+            'id': 373578,
+          },
+        'attrib': {
+          'reg': 535,
+          'nreg': 1,
+          'command': '0x06',
+          'command_ask': '0x03',
+
+        }
+      },
+
+      {
+        'type': 'OutflowDuctFan',
+        't_gap': 80,
+        'pres': 1.,
+        'topic_type': 'Jocket',
+        'dev':
+          {
+
+            'maddr': 4,
+            'type': 'OutflowDuctFan',
+            'value': False,
+            'id': 373585,
+          },
+        'attrib': {
+          'reg': 536,
+          'nreg': 1,
+          'command': '0x06',
+          'command_ask': '0x03',
+
+        }
+      },
+      {
+        'type': 'OutflowAirValve',
+        't_gap': 80,
+        'pres': 1.,
+        'topic_type': 'Jocket',
+        'dev':
+          {
+
+            'maddr': 4,
+            'type': 'OutflowAirValve',
+            'value': False,
+            'id': 373579,
+          },
+        'attrib': {
+          'reg': 536,
+          'nreg': 1,
+          'command': '0x06',
+          'command_ask': '0x03',
+
+        }
+      },
 ]
 
 DALI_DEV: [
