@@ -1,3 +1,4 @@
+import json
 import socket
 import threading
 import time
@@ -338,7 +339,8 @@ class ModBusProvider:
             out_ = VariableTRS3(id=self.dev['dev']['id'], cl=fl, val=data)
             out = out_.pack()
         elif self.topType == 'Jocket':
-            out = VariableJocket.create_data(id=self.dev['dev']['id'], cl=fl, action='state' ,val=data)
+            out_ = VariableJocket.create_data(id=self.dev['dev']['id'], cl=fl, action='state' ,val=data)
+            out  = out_.pack()
         if fl == 0:
             clientTopic = self._stateTopicLevel
         elif fl == 2:
@@ -722,17 +724,6 @@ class RGPTCPAdapterLauncher:
                                     dd = False
                                     # clf =1
 
-                            # n=0
-                            # for gr in prov.groupList:
-                            #     if gr:
-                            #         grComm = GroupDaliAddtessComm(n, dd, clf)
-                            #         grList.append(n)
-                            #
-                            #         prov.answerIs = False
-                            #         prov.typeOfQuery = 0  # no answer
-                            #         prov.twoByteAnswer = None
-                            #         prov.oneByteAnswer = None
-                            #         self.isDaliQueried = True
 
                             prov.callModBus(dd)
                             res = prov.queryModBusState()
@@ -745,21 +736,22 @@ class RGPTCPAdapterLauncher:
 
                             # prov.dumpMqtt(data=dd, fl=2)
 
-                            # self.callDaliProvider = prov
-                                #     while (prov.getCallTime != 0) and (current_milli_time()-prov.getCallTime < 100):
-                                #         if prov.answerIs:
-                                #             break
-                                #
-                                # n=n+1
+            elif ('Jocket' in topic) and ('Command' in topic):
+                mess = json.loads(msg.payload)
+                dd_ = mess['data']['value']
+                dd = dd_
+                for prov in self.modbusProviders:
+                    if prov.dev['dev']['id'] == int(topic[5]):
+                        prov.callModBus(dd)
+                        res = prov.queryModBusState()
+                        if prov.isValid:
+                            if 'intRes' in res:
+                                if res['intRes'] == 1:
+                                    prov.dumpMqtt(data=True, fl=2)
+                                elif res['intRes'] == 0:
+                                    prov.dumpMqtt(data=False, fl=2)
 
-                            # qList = []
-                            # for gr in grList:
-                            #     qList = qList+self.daliGroup[gr]
-                            # qList = list(set(qList))    # формирование списка DALI устройств для опроса
-                            #
-                            #
-                            # for daliDevice in qList:
-                            #     self.queryDali(daliDevice.getCallTime, daliDevice)
+
         except BaseException as ex:
             logging.exception(ex)
         self.startEvent.set()
