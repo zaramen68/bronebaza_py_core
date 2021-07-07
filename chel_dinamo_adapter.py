@@ -49,6 +49,57 @@ DALI_GAP = 100
 
 MIN_FADE_TIME = 0.5
 
+CLASS_TABLE = {
+    'Air':1090000,
+    'VentilationUnit': 1090100,
+        'VentilationUnit_On': 1090101,
+        'VentilationUnit_TargetTemperature': 1090102,
+        'VentilationUnit_OperationMode': 1090110,
+        'VentilationUnit_NoInputVoltage': 1090131,
+    'ElectricAirHeater':1090200,
+        'ElectricAirHeater_On': 1090201,
+        'ElectricAirHeater_PowerLevel': 1090203,
+        'ElectricAirHeater_Overheat': 1090233,
+    'WaterAirHeater': 1090300,
+        'WaterAirHeater_FreezingThreat': 1090334,
+    'WaterAirCooler': 1090400,
+        'WaterAirCooler_FreezingThreat': 1090434,
+    'InflowDuctFan': 1090500,
+        'InflowDuctFan_On': 1090501,
+        'InflowDuctFan_RunningTime': 1090511,
+        'InflowDuctFan_Overheat': 1090533,
+        'InflowDuctFan_NoPressureDrop': 1090532,
+    'OutflowDuctFan': 1090600,
+        'OutflowDuctFan_On': 1090601,
+        'OutflowDuctFan_RunningTime': 1090611,
+        'OutflowDuctFan_Overheat': 1090633,
+        'OutflowDuctFan_NoPressureDrop': 1090632,
+    'InflowAirValve':  1090700,
+        'InflowAirValve_Open': 1090701,
+    'OutflowAirValve':  1090800,
+        'OutflowAirValve_Open': 1090801,
+    'InflowAirFilter':  1090900,
+        'InflowAirFilter_Dirty':  1090935,
+    'OutflowAirFilter':  1091000,
+        'OutflowAirFilter_Dirty': 1091035,
+    'HeaterWaterValve': 1091100,
+        'HeaterWaterValve_OpenLevel': 1091101,
+    'CoolerWaterValve': 1091200,
+        'CoolerWaterValve_OpenLevel': 1091201,
+    'HeaterWaterPump':  1091300,
+        'HeaterWaterPump_On': 1091301,
+        'HeaterWaterPump_RunningTime': 1091311,
+        'HeaterWaterPump_Overheat': 1091333,
+    'CoolerWaterPump': 1091400,
+        'CoolerWaterPump_On': 1091401,
+        'CoolerWaterPump_RunningTime': 1091411,
+        'CoolerWaterPump_Overheat':  1091433,
+    'DuctTemperatureSensor': 1091500,
+        'DuctTemperatureSensor_Temperature': 1091512,
+    'ImmersionTemperatureSensor': 1091600,
+        'ImmersionTemperatureSensor_Temperature': 1091612,
+}
+
 MODBUS_DEV = config['MODBUS_DEV']
 DALI_DEV = config['DALI_DEV']
 
@@ -205,7 +256,7 @@ class ModBusProvider:
         self.answerIs = None
         self.maddr = args[0]['dev']['maddr']
         self.reg = args[0]['attrib']['reg']
-        self.topType = args[0]['potic_type']
+        self.topType = args[0]['topic_type']
         self._stateTopicLevel = '{}/State/{}/Equipment/{}/{}/0'.format(self.topType, PROJECT, args[0]['dev']['type'], args[0]['dev']['id'])
         self._stateTopicIsOn = '{}/State/{}/Equipment/{}/{}/{}'.format(self.topType, PROJECT, args[0]['dev']['type'], args[0]['dev']['id'], isONID(args[0]['dev']['type']))
         self.answer = None
@@ -529,6 +580,7 @@ class RGPTcpSocket:
         self.sock.settimeout(TIMEOUT)
         while True:
             try:
+
                 self.sock.connect((self._host, self._port))
             except ConnectionRefusedError as ex:
                 logging.exception(ex)
@@ -734,7 +786,7 @@ class RGPTCPAdapterLauncher:
                                     elif res['intRes'] == 0:
                                         prov.dumpMqtt(data=False, fl=2)
 
-                            # prov.dumpMqtt(data=dd, fl=2)
+                            prov.dumpMqtt(data=dd, fl=2)
 
             elif ('Jocket' in topic) and ('Command' in topic):
                 mess = json.loads(msg.payload)
@@ -750,6 +802,8 @@ class RGPTCPAdapterLauncher:
                                     prov.dumpMqtt(data=True, fl=2)
                                 elif res['intRes'] == 0:
                                     prov.dumpMqtt(data=False, fl=2)
+
+                        prov.dumpMqtt(data=dd, fl=2)
 
 
         except BaseException as ex:

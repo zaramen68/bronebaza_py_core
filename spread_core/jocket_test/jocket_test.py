@@ -48,6 +48,58 @@ DALI_GAP = 100
 
 MIN_FADE_TIME = 0.5
 
+
+CLASS_TABLE = {
+    'Air':1090000,
+    'VentilationUnit': 1090100,
+        'VentilationUnit_On': 1090101,
+        'VentilationUnit_TargetTemperature': 1090102,
+        'VentilationUnit_OperationMode': 1090110,
+        'VentilationUnit_NoInputVoltage': 1090131,
+    'ElectricAirHeater':1090200,
+        'ElectricAirHeater_On': 1090201,
+        'ElectricAirHeater_PowerLevel': 1090203,
+        'ElectricAirHeater_Overheat': 1090233,
+    'WaterAirHeater': 1090300,
+        'WaterAirHeater_FreezingThreat': 1090334,
+    'WaterAirCooler': 1090400,
+        'WaterAirCooler_FreezingThreat': 1090434,
+    'InflowDuctFan': 1090500,
+        'InflowDuctFan_On': 1090501,
+        'InflowDuctFan_RunningTime': 1090511,
+        'InflowDuctFan_Overheat': 1090533,
+        'InflowDuctFan_NoPressureDrop': 1090532,
+    'OutflowDuctFan': 1090600,
+        'OutflowDuctFan_On': 1090601,
+        'OutflowDuctFan_RunningTime': 1090611,
+        'OutflowDuctFan_Overheat': 1090633,
+        'OutflowDuctFan_NoPressureDrop': 1090632,
+    'InflowAirValve':  1090700,
+        'InflowAirValve_Open': 1090701,
+    'OutflowAirValve':  1090800,
+        'OutflowAirValve_Open': 1090801,
+    'InflowAirFilter':  1090900,
+        'InflowAirFilter_Dirty':  1090935,
+    'OutflowAirFilter':  1091000,
+        'OutflowAirFilter_Dirty': 1091035,
+    'HeaterWaterValve': 1091100,
+        'HeaterWaterValve_OpenLevel': 1091101,
+    'CoolerWaterValve': 1091200,
+        'CoolerWaterValve_OpenLevel': 1091201,
+    'HeaterWaterPump':  1091300,
+        'HeaterWaterPump_On': 1091301,
+        'HeaterWaterPump_RunningTime': 1091311,
+        'HeaterWaterPump_Overheat': 1091333,
+    'CoolerWaterPump': 1091400,
+        'CoolerWaterPump_On': 1091401,
+        'CoolerWaterPump_RunningTime': 1091411,
+        'CoolerWaterPump_Overheat':  1091433,
+    'DuctTemperatureSensor': 1091500,
+        'DuctTemperatureSensor_Temperature': 1091512,
+    'ImmersionTemperatureSensor': 1091600,
+        'ImmersionTemperatureSensor_Temperature': 1091612,
+}
+
 MODBUS_DEV = config['MODBUS_DEV']
 DALI_DEV = config['DALI_DEV']
 
@@ -73,6 +125,8 @@ def isONID(x):
         return 2
     elif x == 'LeakageSensor':
         return 0
+    else:
+        return 'On'
 
 def make_two_bit(x):
     bytes_list =list('00')
@@ -204,9 +258,10 @@ class ModBusProvider:
         self.answerIs = None
         self.maddr = args[0]['dev']['maddr']
         self.reg = args[0]['attrib']['reg']
-        self.topType = args[0]['topic_type']
-        self._stateTopicLevel = '{}/State/{}/Equipment/{}/{}/0'.format(self.topType, PROJECT, args[0]['dev']['type'], args[0]['dev']['id'])
-        self._stateTopicIsOn = '{}/State/{}/Equipment/{}/{}/{}'.format(self.topType, PROJECT, args[0]['dev']['type'], args[0]['dev']['id'], isONID(args[0]['dev']['type']))
+        self.topType = args[0]['topic_type'][0]
+        self.tt = args[0]['topic_type'][1]
+        self._stateTopicLevel = '{}/State/{}/Equipment/{}/{}/0'.format(self.topType, PROJECT, args[0]['dev']['type'], args[0]['dev']['id'][0])
+        self._stateTopicIsOn = '{}/State/{}/Equipment/{}/{}/{}'.format(self.topType, PROJECT, args[0]['dev']['type'], args[0]['dev']['id'][0], args[0]['topic_type'][1])
         self.answer = None
 
 
@@ -326,19 +381,21 @@ class ModBusProvider:
         self.answerIs=out
         self._callMTime = current_milli_time()
 
-    def dumpMqtt(self, data=None, fl = 0):
+    def dumpMqtt(self, data=None, fl = 0, classId = None):
         # if data == None:
         #     data = self.stateInt
         if data == None and self.state is not None:
             data = self.state
         else:
             self.state = data
-        # out = VariableTRS3(None, self.dev['dev']['id'], 0, data, invalid=(not self.isValid))
+        # out = VariableTRS3(None, self.dev['dev']['id'][0], 0, data, invalid=(not self.isValid))
         if self.topType == 'Tros3':
-            out_ = VariableTRS3(id=self.dev['dev']['id'], cl=fl, val=data)
+            out_ = VariableTRS3(id=self.dev['dev']['id'][0], cl=fl, val=data)
             out = out_.pack()
         elif self.topType == 'Jocket':
-            out_ = VariableJocket.create_data(id=self.dev['dev']['id'], cl=fl, action='state' ,val=data)
+            if classId is None:
+                classId = CLASS_TABLE[self.dev['dev']['type']+'_'+self.tt]
+            out_ = VariableJocket.create_data(id=self.dev['dev']['id'][0], cl=classId, action='state' ,val=data)
             out = out_.pack()
         if fl == 0:
             clientTopic = self._stateTopicLevel
@@ -574,7 +631,7 @@ class RGPTCPAdapterLauncher:
                 # ModBus ВМЕСТО DALI!!!!!!!!!
                 #
                 for prov in self.modbusProviders:
-                    if prov.dev['dev']['id'] == int(topic[5]):
+                    if int(topic[5]) in prov.dev['dev']['id'] :
                         if prov.dev['dev']['type'] == 'DimmingLight':
                             pass
                         elif prov.dev['dev']['type'] == 'SwitchingLight':
@@ -608,8 +665,12 @@ class RGPTCPAdapterLauncher:
 
             elif ('Jocket'in topic) and ('Command' in topic):
                 mess = json.loads(msg.payload)
-
-                            # prov.dumpMqtt(data=dd, fl=2)
+                dd_ = mess['data']['value']
+                dd = dd_
+                for prov in self.modbusProviders:
+                    if int(topic[6]) in prov.dev['dev']['id'] :
+                        # prov.dumpMqtt(data=dd, fl=2, classId=mess['address']['class'])
+                        prov.dumpMqtt(data=dd, fl=2)
 
         except BaseException as ex:
             logging.exception(ex)

@@ -13,14 +13,14 @@ MODBUS_DEV: [
         'type': 'LeakageSensor',
         't_gap': 8000,
         'pres': 1.,
-        'topic_type': 'Tros3',
+        'topic_type': ['Tros3', '0'],
         'dev':
           {
 
             'maddr': 1,
             'type': 'LeakageSensor',
             'value': False,
-            'id': 370269,
+            'id': [370269,],
           },
         'attrib': {
           'reg': 519,
@@ -33,14 +33,14 @@ MODBUS_DEV: [
           'type': 'SwitchingLight',
           't_gap': 8000,
           'pres': 1.,
-          'topic_type': 'Tros3',
+          'topic_type': ['Tros3','2'],
           'dev':
           {
 
             'maddr': 1,
             'type': 'SwitchingLight',
             'value': False,
-            'id': 373225,
+            'id': [373225,],
           },
           'attrib': {
           'reg': 518,
@@ -55,14 +55,14 @@ MODBUS_DEV: [
         'type': 'SwitchingLight',
         't_gap': 8000,
         'pres': 1.,
-        'topic_type': 'Tros3',
+        'topic_type': ['Tros3','2'],
         'dev':
         {
 
           'maddr': 1,
           'type': 'SwitchingLight',
           'value': False,
-          'id': 373220,
+          'id': [373220,],
         },
         'attrib': {
         'reg': 512,
@@ -77,14 +77,14 @@ MODBUS_DEV: [
         'type': 'SwitchingLight',
         't_gap': 8000,
         'pres': 1.,
-        'topic_type': 'Tros3',
+        'topic_type': ['Tros3','2'],
         'dev':
           {
 
             'maddr': 1,
             'type': 'SwitchingLight',
             'value': False,
-            'id': 373219,
+            'id': [373219,],
           },
         'attrib': {
           'reg': 513,
@@ -100,14 +100,14 @@ MODBUS_DEV: [
         'type': 'SwitchingLight',
         't_gap': 8000,
         'pres': 1.,
-        'topic_type': 'Tros3',
+        'topic_type': ['Tros3','2'],
         'dev':
           {
 
             'maddr': 1,
             'type': 'SwitchingLight',
             'value': False,
-            'id': 373221,
+            'id': [373221,],
           },
         'attrib': {
           'reg': 514,
@@ -122,14 +122,14 @@ MODBUS_DEV: [
         'type': 'SwitchingLight',
         't_gap': 8000,
         'pres': 1.,
-        'topic_type': 'Tros3',
+        'topic_type': ['Tros3','2'],
         'dev':
           {
 
             'maddr': 1,
             'type': 'SwitchingLight',
             'value': False,
-            'id': 373222,
+            'id': [373222,],
           },
         'attrib': {
           'reg': 515,
@@ -144,14 +144,14 @@ MODBUS_DEV: [
         'type': 'SwitchingLight',
         't_gap': 8000,
         'pres': 1.,
-        'topic_type': 'Tros3',
+        'topic_type': ['Tros3','2'],
         'dev':
           {
 
             'maddr': 1,
             'type': 'SwitchingLight',
             'value': False,
-            'id': 373223,
+            'id': [373223,],
           },
         'attrib': {
           'reg': 516,
@@ -166,14 +166,14 @@ MODBUS_DEV: [
         'type': 'SwitchingLight',
         't_gap': 8000,
         'pres': 1.,
-        'topic_type': 'Tros3',
+        'topic_type': ['Tros3','2'],
         'dev':
           {
 
             'maddr': 1,
             'type': 'SwitchingLight',
             'value': False,
-            'id': 373224,
+            'id': [373224,],
           },
         'attrib': {
           'reg': 517,
@@ -187,14 +187,14 @@ MODBUS_DEV: [
         'type': 'OutflowDuctFan',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 2,
             'type': 'OutflowDuctFan',
             'value': False,
-            'id': 373469,
+            'id': [373469, 373464],
           },
         'attrib': {
           'reg': 520,
@@ -208,14 +208,14 @@ MODBUS_DEV: [
         'type': 'OutflowAirValve',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'Open',],
         'dev':
           {
 
             'maddr': 2,
             'type': 'OutflowAirValve',
             'value': False,
-            'id': 373474,
+            'id': [373474,],
           },
         'attrib': {
           'reg': 520,
@@ -230,14 +230,14 @@ MODBUS_DEV: [
         'type': 'OutflowDuctFan',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 2,
             'type': 'OutflowDuctFan',
             'value': False,
-            'id': 373470,
+            'id': [373470, 373465],
           },
         'attrib': {
           'reg': 521,
@@ -251,14 +251,14 @@ MODBUS_DEV: [
         'type': 'OutflowAirValve',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'Open',],
         'dev':
           {
 
             'maddr': 2,
             'type': 'OutflowAirValve',
             'value': False,
-            'id': 373475,
+            'id': [373475,],
           },
         'attrib': {
           'reg': 521,
@@ -273,14 +273,14 @@ MODBUS_DEV: [
         'type': 'OutflowDuctFan',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 2,
             'type': 'OutflowDuctFan',
             'value': False,
-            'id': 373471,
+            'id': [373471, 373466],
           },
         'attrib': {
           'reg': 522,
@@ -294,14 +294,14 @@ MODBUS_DEV: [
         'type': 'OutflowAirValve',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'Open',],
         'dev':
           {
 
             'maddr': 2,
             'type': 'OutflowAirValve',
             'value': False,
-            'id': 373476,
+            'id': [373476, ],
           },
         'attrib': {
           'reg': 522,
@@ -311,18 +311,18 @@ MODBUS_DEV: [
 
         }
       },
-{
+      {
         'type': 'OutflowDuctFan',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 2,
             'type': 'OutflowDuctFan',
             'value': False,
-            'id': 373472,
+            'id': [373472, 373467],
           },
         'attrib': {
           'reg': 523,
@@ -336,14 +336,14 @@ MODBUS_DEV: [
         'type': 'OutflowAirValve',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'Open',],
         'dev':
           {
 
             'maddr': 2,
             'type': 'OutflowAirValve',
             'value': False,
-            'id': 373477,
+            'id': [373477,],
           },
         'attrib': {
           'reg': 523,
@@ -357,14 +357,14 @@ MODBUS_DEV: [
         'type': 'OutflowDuctFan',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 2,
             'type': 'OutflowDuctFan',
             'value': False,
-            'id': 373473,
+            'id': [373473, 373468],
           },
         'attrib': {
           'reg': 524,
@@ -378,14 +378,14 @@ MODBUS_DEV: [
         'type': 'OutflowAirValve',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'Open',],
         'dev':
           {
 
             'maddr': 2,
             'type': 'OutflowAirValve',
             'value': False,
-            'id': 373478,
+            'id': [373478,],
           },
         'attrib': {
           'reg': 524,
@@ -400,14 +400,14 @@ MODBUS_DEV: [
         'type': 'OutflowDuctFan',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 3,
             'type': 'OutflowDuctFan',
             'value': False,
-            'id': 373550,
+            'id': [373550, 373524],
           },
         'attrib': {
           'reg': 525,
@@ -421,14 +421,14 @@ MODBUS_DEV: [
         'type': 'OutflowAirValve',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'Open',],
         'dev':
           {
 
             'maddr': 3,
             'type': 'OutflowAirValve',
             'value': False,
-            'id': 373543,
+            'id': [373543,],
           },
         'attrib': {
           'reg': 525,
@@ -443,14 +443,14 @@ MODBUS_DEV: [
         'type': 'OutflowDuctFan',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 3,
             'type': 'OutflowDuctFan',
             'value': False,
-            'id': 373551,
+            'id': [373551, 373525],
           },
         'attrib': {
           'reg': 526,
@@ -464,14 +464,14 @@ MODBUS_DEV: [
         'type': 'OutflowAirValve',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'Open',],
         'dev':
           {
 
             'maddr': 3,
             'type': 'OutflowAirValve',
             'value': False,
-            'id': 373544,
+            'id': [373544,],
           },
         'attrib': {
           'reg': 526,
@@ -486,14 +486,14 @@ MODBUS_DEV: [
         'type': 'OutflowDuctFan',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 3,
             'type': 'OutflowDuctFan',
             'value': False,
-            'id': 373552,
+            'id': [373552, 373526],
           },
         'attrib': {
           'reg': 527,
@@ -507,14 +507,14 @@ MODBUS_DEV: [
         'type': 'OutflowAirValve',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'Open',],
         'dev':
           {
 
             'maddr': 3,
             'type': 'OutflowAirValve',
             'value': False,
-            'id': 373544,
+            'id': [373544,],
           },
         'attrib': {
           'reg': 527,
@@ -529,14 +529,14 @@ MODBUS_DEV: [
         'type': 'OutflowDuctFan',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 3,
             'type': 'OutflowDuctFan',
             'value': False,
-            'id': 373553,
+            'id': [373553, 373527],
           },
         'attrib': {
           'reg': 528,
@@ -550,14 +550,14 @@ MODBUS_DEV: [
         'type': 'OutflowAirValve',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'Open',],
         'dev':
           {
 
             'maddr': 3,
             'type': 'OutflowAirValve',
             'value': False,
-            'id': 373546,
+            'id': [373546,],
           },
         'attrib': {
           'reg': 528,
@@ -573,14 +573,14 @@ MODBUS_DEV: [
         'type': 'OutflowDuctFan',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 3,
             'type': 'OutflowDuctFan',
             'value': False,
-            'id': 373554,
+            'id': [373554, 373528],
           },
         'attrib': {
           'reg': 529,
@@ -594,14 +594,14 @@ MODBUS_DEV: [
         'type': 'OutflowAirValve',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'Open',],
         'dev':
           {
 
             'maddr': 3,
             'type': 'OutflowAirValve',
             'value': False,
-            'id': 373547,
+            'id': [373547,],
           },
         'attrib': {
           'reg': 529,
@@ -616,14 +616,14 @@ MODBUS_DEV: [
         'type': 'OutflowDuctFan',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 3,
             'type': 'OutflowDuctFan',
             'value': False,
-            'id': 373555,
+            'id': [373555, 373529],
           },
         'attrib': {
           'reg': 530,
@@ -637,14 +637,14 @@ MODBUS_DEV: [
         'type': 'OutflowAirValve',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'Open',],
         'dev':
           {
 
             'maddr': 3,
             'type': 'OutflowAirValve',
             'value': False,
-            'id': 373548,
+            'id': [373548,],
           },
         'attrib': {
           'reg': 530,
@@ -659,14 +659,14 @@ MODBUS_DEV: [
         'type': 'OutflowDuctFan',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 3,
             'type': 'OutflowDuctFan',
             'value': False,
-            'id': 373556,
+            'id': [373556, 373530],
           },
         'attrib': {
           'reg': 531,
@@ -680,14 +680,14 @@ MODBUS_DEV: [
         'type': 'OutflowAirValve',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'Open',],
         'dev':
           {
 
             'maddr': 3,
             'type': 'OutflowAirValve',
             'value': False,
-            'id': 373549,
+            'id': [373549,],
           },
         'attrib': {
           'reg': 531,
@@ -702,14 +702,14 @@ MODBUS_DEV: [
         'type': 'OutflowDuctFan',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 4,
             'type': 'OutflowDuctFan',
             'value': False,
-            'id': 373580,
+            'id': [373580, 373568],
           },
         'attrib': {
           'reg': 532,
@@ -723,14 +723,14 @@ MODBUS_DEV: [
         'type': 'OutflowAirValve',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'Open',],
         'dev':
           {
 
             'maddr': 4,
             'type': 'OutflowAirValve',
             'value': False,
-            'id': 373574,
+            'id': [373574,],
           },
         'attrib': {
           'reg': 532,
@@ -745,14 +745,14 @@ MODBUS_DEV: [
         'type': 'OutflowDuctFan',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 4,
             'type': 'OutflowDuctFan',
             'value': False,
-            'id': 373581,
+            'id': [373581, 373569],
           },
         'attrib': {
           'reg': 538,
@@ -766,14 +766,14 @@ MODBUS_DEV: [
         'type': 'OutflowAirValve',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'Open',],
         'dev':
           {
 
             'maddr': 4,
             'type': 'OutflowAirValve',
             'value': False,
-            'id': 373575,
+            'id': [373575,],
           },
         'attrib': {
           'reg': 538,
@@ -788,14 +788,14 @@ MODBUS_DEV: [
         'type': 'OutflowDuctFan',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 4,
             'type': 'OutflowDuctFan',
             'value': False,
-            'id': 373582,
+            'id': [373582, 373570],
           },
         'attrib': {
           'reg': 533,
@@ -809,14 +809,14 @@ MODBUS_DEV: [
         'type': 'OutflowAirValve',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'Open',],
         'dev':
           {
 
             'maddr': 4,
             'type': 'OutflowAirValve',
             'value': False,
-            'id': 373576,
+            'id': [373576,],
           },
         'attrib': {
           'reg': 533,
@@ -831,14 +831,14 @@ MODBUS_DEV: [
         'type': 'OutflowDuctFan',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 4,
             'type': 'OutflowDuctFan',
             'value': False,
-            'id': 373583,
+            'id': [373583, 373571],
           },
         'attrib': {
           'reg': 534,
@@ -852,14 +852,14 @@ MODBUS_DEV: [
         'type': 'OutflowAirValve',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'Open',],
         'dev':
           {
 
             'maddr': 4,
             'type': 'OutflowAirValve',
             'value': False,
-            'id': 373577,
+            'id': [373577,],
           },
         'attrib': {
           'reg': 534,
@@ -874,14 +874,14 @@ MODBUS_DEV: [
         'type': 'OutflowDuctFan',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 4,
             'type': 'OutflowDuctFan',
             'value': False,
-            'id': 373584,
+            'id': [373584, 373572],
           },
         'attrib': {
           'reg': 535,
@@ -895,14 +895,14 @@ MODBUS_DEV: [
         'type': 'OutflowAirValve',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'Open',],
         'dev':
           {
 
             'maddr': 4,
             'type': 'OutflowAirValve',
             'value': False,
-            'id': 373578,
+            'id': [373578,],
           },
         'attrib': {
           'reg': 535,
@@ -917,14 +917,14 @@ MODBUS_DEV: [
         'type': 'OutflowDuctFan',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 4,
             'type': 'OutflowDuctFan',
             'value': False,
-            'id': 373585,
+            'id': [373585, 373573],
           },
         'attrib': {
           'reg': 536,
@@ -938,14 +938,14 @@ MODBUS_DEV: [
         'type': 'OutflowAirValve',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': 'Jocket',
+        'topic_type': ['Jocket', 'Open',],
         'dev':
           {
 
             'maddr': 4,
             'type': 'OutflowAirValve',
             'value': False,
-            'id': 373579,
+            'id': [373579,],
           },
         'attrib': {
           'reg': 536,
