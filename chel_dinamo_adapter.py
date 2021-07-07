@@ -3,7 +3,7 @@ import socket
 import threading
 import time
 import random
-import math
+import json
 import paho.mqtt.client
 from threading import Timer
 import bitstring
@@ -125,6 +125,8 @@ def isONID(x):
         return 2
     elif x == 'LeakageSensor':
         return 0
+    else:
+        return 'On'
 
 def make_two_bit(x):
     bytes_list =list('00')
@@ -256,9 +258,12 @@ class ModBusProvider:
         self.answerIs = None
         self.maddr = args[0]['dev']['maddr']
         self.reg = args[0]['attrib']['reg']
-        self.topType = args[0]['topic_type']
-        self._stateTopicLevel = '{}/State/{}/Equipment/{}/{}/0'.format(self.topType, PROJECT, args[0]['dev']['type'], args[0]['dev']['id'])
-        self._stateTopicIsOn = '{}/State/{}/Equipment/{}/{}/{}'.format(self.topType, PROJECT, args[0]['dev']['type'], args[0]['dev']['id'], isONID(args[0]['dev']['type']))
+        self.topType = args[0]['topic_type'][0]
+        self.tt = args[0]['topic_type'][1]
+        # self._stateTopicLevel = '{}/State/{}/Equipment/{}/{}/0'.format(self.topType, PROJECT, args[0]['dev']['type'], args[0]['dev']['id'])
+        # self._stateTopicIsOn = '{}/State/{}/Equipment/{}/{}/{}'.format(self.topType, PROJECT, args[0]['dev']['type'], args[0]['dev']['id'], isONID(args[0]['dev']['type']))
+        self._stateTopicLevel = '{}/State/{}/Equipment/{}/{}/0'.format(self.topType, PROJECT, args[0]['dev']['type'], args[0]['dev']['id'][0])
+        self._stateTopicIsOn = '{}/State/{}/Equipment/{}/{}/{}'.format(self.topType, PROJECT, args[0]['dev']['type'], args[0]['dev']['id'][0], args[0]['topic_type'][1])
         self.answer = None
 
 
@@ -378,7 +383,7 @@ class ModBusProvider:
         self.answerIs=out
         self._callMTime = current_milli_time()
 
-    def dumpMqtt(self, data=None, fl = 0):
+    def dumpMqtt(self, data=None, fl = 0, classId = None):
         # if data == None:
         #     data = self.stateInt
         if data == None and self.state is not None:
@@ -387,10 +392,12 @@ class ModBusProvider:
             self.state = data
         # out = VariableTRS3(None, self.dev['dev']['id'], 0, data, invalid=(not self.isValid))
         if self.topType == 'Tros3':
-            out_ = VariableTRS3(id=self.dev['dev']['id'], cl=fl, val=data)
+            out_ = VariableTRS3(id=self.dev['dev']['id'][0], cl=fl, val=data)
             out = out_.pack()
         elif self.topType == 'Jocket':
-            out_ = VariableJocket.create_data(id=self.dev['dev']['id'], cl=fl, action='state' ,val=data)
+            if classId is None:
+                classId = CLASS_TABLE[self.dev['dev']['type']+'_'+self.tt]
+            out_ = VariableJocket.create_data(id=self.dev['dev']['id'][0], cl=classId, action='state' ,val=data)
             out  = out_.pack()
         if fl == 0:
             clientTopic = self._stateTopicLevel
@@ -754,7 +761,7 @@ class RGPTCPAdapterLauncher:
                 # ModBus ВМЕСТО DALI!!!!!!!!!
                 #
                 for prov in self.modbusProviders:
-                    if prov.dev['dev']['id'] == int(topic[5]):
+                    if int(topic[5]) in prov.dev['dev']['id'] :
                         if prov.dev['dev']['type'] == 'DimmingLight':
                             pass
                         elif prov.dev['dev']['type'] == 'SwitchingLight':
@@ -793,7 +800,7 @@ class RGPTCPAdapterLauncher:
                 dd_ = mess['data']['value']
                 dd = dd_
                 for prov in self.modbusProviders:
-                    if prov.dev['dev']['id'] == int(topic[5]):
+                    if int(topic[6]) in prov.dev['dev']['id']:
                         prov.callModBus(dd)
                         res = prov.queryModBusState()
                         if prov.isValid:
