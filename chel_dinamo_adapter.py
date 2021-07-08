@@ -322,24 +322,30 @@ class ModBusProvider:
 
         out = self._socket.send_message(dd, size)
         self.answerIs = out
-        result = ByteStrToStr(out)
-        if result[:4].lower() == transaction_id:
-            out_ = out[2:]
-            res, rest = self.parceModBusData(out_)
-            if res['payload']['error'] == bytearray():
-                self.BytesAnswer = res['payload']['data']
-                self.isValid = True
-                if res['payload']['nbyte'][0] == 2 or res['payload']['nbyte'][0] == 1:
-                    # только для опроса одного регистра !!!!!!!!!!!!!
-                    res['payload']['data'].reverse()
-                    intRes = bitstring.BitArray(res['payload']['data']).int
-                    res['intRes'] = intRes
+        if out is not None:
+            result = ByteStrToStr(out)
+            if result[:4].lower() == transaction_id:
+                out_ = out[2:]
+                res, rest = self.parceModBusData(out_)
+                if res['payload']['error'] == bytearray():
+                    self.BytesAnswer = res['payload']['data']
+                    self.isValid = True
+                    if res['payload']['nbyte'][0] == 2 or res['payload']['nbyte'][0] == 1:
+                        # только для опроса одного регистра !!!!!!!!!!!!!
+                        res['payload']['data'].reverse()
+                        intRes = bitstring.BitArray(res['payload']['data']).int
+                        res['intRes'] = intRes
+                else:
+                    self.isValid = False
             else:
-                self.isValid = False
+
+                res = None
         else:
             res = None
+            self.isValid=False
 
         return res
+
 
     def callModBus(self, data = None, part=False):
         # запись в регистры
@@ -619,7 +625,11 @@ class RGPTcpSocket:
         print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
         logging.debug('[->  ]: {}'.format(' '.join(hex(b)[2:].rjust(2, '0').upper() for b in data)))
         print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-        out = self.sock.recv(2048)
+        try:
+            out = self.sock.recv(1024)
+        except BaseException as ex:
+            logging.exception(ex)
+            return None
         logging.debug('[  <-]: {}'.format(' '.join(hex(b)[2:].rjust(2, '0').upper() for b in out)))
         # out_str = '{}'.format(''.join(hex(b)[2:].rjust(2, '0').upper() for b in out))
         out_str = out
