@@ -514,7 +514,7 @@ MODBUS_DEV: [
             'maddr': 3,
             'type': 'OutflowAirValve',
             'value': False,
-            'id': [373544,],
+            'id': [373545,],
           },
         'attrib': {
           'reg': 527,

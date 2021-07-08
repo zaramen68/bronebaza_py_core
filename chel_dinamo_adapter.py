@@ -657,6 +657,7 @@ class RGPTCPAdapterLauncher:
         self.mqttc = paho.mqtt.client.Client()
         self.mqttc.username_pw_set(BROKER_USERNAME, BROKER_PWD)
         self.mqttc.on_connect = self.on_connect
+        self.mqttc.on_disconnect = self.on_disconnect
         self.mqttc.on_subscribe = self.on_subscribe
         self.mqttc.on_message = self.on_message
         self.mqttc.connect(BROKER_HOST, BROKER_PORT)
@@ -736,6 +737,11 @@ class RGPTCPAdapterLauncher:
             print("connected OK Returned code=",rc)
         else:
             print("Bad connection Returned code=",rc)
+
+    def on_disconnect(self, mqttc, userdata, rc):
+        if rc != 0:
+            print("Unexpected MQTT disconnection. Will auto-reconnect")
+            self.mqttc.reconnect()
 
     def on_subscribe(self, mqttc, userdata, mid, granted_qos):
         print("Subscribed: " + str(mid) + " " + str(granted_qos))
