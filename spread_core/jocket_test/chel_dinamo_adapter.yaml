@@ -183,6 +183,28 @@ MODBUS_DEV: [
 
         }
       },
+
+      {
+        'type': 'VentilationUnit',
+        't_gap': 80,
+        'pres': 1.,
+        'topic_type': ['Jocket', 'On',],
+        'dev':
+          {
+
+            'maddr': 2,
+            'type': 'VentilationUnit',
+            'value': False,
+            'id': [ 373464, 373469,],
+          },
+        'attrib': {
+          'reg': 520,
+          'nreg': 1,
+          'command': '0x06',
+          'command_ask': '0x03',
+
+        }
+      },
       {
         'type': 'OutflowDuctFan',
         't_gap': 80,
@@ -204,28 +226,49 @@ MODBUS_DEV: [
 
         }
       },
+#      {
+#        'type': 'OutflowAirValve',
+#        't_gap': 80,
+#        'pres': 1.,
+#        'topic_type': ['Jocket', 'Open',],
+#        'dev':
+#          {
+#
+#            'maddr': 2,
+#            'type': 'OutflowAirValve',
+#            'value': False,
+#            'id': [373474,],
+#          },
+#        'attrib': {
+#          'reg': 520,
+#          'nreg': 1,
+#          'command': '0x06',
+#          'command_ask': '0x03',
+#
+#        }
+#      },
+
       {
-        'type': 'OutflowAirValve',
+        'type': 'VentilationUnit',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': ['Jocket', 'Open',],
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 2,
-            'type': 'OutflowAirValve',
+            'type': 'VentilationUnit',
             'value': False,
-            'id': [373474,],
+            'id': [373465, 373470, ],
           },
         'attrib': {
-          'reg': 520,
+          'reg': 521,
           'nreg': 1,
           'command': '0x06',
           'command_ask': '0x03',
 
         }
       },
-
       {
         'type': 'OutflowDuctFan',
         't_gap': 80,
@@ -247,28 +290,49 @@ MODBUS_DEV: [
 
         }
       },
+#      {
+#        'type': 'OutflowAirValve',
+#        't_gap': 80,
+#        'pres': 1.,
+#        'topic_type': ['Jocket', 'Open',],
+#        'dev':
+#          {
+#
+#            'maddr': 2,
+#            'type': 'OutflowAirValve',
+#            'value': False,
+#            'id': [373475,],
+#          },
+#        'attrib': {
+#          'reg': 521,
+#          'nreg': 1,
+#          'command': '0x06',
+#          'command_ask': '0x03',
+#
+#        }
+#      },
+
       {
-        'type': 'OutflowAirValve',
+        'type': 'VentilationUnit',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': ['Jocket', 'Open',],
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 2,
-            'type': 'OutflowAirValve',
+            'type': 'VentilationUnit',
             'value': False,
-            'id': [373475,],
+            'id': [373466, 373471, ],
           },
         'attrib': {
-          'reg': 521,
+          'reg': 522,
           'nreg': 1,
           'command': '0x06',
           'command_ask': '0x03',
 
         }
       },
-
       {
         'type': 'OutflowDuctFan',
         't_gap': 80,
@@ -290,21 +354,42 @@ MODBUS_DEV: [
 
         }
       },
+#      {
+#        'type': 'OutflowAirValve',
+#        't_gap': 80,
+#        'pres': 1.,
+#        'topic_type': ['Jocket', 'Open',],
+#        'dev':
+#          {
+#
+#            'maddr': 2,
+#            'type': 'OutflowAirValve',
+#            'value': False,
+#            'id': [373476, ],
+#          },
+#        'attrib': {
+#          'reg': 522,
+#          'nreg': 1,
+#          'command': '0x06',
+#          'command_ask': '0x03',
+#
+#        }
+#      },
       {
-        'type': 'OutflowAirValve',
+        'type': 'VentilationUnit',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': ['Jocket', 'Open',],
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 2,
-            'type': 'OutflowAirValve',
+            'type': 'VentilationUnit',
             'value': False,
-            'id': [373476, ],
+            'id': [373467, 373472, ],
           },
         'attrib': {
-          'reg': 522,
+          'reg': 523,
           'nreg': 1,
           'command': '0x06',
           'command_ask': '0x03',
@@ -332,21 +417,42 @@ MODBUS_DEV: [
 
         }
       },
+#      {
+#        'type': 'OutflowAirValve',
+#        't_gap': 80,
+#        'pres': 1.,
+#        'topic_type': ['Jocket', 'Open',],
+#        'dev':
+#          {
+#
+#            'maddr': 2,
+#            'type': 'OutflowAirValve',
+#            'value': False,
+#            'id': [373477,],
+#          },
+#        'attrib': {
+#          'reg': 523,
+#          'nreg': 1,
+#          'command': '0x06',
+#          'command_ask': '0x03',
+#
+#        }
+#      },
       {
-        'type': 'OutflowAirValve',
+        'type': 'VentilationUnit',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': ['Jocket', 'Open',],
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 2,
-            'type': 'OutflowAirValve',
+            'type': 'VentilationUnit',
             'value': False,
-            'id': [373477,],
+            'id': [373468, 373473, ],
           },
         'attrib': {
-          'reg': 523,
+          'reg': 524,
           'nreg': 1,
           'command': '0x06',
           'command_ask': '0x03',
@@ -374,28 +480,49 @@ MODBUS_DEV: [
 
         }
       },
+#      {
+#        'type': 'OutflowAirValve',
+#        't_gap': 80,
+#        'pres': 1.,
+#        'topic_type': ['Jocket', 'Open',],
+#        'dev':
+#          {
+#
+#            'maddr': 2,
+#            'type': 'OutflowAirValve',
+#            'value': False,
+#            'id': [373478,],
+#          },
+#        'attrib': {
+#          'reg': 524,
+#          'nreg': 1,
+#          'command': '0x06',
+#          'command_ask': '0x03',
+#
+#        }
+#      },
+
       {
-        'type': 'OutflowAirValve',
+        'type': 'VentilationUnit',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': ['Jocket', 'Open',],
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
-            'maddr': 2,
-            'type': 'OutflowAirValve',
+            'maddr': 3,
+            'type': 'VentilationUnit',
             'value': False,
-            'id': [373478,],
+            'id': [373524, 373550, ],
           },
         'attrib': {
-          'reg': 524,
+          'reg': 525,
           'nreg': 1,
           'command': '0x06',
           'command_ask': '0x03',
 
         }
       },
-
       {
         'type': 'OutflowDuctFan',
         't_gap': 80,
@@ -417,28 +544,49 @@ MODBUS_DEV: [
 
         }
       },
+#      {
+#        'type': 'OutflowAirValve',
+#        't_gap': 80,
+#        'pres': 1.,
+#        'topic_type': ['Jocket', 'Open',],
+#        'dev':
+#          {
+#
+#            'maddr': 3,
+#            'type': 'OutflowAirValve',
+#            'value': False,
+#            'id': [373543,],
+#          },
+#        'attrib': {
+#          'reg': 525,
+#          'nreg': 1,
+#          'command': '0x06',
+#          'command_ask': '0x03',
+#
+#        }
+#      },
+
       {
-        'type': 'OutflowAirValve',
+        'type': 'VentilationUnit',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': ['Jocket', 'Open',],
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 3,
-            'type': 'OutflowAirValve',
+            'type': 'VentilationUnit',
             'value': False,
-            'id': [373543,],
+            'id': [ 373525, 373551,],
           },
         'attrib': {
-          'reg': 525,
+          'reg': 526,
           'nreg': 1,
           'command': '0x06',
           'command_ask': '0x03',
 
         }
       },
-
       {
         'type': 'OutflowDuctFan',
         't_gap': 80,
@@ -460,28 +608,49 @@ MODBUS_DEV: [
 
         }
       },
+#      {
+#        'type': 'OutflowAirValve',
+#        't_gap': 80,
+#        'pres': 1.,
+#        'topic_type': ['Jocket', 'Open',],
+#        'dev':
+#          {
+#
+#            'maddr': 3,
+#            'type': 'OutflowAirValve',
+#            'value': False,
+#            'id': [373544,],
+#          },
+#        'attrib': {
+#          'reg': 526,
+#          'nreg': 1,
+#          'command': '0x06',
+#          'command_ask': '0x03',
+#
+#        }
+#      },
+
       {
-        'type': 'OutflowAirValve',
+        'type': 'VentilationUnit',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': ['Jocket', 'Open',],
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 3,
-            'type': 'OutflowAirValve',
+            'type': 'VentilationUnit',
             'value': False,
-            'id': [373544,],
+            'id': [373526, 373552, ],
           },
         'attrib': {
-          'reg': 526,
+          'reg': 527,
           'nreg': 1,
           'command': '0x06',
           'command_ask': '0x03',
 
         }
       },
-
       {
         'type': 'OutflowDuctFan',
         't_gap': 80,
@@ -503,28 +672,49 @@ MODBUS_DEV: [
 
         }
       },
+#      {
+#        'type': 'OutflowAirValve',
+#        't_gap': 80,
+#        'pres': 1.,
+#        'topic_type': ['Jocket', 'Open',],
+#        'dev':
+#          {
+#
+#            'maddr': 3,
+#            'type': 'OutflowAirValve',
+#            'value': False,
+#            'id': [373545,],
+#          },
+#        'attrib': {
+#          'reg': 527,
+#          'nreg': 1,
+#          'command': '0x06',
+#          'command_ask': '0x03',
+#
+#        }
+#      },
+
       {
-        'type': 'OutflowAirValve',
+        'type': 'VentilationUnit',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': ['Jocket', 'Open',],
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 3,
-            'type': 'OutflowAirValve',
+            'type': 'VentilationUnit',
             'value': False,
-            'id': [373545,],
+            'id': [373527, 373553, ],
           },
         'attrib': {
-          'reg': 527,
+          'reg': 528,
           'nreg': 1,
           'command': '0x06',
           'command_ask': '0x03',
 
         }
       },
-
       {
         'type': 'OutflowDuctFan',
         't_gap': 80,
@@ -546,29 +736,49 @@ MODBUS_DEV: [
 
         }
       },
+#      {
+#        'type': 'OutflowAirValve',
+#        't_gap': 80,
+#        'pres': 1.,
+#        'topic_type': ['Jocket', 'Open',],
+#        'dev':
+#          {
+#
+#            'maddr': 3,
+#            'type': 'OutflowAirValve',
+#            'value': False,
+#            'id': [373546,],
+#          },
+#        'attrib': {
+#          'reg': 528,
+#          'nreg': 1,
+#          'command': '0x06',
+#          'command_ask': '0x03',
+#
+#        }
+#      },
+
       {
-        'type': 'OutflowAirValve',
+        'type': 'VentilationUnit',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': ['Jocket', 'Open',],
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 3,
-            'type': 'OutflowAirValve',
+            'type': 'VentilationUnit',
             'value': False,
-            'id': [373546,],
+            'id': [ 373528, 373554,],
           },
         'attrib': {
-          'reg': 528,
+          'reg': 529,
           'nreg': 1,
           'command': '0x06',
           'command_ask': '0x03',
 
         }
       },
-
-
       {
         'type': 'OutflowDuctFan',
         't_gap': 80,
@@ -590,28 +800,49 @@ MODBUS_DEV: [
 
         }
       },
+#      {
+#        'type': 'OutflowAirValve',
+#        't_gap': 80,
+#        'pres': 1.,
+#        'topic_type': ['Jocket', 'Open',],
+#        'dev':
+#          {
+#
+#            'maddr': 3,
+#            'type': 'OutflowAirValve',
+#            'value': False,
+#            'id': [373547,],
+#          },
+#        'attrib': {
+#          'reg': 529,
+#          'nreg': 1,
+#          'command': '0x06',
+#          'command_ask': '0x03',
+#
+#        }
+#      },
+
       {
-        'type': 'OutflowAirValve',
+        'type': 'VentilationUnit',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': ['Jocket', 'Open',],
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 3,
-            'type': 'OutflowAirValve',
+            'type': 'VentilationUnit',
             'value': False,
-            'id': [373547,],
+            'id': [373529, 373555, ],
           },
         'attrib': {
-          'reg': 529,
+          'reg': 530,
           'nreg': 1,
           'command': '0x06',
           'command_ask': '0x03',
 
         }
       },
-
       {
         'type': 'OutflowDuctFan',
         't_gap': 80,
@@ -633,28 +864,49 @@ MODBUS_DEV: [
 
         }
       },
+#      {
+#        'type': 'OutflowAirValve',
+#        't_gap': 80,
+#        'pres': 1.,
+#        'topic_type': ['Jocket', 'Open',],
+#        'dev':
+#          {
+#
+#            'maddr': 3,
+#            'type': 'OutflowAirValve',
+#            'value': False,
+#            'id': [373548,],
+#          },
+#        'attrib': {
+#          'reg': 530,
+#          'nreg': 1,
+#          'command': '0x06',
+#          'command_ask': '0x03',
+#
+#        }
+#      },
+
       {
-        'type': 'OutflowAirValve',
+        'type': 'VentilationUnit',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': ['Jocket', 'Open',],
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 3,
-            'type': 'OutflowAirValve',
+            'type': 'VentilationUnit',
             'value': False,
-            'id': [373548,],
+            'id': [373530, 373556, ],
           },
         'attrib': {
-          'reg': 530,
+          'reg': 531,
           'nreg': 1,
           'command': '0x06',
           'command_ask': '0x03',
 
         }
       },
-
       {
         'type': 'OutflowDuctFan',
         't_gap': 80,
@@ -676,28 +928,49 @@ MODBUS_DEV: [
 
         }
       },
+#      {
+#        'type': 'OutflowAirValve',
+#        't_gap': 80,
+#        'pres': 1.,
+#        'topic_type': ['Jocket', 'Open',],
+#        'dev':
+#          {
+#
+#            'maddr': 3,
+#            'type': 'OutflowAirValve',
+#            'value': False,
+#            'id': [373549,],
+#          },
+#        'attrib': {
+#          'reg': 531,
+#          'nreg': 1,
+#          'command': '0x06',
+#          'command_ask': '0x03',
+#
+#        }
+#      },
+
       {
-        'type': 'OutflowAirValve',
+        'type': 'VentilationUnit',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': ['Jocket', 'Open',],
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
-            'maddr': 3,
-            'type': 'OutflowAirValve',
+            'maddr': 4,
+            'type': 'VentilationUnit',
             'value': False,
-            'id': [373549,],
+            'id': [373568, 373580, ],
           },
         'attrib': {
-          'reg': 531,
+          'reg': 532,
           'nreg': 1,
           'command': '0x06',
           'command_ask': '0x03',
 
         }
       },
-
       {
         'type': 'OutflowDuctFan',
         't_gap': 80,
@@ -719,28 +992,49 @@ MODBUS_DEV: [
 
         }
       },
+#      {
+#        'type': 'OutflowAirValve',
+#        't_gap': 80,
+#        'pres': 1.,
+#        'topic_type': ['Jocket', 'Open',],
+#        'dev':
+#          {
+#
+#            'maddr': 4,
+#            'type': 'OutflowAirValve',
+#            'value': False,
+#            'id': [373574,],
+#          },
+#        'attrib': {
+#          'reg': 532,
+#          'nreg': 1,
+#          'command': '0x06',
+#          'command_ask': '0x03',
+#
+#        }
+#      },
+
       {
-        'type': 'OutflowAirValve',
+        'type': 'VentilationUnit',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': ['Jocket', 'Open',],
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 4,
-            'type': 'OutflowAirValve',
+            'type': 'VentilationUnit',
             'value': False,
-            'id': [373574,],
+            'id': [373569, 373581, ],
           },
         'attrib': {
-          'reg': 532,
+          'reg': 538,
           'nreg': 1,
           'command': '0x06',
           'command_ask': '0x03',
 
         }
       },
-
       {
         'type': 'OutflowDuctFan',
         't_gap': 80,
@@ -762,28 +1056,49 @@ MODBUS_DEV: [
 
         }
       },
+#      {
+#        'type': 'OutflowAirValve',
+#        't_gap': 80,
+#        'pres': 1.,
+#        'topic_type': ['Jocket', 'Open',],
+#        'dev':
+#          {
+#
+#            'maddr': 4,
+#            'type': 'OutflowAirValve',
+#            'value': False,
+#            'id': [373575,],
+#          },
+#        'attrib': {
+#          'reg': 538,
+#          'nreg': 1,
+#          'command': '0x06',
+#          'command_ask': '0x03',
+#
+#        }
+#      },
+
       {
-        'type': 'OutflowAirValve',
+        'type': 'VentilationUnit',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': ['Jocket', 'Open',],
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 4,
-            'type': 'OutflowAirValve',
+            'type': 'VentilationUnit',
             'value': False,
-            'id': [373575,],
+            'id': [373570, 373582, ],
           },
         'attrib': {
-          'reg': 538,
+          'reg': 533,
           'nreg': 1,
           'command': '0x06',
           'command_ask': '0x03',
 
         }
       },
-
       {
         'type': 'OutflowDuctFan',
         't_gap': 80,
@@ -805,28 +1120,49 @@ MODBUS_DEV: [
 
         }
       },
+#      {
+#        'type': 'OutflowAirValve',
+#        't_gap': 80,
+#        'pres': 1.,
+#        'topic_type': ['Jocket', 'Open',],
+#        'dev':
+#          {
+#
+#            'maddr': 4,
+#            'type': 'OutflowAirValve',
+#            'value': False,
+#            'id': [373576,],
+#          },
+#        'attrib': {
+#          'reg': 533,
+#          'nreg': 1,
+#          'command': '0x06',
+#          'command_ask': '0x03',
+#
+#        }
+#      },
+
       {
-        'type': 'OutflowAirValve',
+        'type': 'VentilationUnit',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': ['Jocket', 'Open',],
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 4,
-            'type': 'OutflowAirValve',
+            'type': 'VentilationUnit',
             'value': False,
-            'id': [373576,],
+            'id': [373571, 373583, ],
           },
         'attrib': {
-          'reg': 533,
+          'reg': 534,
           'nreg': 1,
           'command': '0x06',
           'command_ask': '0x03',
 
         }
       },
-
       {
         'type': 'OutflowDuctFan',
         't_gap': 80,
@@ -848,28 +1184,49 @@ MODBUS_DEV: [
 
         }
       },
+#      {
+#        'type': 'OutflowAirValve',
+#        't_gap': 80,
+#        'pres': 1.,
+#        'topic_type': ['Jocket', 'Open',],
+#        'dev':
+#          {
+#
+#            'maddr': 4,
+#            'type': 'OutflowAirValve',
+#            'value': False,
+#            'id': [373577,],
+#          },
+#        'attrib': {
+#          'reg': 534,
+#          'nreg': 1,
+#          'command': '0x06',
+#          'command_ask': '0x03',
+#
+#        }
+#      },
+
       {
-        'type': 'OutflowAirValve',
+        'type': 'VentilationUnit',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': ['Jocket', 'Open',],
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 4,
-            'type': 'OutflowAirValve',
+            'type': 'VentilationUnit',
             'value': False,
-            'id': [373577,],
+            'id': [373572, 373584, ],
           },
         'attrib': {
-          'reg': 534,
+          'reg': 535,
           'nreg': 1,
           'command': '0x06',
           'command_ask': '0x03',
 
         }
       },
-
       {
         'type': 'OutflowDuctFan',
         't_gap': 80,
@@ -891,28 +1248,49 @@ MODBUS_DEV: [
 
         }
       },
+#      {
+#        'type': 'OutflowAirValve',
+#        't_gap': 80,
+#        'pres': 1.,
+#        'topic_type': ['Jocket', 'Open',],
+#        'dev':
+#          {
+#
+#            'maddr': 4,
+#            'type': 'OutflowAirValve',
+#            'value': False,
+#            'id': [373578,],
+#          },
+#        'attrib': {
+#          'reg': 535,
+#          'nreg': 1,
+#          'command': '0x06',
+#          'command_ask': '0x03',
+#
+#        }
+#      },
+
       {
-        'type': 'OutflowAirValve',
+        'type': 'VentilationUnit',
         't_gap': 80,
         'pres': 1.,
-        'topic_type': ['Jocket', 'Open',],
+        'topic_type': ['Jocket', 'On',],
         'dev':
           {
 
             'maddr': 4,
-            'type': 'OutflowAirValve',
+            'type': 'VentilationUnit',
             'value': False,
-            'id': [373578,],
+            'id': [373573, 373585, ],
           },
         'attrib': {
-          'reg': 535,
+          'reg': 536,
           'nreg': 1,
           'command': '0x06',
           'command_ask': '0x03',
 
         }
       },
-
       {
         'type': 'OutflowDuctFan',
         't_gap': 80,
@@ -934,27 +1312,27 @@ MODBUS_DEV: [
 
         }
       },
-      {
-        'type': 'OutflowAirValve',
-        't_gap': 80,
-        'pres': 1.,
-        'topic_type': ['Jocket', 'Open',],
-        'dev':
-          {
-
-            'maddr': 4,
-            'type': 'OutflowAirValve',
-            'value': False,
-            'id': [373579,],
-          },
-        'attrib': {
-          'reg': 536,
-          'nreg': 1,
-          'command': '0x06',
-          'command_ask': '0x03',
-
-        }
-      },
+#      {
+#        'type': 'OutflowAirValve',
+#        't_gap': 80,
+#        'pres': 1.,
+#        'topic_type': ['Jocket', 'Open',],
+#        'dev':
+#          {
+#
+#            'maddr': 4,
+#            'type': 'OutflowAirValve',
+#            'value': False,
+#            'id': [373579,],
+#          },
+#        'attrib': {
+#          'reg': 536,
+#          'nreg': 1,
+#          'command': '0x06',
+#          'command_ask': '0x03',
+#
+#        }
+#      },
 ]
 
 DALI_DEV: [
