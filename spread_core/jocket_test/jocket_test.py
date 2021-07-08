@@ -534,6 +534,7 @@ class RGPTCPAdapterLauncher:
         self.mqttc.on_connect = self.on_connect
         self.mqttc.on_subscribe = self.on_subscribe
         self.mqttc.on_message = self.on_message
+        self.mqttc.on_disconnect = self.on_disconnect
         self.mqttc.connect(BROKER_HOST, BROKER_PORT)
         self._manager = self
         self._stopped = False
@@ -606,6 +607,12 @@ class RGPTCPAdapterLauncher:
             print("connected OK Returned code=",rc)
         else:
             print("Bad connection Returned code=",rc)
+
+    # def on_disconnect
+    def on_disconnect(self, mqttc, userdata, rc):
+        if rc != 0:
+            print("Unexpected MQTT disconnection. Will auto-reconnect")
+            self.mqttc.reconnect()
 
     def on_subscribe(self, mqttc, userdata, mid, granted_qos):
         print("Subscribed: " + str(mid) + " " + str(granted_qos))
